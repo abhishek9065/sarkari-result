@@ -57,12 +57,9 @@ const AdminDashboard: React.FC = () => {
     severity: 'success' as 'success' | 'error',
   });
 
-  // Load data
-  useEffect(() => {
-    loadJobs();
-    loadResults();
-    loadAdmitCards();
-  }, []);
+  const showSnackbar = (message: string, severity: 'success' | 'error') => {
+    setSnackbar({ open: true, message, severity });
+  };
 
   const loadJobs = async () => {
     try {
@@ -91,9 +88,12 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const showSnackbar = (message: string, severity: 'success' | 'error') => {
-    setSnackbar({ open: true, message, severity });
-  };
+  // Load data
+  useEffect(() => {
+    loadJobs();
+    loadResults();
+    loadAdmitCards();
+  }, []);
 
   // Job Operations
   const handleAddJob = () => {
