@@ -1,0 +1,4 @@
+  getResult: async (id: string): Promise<Result> => {
+    const response = await api.get(`/results/${id}`);
+    return response.data.result;
+  },

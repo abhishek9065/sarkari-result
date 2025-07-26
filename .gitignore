@@ -1,0 +1,29 @@
+# Client build
+client/build/
+client/node_modules/
+
+# Server
+server/node_modules/
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Logs
+*.log
+logs/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp

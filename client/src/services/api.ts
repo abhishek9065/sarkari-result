@@ -1,0 +1,217 @@
+import axios from 'axios';
+import { User, Job, Result, AdmitCard, LoginCredentials, RegisterData, ApiResponse, JobFilters, ResultFilters, AdmitCardFilters } from '../types';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor to add auth token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Response interceptor to handle errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Auth API
+export const authAPI = {
+  login: async (credentials: LoginCredentials): Promise<{ user: User; token: string }> => {
+    const response = await api.post('/auth/login', credentials);
+    return response.data.data;
+  },
+
+  register: async (userData: RegisterData): Promise<{ user: User; token: string }> => {
+    const response = await api.post('/auth/register', userData);
+    return response.data.data;
+  },
+
+  getProfile: async (): Promise<User> => {
+    const response = await api.get('/auth/profile');
+    return response.data.data;
+  },
+
+  updateProfile: async (userData: Partial<User>): Promise<User> => {
+    const response = await api.put('/auth/profile', userData);
+    return response.data.data;
+  },
+};
+
+// Jobs API
+export const jobsAPI = {
+  getJobs: async (filters?: JobFilters): Promise<ApiResponse<Job[]>> => {
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== '') {
+          params.append(key, value.toString());
+        }
+      });
+    }
+    const response = await api.get(`/jobs?${params.toString()}`);
+    return response.data;
+  },
+
+  getJob: async (id: string): Promise<Job> => {
+    const response = await api.get(`/jobs/${id}`);
+    // Transform the job data to match frontend expectations
+    const job = response.data;
+    return {
+      ...job,
+      jobType: job.category?.toLowerCase().replace(' jobs', '') || 'other',
+      status: job.isActive ? 'active' : 'closed',
+      featured: job.isFeatured || false,
+      applicationStartDate: job.importantDates?.applicationStartDate,
+      applicationEndDate: job.importantDates?.applicationEndDate,
+      examDate: job.importantDates?.examDate,
+      location: typeof job.location === 'object' ? 
+        `${job.location.city || ''}, ${job.location.state || ''}`.replace(/^,\s*|,\s*$/, '') : 
+        job.location,
+      eligibility: {
+        education: job.qualification?.minimum || job.eligibilityCriteria || 'As per notification',
+        ageLimit: job.ageLimit ? 
+          `${job.ageLimit.minimum || 18}-${job.ageLimit.maximum || 35} years` : 
+          'As per notification',
+        experience: job.experience ? 
+          `${job.experience.minimum || 0}-${job.experience.maximum || 5} years` : 
+          'Not specified'
+      },
+      applicationFee: {
+        general: job.applicationFee?.general || 0,
+        sc_st: job.applicationFee?.sc || job.applicationFee?.st || 0,
+        obc: job.applicationFee?.obc || 0
+      },
+      applyOnline: job.howToApply?.includes('Online') || true,
+      notificationUrl: job.notificationPDF || job.applicationLink || ''
+    };
+  },
+
+  getFeaturedJobs: async (): Promise<Job[]> => {
+    const response = await api.get('/jobs?featured=true&limit=6');
+    return response.data.jobs || [];
+  },
+
+  getLatestJobs: async (limit: number = 10): Promise<Job[]> => {
+    const response = await api.get(`/jobs?sort=-createdAt&limit=${limit}`);
+    const jobs = response.data.jobs || [];
+    
+    // Transform each job to match frontend expectations
+    return jobs.map((job: any) => ({
+      ...job,
+      jobType: job.category?.toLowerCase().replace(' jobs', '') || 'other',
+      status: job.isActive ? 'active' : 'closed',
+      featured: job.isFeatured || false,
+      applicationStartDate: job.importantDates?.applicationStartDate || job.applicationStartDate,
+      applicationEndDate: job.importantDates?.applicationEndDate || job.applicationEndDate,
+      examDate: job.importantDates?.examDate || job.examDate,
+      eligibility: {
+        education: job.qualification?.minimum || job.eligibility?.education || '',
+        ageLimit: job.ageLimit ? `${job.ageLimit.minimum}-${job.ageLimit.maximum} years` : job.eligibility?.ageLimit || '',
+        experience: job.experience ? `${job.experience.minimum}-${job.experience.maximum} years` : job.eligibility?.experience || ''
+      },
+      applicationFee: {
+        general: job.applicationFee?.general || 0,
+        sc_st: job.applicationFee?.sc || 0,
+        obc: job.applicationFee?.obc || 0
+      },
+      applyOnline: true,
+      location: job.location?.state || job.location || '',
+      notificationUrl: job.notificationPDF || job.notificationUrl
+    }));
+  },
+};
+
+// Results API
+export const resultsAPI = {
+  getResults: async (filters?: ResultFilters): Promise<ApiResponse<Result[]>> => {
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== '') {
+          params.append(key, value.toString());
+        }
+      });
+    }
+    const response = await api.get(`/results?${params.toString()}`);
+    return response.data;
+  },
+  getResult: async (id: string): Promise<Result> => {
+    const response = await api.get(`/results/${id}`);
+    return response.data.result;
+  },
+
+  getLatestResults: async (limit: number = 10): Promise<Result[]> => {
+    const response = await api.get(`/results?sort=-createdAt&limit=${limit}`);
+    return response.data.results || [];
+  },
+
+  getImportantResults: async (): Promise<Result[]> => {
+    const response = await api.get('/results?important=true&limit=6');
+    return response.data.results || [];
+  },
+};
+
+// Admit Cards API
+export const admitCardsAPI = {
+  getAdmitCards: async (filters?: AdmitCardFilters): Promise<ApiResponse<AdmitCard[]>> => {
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== '') {
+          params.append(key, value.toString());
+        }
+      });
+    }
+    const response = await api.get(`/admit-cards?${params.toString()}`);
+    return response.data;
+  },
+
+  getAdmitCard: async (id: string): Promise<AdmitCard> => {
+    const response = await api.get(`/admit-cards/${id}`);
+    return response.data.admitCard;
+  },
+
+  getLatestAdmitCards: async (limit: number = 10): Promise<AdmitCard[]> => {
+    const response = await api.get(`/admit-cards?sort=-createdAt&limit=${limit}`);
+    return response.data.admitCards || [];
+  },
+
+  getImportantAdmitCards: async (): Promise<AdmitCard[]> => {
+    const response = await api.get('/admit-cards?important=true&limit=6');
+    return response.data.admitCards || [];
+  },
+};
+
+// Export individual APIs for backward compatibility
+export const getJobs = jobsAPI.getJobs;
+export const getJob = jobsAPI.getJob;
+export const getFeaturedJobs = jobsAPI.getFeaturedJobs;
+export const getLatestJobs = jobsAPI.getLatestJobs;
+
+export const getResults = resultsAPI.getResults;
+export const getResult = resultsAPI.getResult;
+export const getLatestResults = resultsAPI.getLatestResults;
+
+export const getAdmitCards = admitCardsAPI.getAdmitCards;
+export const getAdmitCard = admitCardsAPI.getAdmitCard;
+export const getLatestAdmitCards = admitCardsAPI.getLatestAdmitCards;
+
+export default api;

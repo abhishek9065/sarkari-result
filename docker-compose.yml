@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: sarkari-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - sarkari-network
+
+  server:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: sarkari-server
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/sarkari_results?authSource=admin
+      JWT_SECRET: your_super_secure_jwt_secret_key_change_this
+      JWT_EXPIRE: 7d
+      ADMIN_EMAIL: admin@sarkariresults.com
+      ADMIN_PASSWORD: secure_admin_password
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+    volumes:
+      - ./server/uploads:/app/uploads
+    networks:
+      - sarkari-network
+
+  client:
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: sarkari-client
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - sarkari-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  sarkari-network:
+    driver: bridge
