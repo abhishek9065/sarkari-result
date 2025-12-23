@@ -309,7 +309,7 @@ function App() {
       {/* Main Content */}
       <main className="main-content">
         {error && <div className="error-message">{error}</div>}
-        {loading && <div className="loading">Loading latest updates...</div>}
+        {loading && <SkeletonLoader />}
 
         {!loading && !error && (
           <>
@@ -429,6 +429,42 @@ function SocialButtons() {
       <a href="#" className="social-btn whatsapp-btn">📱 Join WhatsApp Channel</a>
       <a href="#" className="social-btn telegram-btn">✈️ Join Telegram Channel</a>
     </div>
+  );
+}
+
+function SkeletonLoader() {
+  const SkeletonCard = () => (
+    <div className="skeleton-card">
+      <div className="skeleton-header"></div>
+      <div className="skeleton-content">
+        <div className="skeleton-line"></div>
+        <div className="skeleton-line"></div>
+        <div className="skeleton-line"></div>
+        <div className="skeleton-line"></div>
+        <div className="skeleton-line"></div>
+        <div className="skeleton-line"></div>
+        <div className="skeleton-line"></div>
+        <div className="skeleton-line"></div>
+      </div>
+      <div className="skeleton-footer">
+        <div className="skeleton-button"></div>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <div className="skeleton-grid">
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+      <div className="skeleton-grid">
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    </>
   );
 }
 
