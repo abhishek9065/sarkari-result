@@ -86,7 +86,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
     }
 
     const data = parseResult.data;
-    const announcement = await AnnouncementModel.create(data as CreateAnnouncementDto, req.user!.userId);
+    const announcement = await AnnouncementModel.create(data as unknown as CreateAnnouncementDto, req.user!.userId);
 
     return res.status(201).json({ data: announcement });
   } catch (error) {
@@ -109,7 +109,7 @@ router.patch('/:id', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: parseResult.error.flatten() });
     }
 
-    const announcement = await AnnouncementModel.update(id, parseResult.data as Partial<CreateAnnouncementDto>);
+    const announcement = await AnnouncementModel.update(id, parseResult.data as unknown as Partial<CreateAnnouncementDto>);
     if (!announcement) {
       return res.status(404).json({ error: 'Announcement not found' });
     }
