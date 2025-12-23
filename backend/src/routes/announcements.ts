@@ -14,7 +14,7 @@ const querySchema = z.object({
   search: z.string().trim().optional(),
   category: z.string().trim().optional(),
   organization: z.string().trim().optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  limit: z.coerce.number().int().min(1).max(200).default(100),
   offset: z.coerce.number().int().min(0).default(0),
 });
 
