@@ -70,3 +70,10 @@ export interface JwtPayload {
   email: string;
   role: UserRole;
 }
+
+export interface Bookmark {
+  id: number;
+  userId: number;
+  announcementId: number;
+  createdAt: Date;
+}

@@ -60,6 +60,18 @@ CREATE TABLE IF NOT EXISTS important_dates (
     description TEXT
 );
 
+-- Bookmarks table for users to save announcements
+CREATE TABLE IF NOT EXISTS bookmarks (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    announcement_id INTEGER NOT NULL REFERENCES announcements(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, announcement_id)
+);
+
+-- Create index for faster bookmark lookups by user
+CREATE INDEX idx_bookmarks_user_id ON bookmarks(user_id);
+
 -- Create indexes for better query performance
 CREATE INDEX idx_announcements_type ON announcements(type);
 CREATE INDEX idx_announcements_category ON announcements(category);

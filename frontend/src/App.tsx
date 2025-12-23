@@ -1,21 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import './styles.css';
-import type { Announcement, ContentType } from './types';
+import type { Announcement, ContentType, User } from './types';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 const apiBase = import.meta.env.VITE_API_BASE ?? '';
 
 // Page types
 type PageType = 'home' | 'admin' | 'about' | 'contact' | 'privacy' | 'disclaimer';
+type TabType = ContentType | 'bookmarks' | undefined;
 
 // Navigation menu items
 const navItems = [
-  { label: 'Home', type: undefined as ContentType | undefined },
-  { label: 'Result', type: 'result' as ContentType },
-  { label: 'Jobs', type: 'job' as ContentType },
-  { label: 'Admit Card', type: 'admit-card' as ContentType },
-  { label: 'Admission', type: 'admission' as ContentType },
-  { label: 'Syllabus', type: 'syllabus' as ContentType },
-  { label: 'Answer Key', type: 'answer-key' as ContentType },
+  { label: 'Home', type: undefined as ContentType | undefined | 'bookmarks' },
+  { label: 'Result', type: 'result' as ContentType | undefined | 'bookmarks' },
+  { label: 'Jobs', type: 'job' as ContentType | undefined | 'bookmarks' },
+  { label: 'Admit Card', type: 'admit-card' as ContentType | undefined | 'bookmarks' },
+  { label: 'Admission', type: 'admission' as ContentType | undefined | 'bookmarks' },
+  { label: 'Syllabus', type: 'syllabus' as ContentType | undefined | 'bookmarks' },
+  { label: 'Answer Key', type: 'answer-key' as ContentType | undefined | 'bookmarks' },
+  { label: '❤️ My Bookmarks', type: 'bookmarks' as ContentType | undefined | 'bookmarks' },
 ];
 
 // Featured exams
@@ -41,12 +44,16 @@ function App() {
   const [data, setData] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<ContentType | undefined>();
+  const [activeTab, setActiveTab] = useState<TabType>();
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<Announcement | null>(null);
   const [currentPage, setCurrentPage] = useState<PageType>('home');
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<number>>(new Set());
+  const [bookmarks, setBookmarks] = useState<Announcement[]>([]);
+  const { user, token, logout, isAuthenticated } = useAuth();
 
   // Advanced search states
   const [searchCategory, setSearchCategory] = useState('');
@@ -77,6 +84,70 @@ function App() {
 
     return () => controller.abort();
   }, [searchQuery, searchType, searchCategory]);
+
+  // Fetch bookmarks when user is authenticated
+  const fetchBookmarks = useCallback(async () => {
+    if (!token) return;
+    try {
+      const [idsRes, bookmarksRes] = await Promise.all([
+        fetch(`${apiBase}/api/bookmarks/ids`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${apiBase}/api/bookmarks`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
+      if (idsRes.ok && bookmarksRes.ok) {
+        const idsData = await idsRes.json();
+        const bookmarksData = await bookmarksRes.json();
+        setBookmarkedIds(new Set(idsData.data));
+        setBookmarks(bookmarksData.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch bookmarks:', err);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchBookmarks();
+    } else {
+      setBookmarkedIds(new Set());
+      setBookmarks([]);
+    }
+  }, [isAuthenticated, fetchBookmarks]);
+
+  // Toggle bookmark
+  const toggleBookmark = async (announcementId: number) => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    const isBookmarked = bookmarkedIds.has(announcementId);
+
+    try {
+      if (isBookmarked) {
+        await fetch(`${apiBase}/api/bookmarks/${announcementId}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        await fetch(`${apiBase}/api/bookmarks`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ announcementId })
+        });
+      }
+      fetchBookmarks();
+    } catch (err) {
+      console.error('Failed to toggle bookmark:', err);
+    }
+  };
 
   // Filter by type
   const getByType = (type: ContentType) => data.filter((item) => item.type === type);
@@ -110,13 +181,15 @@ function App() {
   if (currentPage === 'admin') {
     return (
       <div className="app">
-        <Header setCurrentPage={setCurrentPage} />
+        <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} />
         <Navigation
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           setShowSearch={setShowSearch}
           goBack={goBack}
           setCurrentPage={setCurrentPage}
+          isAuthenticated={isAuthenticated}
+          onShowAuth={() => setShowAuthModal(true)}
         />
         <AdminPanel
           isLoggedIn={isAdminLoggedIn}
@@ -134,13 +207,15 @@ function App() {
   if (currentPage === 'about' || currentPage === 'contact' || currentPage === 'privacy' || currentPage === 'disclaimer') {
     return (
       <div className="app">
-        <Header setCurrentPage={setCurrentPage} />
+        <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} />
         <Navigation
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           setShowSearch={setShowSearch}
           goBack={goBack}
           setCurrentPage={setCurrentPage}
+          isAuthenticated={isAuthenticated}
+          onShowAuth={() => setShowAuthModal(true)}
         />
         <StaticPage type={currentPage} goBack={goBack} />
         <Footer setCurrentPage={setCurrentPage} />
@@ -152,13 +227,15 @@ function App() {
   if (selectedItem) {
     return (
       <div className="app">
-        <Header setCurrentPage={setCurrentPage} />
+        <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} />
         <Navigation
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           setShowSearch={setShowSearch}
           goBack={goBack}
           setCurrentPage={setCurrentPage}
+          isAuthenticated={isAuthenticated}
+          onShowAuth={() => setShowAuthModal(true)}
         />
 
         <div className="page-with-sidebar">
@@ -244,13 +321,15 @@ function App() {
   // Render homepage
   return (
     <div className="app">
-      <Header setCurrentPage={setCurrentPage} />
+      <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} />
       <Navigation
         activeTab={activeTab}
         setActiveTab={(type) => { setActiveTab(type); setSelectedItem(null); }}
         setShowSearch={setShowSearch}
         goBack={goBack}
         setCurrentPage={setCurrentPage}
+        isAuthenticated={isAuthenticated}
+        onShowAuth={() => setShowAuthModal(true)}
       />
 
       <Marquee />
@@ -313,11 +392,27 @@ function App() {
 
         {!loading && !error && (
           <>
-            {activeTab ? (
+            {activeTab === 'bookmarks' ? (
+              <div className="content-grid" style={{ gridTemplateColumns: '1fr' }}>
+                {isAuthenticated ? (
+                  <SectionTable
+                    title="❤️ My Bookmarks"
+                    items={bookmarks}
+                    onItemClick={handleItemClick}
+                    fullWidth
+                  />
+                ) : (
+                  <div className="auth-prompt" style={{ textAlign: 'center', padding: '40px' }}>
+                    <p>Please login to view your bookmarks</p>
+                    <button onClick={() => setShowAuthModal(true)} style={{ marginTop: '15px', padding: '10px 20px', background: '#667eea', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Login</button>
+                  </div>
+                )}
+              </div>
+            ) : activeTab ? (
               <div className="content-grid" style={{ gridTemplateColumns: '1fr' }}>
                 <SectionTable
                   title={navItems.find((n) => n.type === activeTab)?.label || 'Results'}
-                  items={getByType(activeTab)}
+                  items={getByType(activeTab as ContentType)}
                   onItemClick={handleItemClick}
                   fullWidth
                 />
@@ -353,6 +448,9 @@ function App() {
       </main>
 
       <Footer setCurrentPage={setCurrentPage} />
+
+      {/* Auth Modal */}
+      <AuthModal show={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }
@@ -361,44 +459,166 @@ function App() {
 
 interface HeaderProps {
   setCurrentPage: (page: PageType) => void;
+  user: User | null;
+  isAuthenticated: boolean;
+  onLogin: () => void;
+  onLogout: () => void;
 }
 
-function Header({ setCurrentPage }: HeaderProps) {
+function Header({ setCurrentPage, user, isAuthenticated, onLogin, onLogout }: HeaderProps) {
   return (
     <header className="site-header">
       <h1 className="site-title" onClick={() => setCurrentPage('home')} style={{ cursor: 'pointer' }}>
         SARKARI RESULT
       </h1>
       <p className="site-subtitle">SarkariResult.com</p>
+      <div className="header-auth">
+        {isAuthenticated ? (
+          <div className="user-menu">
+            <span className="user-name">👤 {user?.name}</span>
+            <button className="auth-btn logout-btn" onClick={onLogout}>Logout</button>
+          </div>
+        ) : (
+          <button className="auth-btn login-btn" onClick={onLogin}>🔐 Login</button>
+        )}
+      </div>
     </header>
   );
 }
 
+interface AuthModalProps {
+  show: boolean;
+  onClose: () => void;
+}
+
+function AuthModal({ show, onClose }: AuthModalProps) {
+  const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { login, register } = useAuth();
+
+  if (!show) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        await login(formData.email, formData.password);
+      } else {
+        if (formData.name.length < 2) {
+          throw new Error('Name must be at least 2 characters');
+        }
+        await register(formData.name, formData.email, formData.password);
+      }
+      onClose();
+      setFormData({ name: '', email: '', password: '' });
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-overlay" onClick={onClose}>
+      <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="auth-close" onClick={onClose}>×</button>
+
+        <h2 className="auth-title">{isLogin ? '🔐 Login' : '📝 Register'}</h2>
+
+        <div className="auth-tabs">
+          <button
+            className={`auth-tab ${isLogin ? 'active' : ''}`}
+            onClick={() => { setIsLogin(true); setError(null); }}
+          >
+            Login
+          </button>
+          <button
+            className={`auth-tab ${!isLogin ? 'active' : ''}`}
+            onClick={() => { setIsLogin(false); setError(null); }}
+          >
+            Register
+          </button>
+        </div>
+
+        {error && <div className="auth-error">{error}</div>}
+
+        <form onSubmit={handleSubmit}>
+          {!isLogin && (
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+              className="auth-input"
+            />
+          )}
+          <input
+            type="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            required
+            className="auth-input"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            required
+            minLength={6}
+            className="auth-input"
+          />
+          <button type="submit" className="auth-submit" disabled={loading}>
+            {loading ? 'Please wait...' : (isLogin ? 'Login' : 'Register')}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 interface NavProps {
-  activeTab: ContentType | undefined;
-  setActiveTab: (type: ContentType | undefined) => void;
+  activeTab: TabType;
+  setActiveTab: (type: TabType) => void;
   setShowSearch: (show: boolean) => void;
   goBack: () => void;
   setCurrentPage: (page: PageType) => void;
+  isAuthenticated: boolean;
+  onShowAuth: () => void;
 }
 
-function Navigation({ activeTab, setActiveTab, setShowSearch, goBack, setCurrentPage }: NavProps) {
+function Navigation({ activeTab, setActiveTab, setShowSearch, goBack, setCurrentPage, isAuthenticated, onShowAuth }: NavProps) {
   return (
     <nav className="main-nav">
       <div className="nav-container">
-        {navItems.map((item) => (
-          <button
-            key={item.label}
-            className={`nav-link ${activeTab === item.type && (item.type || !activeTab) ? 'active' : (!activeTab && !item.type ? 'active' : '')}`}
-            onClick={() => {
-              setActiveTab(item.type);
-              setCurrentPage('home');
-              if (!item.type) goBack();
-            }}
-          >
-            {item.label}
-          </button>
-        ))}
+        {navItems.map((item) => {
+          // Hide bookmarks tab for non-authenticated users
+          if (item.type === 'bookmarks' && !isAuthenticated) return null;
+          return (
+            <button
+              key={item.label}
+              className={`nav-link ${activeTab === item.type && (item.type || !activeTab) ? 'active' : (!activeTab && !item.type ? 'active' : '')}`}
+              onClick={() => {
+                if (item.type === 'bookmarks' && !isAuthenticated) {
+                  onShowAuth();
+                  return;
+                }
+                setActiveTab(item.type);
+                setCurrentPage('home');
+                if (!item.type) goBack();
+              }}
+            >
+              {item.label}
+            </button>
+          );
+        })}
         <span className="nav-search" onClick={() => setShowSearch(true)}>🔍</span>
         <button className="nav-link admin-link" onClick={() => setCurrentPage('admin')}>⚙️ Admin</button>
       </div>
@@ -958,4 +1178,12 @@ function Footer({ setCurrentPage }: FooterProps) {
   );
 }
 
-export default App;
+function AppWrapper() {
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
+}
+
+export default AppWrapper;

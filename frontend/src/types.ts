@@ -27,3 +27,17 @@ export interface Announcement {
   viewCount: number;
   tags?: Tag[];
 }
+
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  role: 'user' | 'admin';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}

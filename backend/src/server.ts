@@ -4,6 +4,7 @@ import express from 'express';
 import { config } from './config.js';
 import announcementsRouter from './routes/announcements.js';
 import authRouter from './routes/auth.js';
+import bookmarksRouter from './routes/bookmarks.js';
 
 const app = express();
 
@@ -15,12 +16,13 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRouter);
+app.use('/api/bookmarks', bookmarksRouter);
 app.use('/api/announcements', announcementsRouter);
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   // Basic error handler to avoid leaking stack traces in production.
   console.error(err);
-  
+
   if (res.headersSent) return _next(err);
   res.status(500).json({ error: 'Internal server error' });
 });
