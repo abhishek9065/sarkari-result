@@ -158,17 +158,122 @@ function App() {
     return new Date(date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   };
 
-  // Handle item click
+  // ============ BROWSER HISTORY INTEGRATION ============
+  // Navigation state interface for history
+  interface NavState {
+    activeTab?: TabType;
+    selectedItemSlug?: string | null;
+    currentPage: PageType;
+  }
+
+  // Push state to browser history
+  const pushNavState = useCallback((state: NavState) => {
+    const url = new URL(window.location.href);
+    // Update URL based on state
+    if (state.selectedItemSlug) {
+      url.searchParams.set('item', state.selectedItemSlug);
+      url.searchParams.delete('tab');
+      url.searchParams.delete('page');
+    } else if (state.activeTab) {
+      url.searchParams.set('tab', state.activeTab);
+      url.searchParams.delete('item');
+      url.searchParams.delete('page');
+    } else if (state.currentPage !== 'home') {
+      url.searchParams.set('page', state.currentPage);
+      url.searchParams.delete('tab');
+      url.searchParams.delete('item');
+    } else {
+      url.searchParams.delete('tab');
+      url.searchParams.delete('item');
+      url.searchParams.delete('page');
+    }
+    window.history.pushState(state, '', url.toString());
+  }, []);
+
+  // Handle browser back/forward
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const state = event.state as NavState | null;
+      if (state) {
+        // Restore from history state
+        setActiveTab(state.activeTab);
+        setCurrentPage(state.currentPage || 'home');
+        // Find item by slug if present
+        if (state.selectedItemSlug) {
+          const item = data.find(d => d.slug === state.selectedItemSlug);
+          setSelectedItem(item || null);
+        } else {
+          setSelectedItem(null);
+        }
+      } else {
+        // No state - go to home
+        setActiveTab(undefined);
+        setSelectedItem(null);
+        setCurrentPage('home');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [data]);
+
+  // Initialize history state on first load
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const tabParam = url.searchParams.get('tab') as TabType;
+    const itemParam = url.searchParams.get('item');
+    const pageParam = url.searchParams.get('page') as PageType;
+
+    if (itemParam && data.length > 0) {
+      const item = data.find(d => d.slug === itemParam);
+      if (item) {
+        setSelectedItem(item);
+        setCurrentPage('home');
+      }
+    } else if (tabParam) {
+      setActiveTab(tabParam);
+      setCurrentPage('home');
+    } else if (pageParam) {
+      setCurrentPage(pageParam);
+    }
+
+    // Set initial state
+    window.history.replaceState(
+      { activeTab: tabParam, selectedItemSlug: itemParam, currentPage: pageParam || 'home' },
+      '',
+      window.location.href
+    );
+  }, [data]);
+
+  // Handle item click - now with history
   const handleItemClick = (item: Announcement) => {
     setSelectedItem(item);
     setCurrentPage('home');
+    pushNavState({ selectedItemSlug: item.slug, currentPage: 'home' });
   };
 
-  // Go back to home
+  // Handle tab change - now with history
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    setSelectedItem(null);
+    setCurrentPage('home');
+    pushNavState({ activeTab: tab, currentPage: 'home' });
+  };
+
+  // Go back to home - now with history
   const goBack = () => {
     setSelectedItem(null);
     setActiveTab(undefined);
     setCurrentPage('home');
+    pushNavState({ currentPage: 'home' });
+  };
+
+  // Handle page change - now with history
+  const handlePageChange = (page: PageType) => {
+    setCurrentPage(page);
+    setSelectedItem(null);
+    setActiveTab(undefined);
+    pushNavState({ currentPage: page });
   };
 
   // Refresh data
@@ -184,10 +289,10 @@ function App() {
         <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} />
         <Navigation
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleTabChange}
           setShowSearch={setShowSearch}
           goBack={goBack}
-          setCurrentPage={setCurrentPage}
+          setCurrentPage={handlePageChange}
           isAuthenticated={isAuthenticated}
           onShowAuth={() => setShowAuthModal(true)}
         />
@@ -210,10 +315,10 @@ function App() {
         <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} />
         <Navigation
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleTabChange}
           setShowSearch={setShowSearch}
           goBack={goBack}
-          setCurrentPage={setCurrentPage}
+          setCurrentPage={handlePageChange}
           isAuthenticated={isAuthenticated}
           onShowAuth={() => setShowAuthModal(true)}
         />
@@ -230,10 +335,10 @@ function App() {
         <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} />
         <Navigation
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleTabChange}
           setShowSearch={setShowSearch}
           goBack={goBack}
-          setCurrentPage={setCurrentPage}
+          setCurrentPage={handlePageChange}
           isAuthenticated={isAuthenticated}
           onShowAuth={() => setShowAuthModal(true)}
         />
@@ -324,10 +429,10 @@ function App() {
       <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} />
       <Navigation
         activeTab={activeTab}
-        setActiveTab={(type) => { setActiveTab(type); setSelectedItem(null); }}
+        setActiveTab={handleTabChange}
         setShowSearch={setShowSearch}
         goBack={goBack}
-        setCurrentPage={setCurrentPage}
+        setCurrentPage={handlePageChange}
         isAuthenticated={isAuthenticated}
         onShowAuth={() => setShowAuthModal(true)}
       />
@@ -377,7 +482,7 @@ function App() {
       <section className="featured-section">
         <div className="featured-grid">
           {featuredItems.map((item, idx) => (
-            <div key={idx} className={`featured-box ${item.color}`} onClick={() => setActiveTab(item.type)}>
+            <div key={idx} className={`featured-box ${item.color}`} onClick={() => handleTabChange(item.type)}>
               <div className="featured-title">{item.title}</div>
               <div className="featured-subtitle">{item.subtitle}</div>
             </div>
@@ -425,7 +530,7 @@ function App() {
                       key={section.type}
                       title={section.title}
                       items={getByType(section.type)}
-                      onViewMore={() => setActiveTab(section.type)}
+                      onViewMore={() => handleTabChange(section.type)}
                       onItemClick={handleItemClick}
                     />
                   ))}
@@ -436,7 +541,7 @@ function App() {
                       key={section.type}
                       title={section.title}
                       items={getByType(section.type)}
-                      onViewMore={() => setActiveTab(section.type)}
+                      onViewMore={() => handleTabChange(section.type)}
                       onItemClick={handleItemClick}
                     />
                   ))}
