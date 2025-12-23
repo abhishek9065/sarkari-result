@@ -1,0 +1,14 @@
+# Sarkari Result - robots.txt
+# Allow all search engines to crawl the entire site
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://sarkariresult.com/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1
+
+# Disallow admin pages
+Disallow: /admin

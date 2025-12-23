@@ -1,0 +1,46 @@
+{
+    "name": "sarkari-result",
+    "description": "Sarkari Result - Government Jobs Portal",
+    "repository": "https://github.com/your-username/sarkari-result",
+    "logo": "https://sarkariresult.com/logo.png",
+    "keywords": [
+        "node",
+        "express",
+        "postgresql",
+        "government-jobs"
+    ],
+    "env": {
+        "DATABASE_URL": {
+            "description": "PostgreSQL connection URL",
+            "required": true
+        },
+        "JWT_SECRET": {
+            "description": "Secret key for JWT tokens",
+            "required": true,
+            "generator": "secret"
+        },
+        "NODE_ENV": {
+            "description": "Environment mode",
+            "value": "production"
+        }
+    },
+    "formation": {
+        "web": {
+            "quantity": 1,
+            "size": "basic"
+        }
+    },
+    "addons": [
+        {
+            "plan": "heroku-postgresql:essential-0"
+        }
+    ],
+    "buildpacks": [
+        {
+            "url": "heroku/nodejs"
+        }
+    ],
+    "scripts": {
+        "postdeploy": "npm run build"
+    }
+}
