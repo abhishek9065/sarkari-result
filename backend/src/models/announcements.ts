@@ -2,8 +2,7 @@ import { pool } from '../db.js';
 import { Announcement, ContentType, CreateAnnouncementDto, Tag, ImportantDate } from '../types.js';
 import { filterMockAnnouncements, findMockBySlug, mockAnnouncements } from './mockData.js';
 
-// Flag to track if we should use mock data (set when DB connection fails)
-let useMockData = false;
+// Always try database first on each request
 
 export class AnnouncementModel {
   static async findAll(filters?: {
@@ -14,11 +13,7 @@ export class AnnouncementModel {
     limit?: number;
     offset?: number;
   }): Promise<Announcement[]> {
-    // If we already know DB is unavailable, use mock data directly
-    if (useMockData) {
-      console.log('[Mock Mode] Returning mock announcements');
-      return filterMockAnnouncements(filters);
-    }
+    // Always try database connection on each request
 
     try {
       let query = `
@@ -92,16 +87,12 @@ export class AnnouncementModel {
       return result.rows;
     } catch (error) {
       console.error('[DB Error] Falling back to mock data:', (error as Error).message);
-      useMockData = true;
       return filterMockAnnouncements(filters);
     }
   }
 
   static async findBySlug(slug: string): Promise<Announcement | null> {
-    if (useMockData) {
-      console.log('[Mock Mode] Finding announcement by slug:', slug);
-      return findMockBySlug(slug);
-    }
+    // Always try database first
 
     try {
       const query = `
@@ -141,7 +132,6 @@ export class AnnouncementModel {
       return result.rows[0] || null;
     } catch (error) {
       console.error('[DB Error] Falling back to mock data for slug:', slug);
-      useMockData = true;
       return findMockBySlug(slug);
     }
   }
