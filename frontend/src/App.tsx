@@ -849,6 +849,7 @@ interface AdminPanelProps {
 function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goBack }: AdminPanelProps) {
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [activeAdminTab, setActiveAdminTab] = useState<'list' | 'add'>('list');
+  const [adminToken, setAdminToken] = useState<string | null>(() => localStorage.getItem('adminToken'));
   const [formData, setFormData] = useState({
     title: '',
     type: 'job' as ContentType,
@@ -864,15 +865,33 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
   });
   const [message, setMessage] = useState('');
 
-  // Handle login
-  const handleLogin = (e: React.FormEvent) => {
+  // Handle login - call real auth API
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple demo login - in production, use actual API
-    if (loginForm.email === 'admin@sarkari.com' && loginForm.password === 'admin123') {
-      setIsLoggedIn(true);
-      setMessage('Login successful!');
-    } else {
-      setMessage('Invalid credentials. Use admin@sarkari.com / admin123');
+    setMessage('Logging in...');
+    try {
+      const response = await fetch(`${apiBase}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginForm),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.user.role === 'admin') {
+          setAdminToken(data.token);
+          localStorage.setItem('adminToken', data.token);
+          setIsLoggedIn(true);
+          setMessage('Login successful!');
+        } else {
+          setMessage('Access denied. Admin role required.');
+        }
+      } else {
+        const error = await response.json();
+        setMessage(error.error || 'Invalid credentials.');
+      }
+    } catch (err) {
+      setMessage('Login failed. Check your connection.');
     }
   };
 
@@ -881,11 +900,19 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
     e.preventDefault();
     setMessage('Creating announcement...');
 
-    // In production, this would call the API
+    if (!adminToken) {
+      setMessage('Not authenticated. Please log in again.');
+      setIsLoggedIn(false);
+      return;
+    }
+
     try {
       const response = await fetch(`${apiBase}/api/announcements`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`,
+        },
         body: JSON.stringify({
           ...formData,
           totalPosts: formData.totalPosts ? parseInt(formData.totalPosts) : undefined,
