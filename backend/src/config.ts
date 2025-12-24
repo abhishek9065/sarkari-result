@@ -15,4 +15,7 @@ export const config = {
   databaseUrl: getEnv('DATABASE_URL', 'postgres://postgres:postgres@localhost:5432/sarkari'),
   jwtSecret: getEnv('JWT_SECRET', 'dev-secret'),
   nodeEnv: process.env.NODE_ENV ?? 'development',
+  // Telegram bot config (optional - notifications disabled if not set)
+  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? '',
+  telegramChannelId: process.env.TELEGRAM_CHANNEL_ID ?? '',
 };

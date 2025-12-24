@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { AnnouncementModel } from '../models/announcements.js';
 import { ContentType, CreateAnnouncementDto } from '../types.js';
+import { sendAnnouncementNotification } from '../services/telegram.js';
 
 const router = express.Router();
 
@@ -87,6 +88,11 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
 
     const data = parseResult.data;
     const announcement = await AnnouncementModel.create(data as unknown as CreateAnnouncementDto, req.user!.userId);
+
+    // Send Telegram notification (async, don't block response)
+    sendAnnouncementNotification(announcement).catch(err => {
+      console.error('Failed to send Telegram notification:', err);
+    });
 
     return res.status(201).json({ data: announcement });
   } catch (error) {
