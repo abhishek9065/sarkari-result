@@ -877,18 +877,25 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
       });
 
       if (response.ok) {
-        const data = await response.json();
-        if (data.user.role === 'admin') {
-          setAdminToken(data.token);
-          localStorage.setItem('adminToken', data.token);
+        const result = await response.json();
+        // API returns { data: { user, token } }
+        const userData = result.data?.user || result.user;
+        const authToken = result.data?.token || result.token;
+
+        if (userData?.role === 'admin') {
+          setAdminToken(authToken);
+          localStorage.setItem('adminToken', authToken);
           setIsLoggedIn(true);
           setMessage('Login successful!');
         } else {
           setMessage('Access denied. Admin role required.');
         }
       } else {
-        const error = await response.json();
-        setMessage(error.error || 'Invalid credentials.');
+        const errorResult = await response.json();
+        const errorMsg = typeof errorResult.error === 'string'
+          ? errorResult.error
+          : 'Invalid credentials.';
+        setMessage(errorMsg);
       }
     } catch (err) {
       setMessage('Login failed. Check your connection.');
