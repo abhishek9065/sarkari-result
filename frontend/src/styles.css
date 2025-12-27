@@ -84,10 +84,7 @@ a:hover {
 }
 
 .header-auth {
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
+  /* Position is now handled by .header-controls parent */
 }
 
 .user-menu {
