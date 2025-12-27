@@ -256,6 +256,7 @@ function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<number>>(new Set());
   const [bookmarks, setBookmarks] = useState<Announcement[]>([]);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { user, token, logout, isAuthenticated } = useAuth();
 
   // Advanced search states
@@ -568,8 +569,7 @@ function App() {
       )
       .slice(0, 5);
 
-    // FAQ state
-    const [openFaq, setOpenFaq] = useState<number | null>(null);
+    // FAQ data (state is at top level)
     const faqs = [
       {
         q: `${selectedItem.organization} ${selectedItem.title} के लिए आवेदन कैसे करें?`,
