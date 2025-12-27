@@ -30,35 +30,20 @@ router.post('/', async (req, res) => {
             return res.status(500).json({ error: 'Failed to create subscription' });
         }
 
-        // Try to send verification email (optional - works without email config)
-        let emailSent = false;
+        // Auto-verify the subscription immediately (skip email verification for now)
+        if (subscription.verificationToken) {
+            await SubscriptionModel.verify(subscription.verificationToken);
+        }
+
+        // Try to send verification email in background (don't wait for it)
         if (isEmailConfigured() && subscription.verificationToken) {
-            emailSent = await sendVerificationEmail(
-                email,
-                subscription.verificationToken,
-                categories
-            );
-        }
-
-        // If email not configured, auto-verify the subscription
-        if (!isEmailConfigured()) {
-            await SubscriptionModel.verify(subscription.verificationToken || '');
-            return res.status(201).json({
-                message: 'Subscription created and auto-verified! (Email service not configured)',
-                data: { email, categories, verified: true },
-            });
-        }
-
-        if (!emailSent) {
-            return res.status(201).json({
-                message: 'Subscription created but verification email could not be sent. Please contact support.',
-                data: { email, categories, verified: false },
-            });
+            sendVerificationEmail(email, subscription.verificationToken, categories)
+                .catch(err => console.error('Failed to send verification email:', err));
         }
 
         return res.status(201).json({
-            message: 'Subscription created. Please check your email to verify.',
-            data: { email, categories },
+            message: 'Subscribed successfully! You will receive notifications for new announcements.',
+            data: { email, categories, verified: true },
         });
     } catch (error) {
         console.error('Error creating subscription:', error);
