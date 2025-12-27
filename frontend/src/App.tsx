@@ -553,6 +553,42 @@ function App() {
 
   // Render detail page
   if (selectedItem) {
+    // Calculate days remaining
+    const daysRemaining = selectedItem.deadline
+      ? Math.ceil((new Date(selectedItem.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+      : null;
+    const isExpired = daysRemaining !== null && daysRemaining < 0;
+    const isUrgent = daysRemaining !== null && daysRemaining <= 7 && daysRemaining >= 0;
+
+    // Get related jobs (same type or organization)
+    const relatedJobs = data
+      .filter(item =>
+        item.id !== selectedItem.id &&
+        (item.type === selectedItem.type || item.organization === selectedItem.organization)
+      )
+      .slice(0, 5);
+
+    // FAQ state
+    const [openFaq, setOpenFaq] = useState<number | null>(null);
+    const faqs = [
+      {
+        q: `${selectedItem.organization} ${selectedItem.title} के लिए आवेदन कैसे करें?`,
+        a: `${selectedItem.organization} की आधिकारिक वेबसाइट पर जाएं और ऑनलाइन आवेदन लिंक पर क्लिक करें। सभी आवश्यक विवरण भरें और शुल्क का भुगतान करें।`
+      },
+      {
+        q: 'आवेदन की अंतिम तिथि क्या है?',
+        a: selectedItem.deadline ? `आवेदन की अंतिम तिथि ${formatDate(selectedItem.deadline)} है।` : 'अंतिम तिथि की घोषणा जल्द होगी।'
+      },
+      {
+        q: 'शैक्षिक योग्यता क्या है?',
+        a: selectedItem.minQualification || 'विस्तृत योग्यता के लिए आधिकारिक अधिसूचना देखें।'
+      },
+      {
+        q: 'आवेदन शुल्क कितना है?',
+        a: selectedItem.applicationFee ? `सामान्य/OBC: ${selectedItem.applicationFee}, SC/ST/PH: रियायती शुल्क` : 'शुल्क विवरण के लिए अधिसूचना देखें।'
+      }
+    ];
+
     return (
       <div className="app">
         <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} onProfileClick={() => setActiveTab('profile')} />
@@ -567,72 +603,250 @@ function App() {
         />
 
         <div className="page-with-sidebar">
-          <div className="detail-page">
+          <div className="detail-page enhanced-detail">
             <button className="back-btn" onClick={goBack}>← Back to Home</button>
 
-            <h1 className="detail-title">{selectedItem.title}</h1>
-
-            <div className="detail-meta">
-              <span className="meta-badge">📅 Posted: {formatDate(selectedItem.postedAt)}</span>
-              {selectedItem.deadline && <span className="meta-badge">⏳ Last Date: {formatDate(selectedItem.deadline)}</span>}
-              <span className="meta-badge">📍 {selectedItem.location || 'All India'}</span>
+            {/* Header Banner */}
+            <div className="detail-header-banner">
+              <div className="banner-content">
+                <span className="type-badge">{selectedItem.type.toUpperCase()}</span>
+                <h1>{selectedItem.title}</h1>
+                <div className="org-badge">🏛️ {selectedItem.organization}</div>
+              </div>
+              {selectedItem.totalPosts && (
+                <div className="posts-highlight">
+                  <span className="posts-number">{selectedItem.totalPosts.toLocaleString()}</span>
+                  <span className="posts-label">Total Posts</span>
+                </div>
+              )}
             </div>
 
-            {/* Important Dates */}
-            <table className="detail-table">
-              <thead>
-                <tr><th colSpan={2}>📅 Important Dates</th></tr>
-              </thead>
-              <tbody>
-                <tr><td><strong>Notification Date</strong></td><td>{formatDate(selectedItem.postedAt)}</td></tr>
-                <tr><td><strong>Application Start</strong></td><td>{formatDate(selectedItem.postedAt)}</td></tr>
-                {selectedItem.deadline && (
-                  <tr><td><strong>Last Date to Apply</strong></td><td style={{ color: '#cc0000', fontWeight: 600 }}>{formatDate(selectedItem.deadline)}</td></tr>
+            {/* Countdown Timer */}
+            {daysRemaining !== null && (
+              <div className={`countdown-bar ${isExpired ? 'expired' : isUrgent ? 'urgent' : 'active'}`}>
+                {isExpired ? (
+                  <span>❌ Application Closed</span>
+                ) : (
+                  <>
+                    <span className="countdown-icon">⏰</span>
+                    <span className="countdown-text">
+                      {daysRemaining === 0 ? 'Last Day to Apply!' : `${daysRemaining} Days Remaining`}
+                    </span>
+                    <span className="deadline-date">Last Date: {formatDate(selectedItem.deadline)}</span>
+                  </>
                 )}
-              </tbody>
-            </table>
+              </div>
+            )}
 
-            {/* Application Fee */}
-            {selectedItem.applicationFee && (
-              <table className="detail-table">
+            {/* Quick Meta Badges */}
+            <div className="detail-meta enhanced">
+              <span className="meta-badge">📅 Posted: {formatDate(selectedItem.postedAt)}</span>
+              <span className="meta-badge">📍 {selectedItem.location || 'All India'}</span>
+              {selectedItem.category && <span className="meta-badge">📁 {selectedItem.category}</span>}
+            </div>
+
+            {/* Brief Summary */}
+            <div className="brief-summary">
+              <h3>📋 Brief Information</h3>
+              <p>
+                <strong>{selectedItem.organization}</strong> has released a notification for the recruitment of{' '}
+                <strong>{selectedItem.title}</strong>.
+                {selectedItem.totalPosts && ` This recruitment is for ${selectedItem.totalPosts.toLocaleString()} positions.`}
+                {selectedItem.deadline && ` Candidates can apply till ${formatDate(selectedItem.deadline)}.`}
+                {selectedItem.minQualification && ` Minimum qualification required is ${selectedItem.minQualification}.`}
+                {' '}Check the complete details below.
+              </p>
+            </div>
+
+            {/* Social Buttons - Prominent */}
+            <div className="social-prominent">
+              <a href="https://whatsapp.com" target="_blank" rel="noreferrer" className="social-big whatsapp">
+                📲 Join WhatsApp Channel
+              </a>
+              <a href="https://t.me" target="_blank" rel="noreferrer" className="social-big telegram">
+                ✈️ Join Telegram Channel
+              </a>
+            </div>
+
+            {/* Two Column Layout for Tables */}
+            <div className="detail-tables-grid">
+              {/* Important Dates */}
+              <table className="detail-table dates-table">
+                <thead>
+                  <tr><th colSpan={2}>📅 Important Dates</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Notification Date</strong></td>
+                    <td className="date-value">{formatDate(selectedItem.postedAt)}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Application Start</strong></td>
+                    <td className="date-value start">{formatDate(selectedItem.postedAt)}</td>
+                  </tr>
+                  {selectedItem.deadline && (
+                    <tr>
+                      <td><strong>Last Date to Apply</strong></td>
+                      <td className="date-value deadline">{formatDate(selectedItem.deadline)}</td>
+                    </tr>
+                  )}
+                  <tr>
+                    <td><strong>Exam Date</strong></td>
+                    <td className="date-value">Notify Later</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Admit Card</strong></td>
+                    <td className="date-value">Before Exam</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Application Fee */}
+              <table className="detail-table fee-table">
                 <thead>
                   <tr><th colSpan={2}>💰 Application Fee</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td><strong>General / OBC</strong></td><td>{selectedItem.applicationFee}</td></tr>
-                  <tr><td><strong>SC / ST / PH</strong></td><td>Exempted / Reduced</td></tr>
+                  <tr>
+                    <td><strong>General / OBC / EWS</strong></td>
+                    <td className="fee-value">{selectedItem.applicationFee || '₹ 500-1000'}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>SC / ST</strong></td>
+                    <td className="fee-value reduced">₹ Exempted/Reduced</td>
+                  </tr>
+                  <tr>
+                    <td><strong>PH / Female</strong></td>
+                    <td className="fee-value reduced">₹ Exempted/Reduced</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Payment Mode</strong></td>
+                    <td>Online (Debit/Credit/UPI)</td>
+                  </tr>
                 </tbody>
               </table>
-            )}
+            </div>
+
+            {/* Age Limits */}
+            <table className="detail-table">
+              <thead>
+                <tr><th>👤 Age Limits (As on Cut-off Date)</th><th>Total Posts</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>Minimum Age:</strong> 18-21 Years<br />
+                    <strong>Maximum Age:</strong> {selectedItem.ageLimit || '25-35 Years'}<br />
+                    <em>Age relaxation as per rules for SC/ST/OBC/PH</em>
+                  </td>
+                  <td className="total-posts-cell">
+                    {selectedItem.totalPosts?.toLocaleString() || 'Various'} Posts
+                  </td>
+                </tr>
+              </tbody>
+            </table>
 
             {/* Vacancy Details */}
-            {selectedItem.totalPosts && (
-              <table className="detail-table">
-                <thead>
-                  <tr><th colSpan={2}>👥 Vacancy Details</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td><strong>Total Posts</strong></td><td style={{ color: '#27AE60', fontWeight: 700, fontSize: '1.1rem' }}>{selectedItem.totalPosts.toLocaleString()}</td></tr>
-                  {selectedItem.minQualification && (<tr><td><strong>Qualification</strong></td><td>{selectedItem.minQualification}</td></tr>)}
-                  {selectedItem.ageLimit && (<tr><td><strong>Age Limit</strong></td><td>{selectedItem.ageLimit}</td></tr>)}
-                </tbody>
-              </table>
-            )}
+            <table className="detail-table vacancy-table">
+              <thead>
+                <tr>
+                  <th>Post Name</th>
+                  <th>No. Of Posts</th>
+                  <th>Eligibility</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{selectedItem.title.split(' ').slice(0, 3).join(' ')}</td>
+                  <td className="posts-count">{selectedItem.totalPosts?.toLocaleString() || 'Various'}</td>
+                  <td>{selectedItem.minQualification || 'As per Notification'}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* How to Apply */}
+            <div className="how-to-apply">
+              <h3>📝 How to Apply</h3>
+              <ol>
+                <li>Visit the official website of <strong>{selectedItem.organization}</strong></li>
+                <li>Click on "Apply Online" link under Important Links section</li>
+                <li>Register with valid email and mobile number</li>
+                <li>Fill the application form with required details</li>
+                <li>Upload photo, signature and required documents</li>
+                <li>Pay the application fee through online mode</li>
+                <li>Submit and take printout for future reference</li>
+              </ol>
+              <div className="apply-note">
+                ⚠️ Note: कृपया आवेदन करने से पहले Official Notification को ध्यान से पढ़ें।
+              </div>
+            </div>
 
             {/* Important Links */}
-            <table className="links-table">
+            <table className="links-table enhanced">
               <thead>
                 <tr><th colSpan={2}>🔗 Important Links</th></tr>
               </thead>
               <tbody>
                 <tr>
                   <td><strong>Apply Online</strong></td>
-                  <td><a href={selectedItem.externalLink || '#'} target="_blank" rel="noreferrer" className="apply-btn">Click Here to Apply</a></td>
+                  <td>
+                    <a href={selectedItem.externalLink || '#'} target="_blank" rel="noreferrer" className="link-btn apply">
+                      Click Here
+                    </a>
+                  </td>
                 </tr>
-                <tr><td><strong>Official Notification</strong></td><td><a href={selectedItem.externalLink || '#'} target="_blank" rel="noreferrer">Download PDF</a></td></tr>
-                <tr><td><strong>Official Website</strong></td><td><a href={selectedItem.externalLink || '#'} target="_blank" rel="noreferrer">{selectedItem.organization}</a></td></tr>
+                <tr>
+                  <td><strong>Download Notification</strong></td>
+                  <td>
+                    <a href={selectedItem.externalLink || '#'} target="_blank" rel="noreferrer" className="link-btn notification">
+                      Click Here
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Official Website</strong></td>
+                  <td>
+                    <a href={selectedItem.externalLink || '#'} target="_blank" rel="noreferrer" className="link-btn website">
+                      Click Here
+                    </a>
+                  </td>
+                </tr>
               </tbody>
             </table>
+
+            {/* FAQ Section */}
+            <div className="faq-section">
+              <h3>❓ Frequently Asked Questions</h3>
+              {faqs.map((faq, idx) => (
+                <div key={idx} className={`faq-item ${openFaq === idx ? 'open' : ''}`}>
+                  <button className="faq-question" onClick={() => setOpenFaq(openFaq === idx ? null : idx)}>
+                    <span>Q: {faq.q}</span>
+                    <span className="faq-toggle">{openFaq === idx ? '−' : '+'}</span>
+                  </button>
+                  {openFaq === idx && (
+                    <div className="faq-answer">
+                      <strong>A:</strong> {faq.a}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Related Jobs */}
+            {relatedJobs.length > 0 && (
+              <div className="related-jobs">
+                <h3>📌 You May Also Check</h3>
+                <ul>
+                  {relatedJobs.map(job => (
+                    <li key={job.id}>
+                      <a href="#" onClick={(e) => { e.preventDefault(); handleItemClick(job); }}>
+                        {job.title} [{job.totalPosts ? `${job.totalPosts} Posts` : job.type.toUpperCase()}]
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Social Share Buttons */}
             <div className="social-share">
