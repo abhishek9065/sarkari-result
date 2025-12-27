@@ -24,32 +24,36 @@ router.post('/', async (req, res) => {
 
         const { email, categories } = parseResult.data;
 
-        // Check if email service is configured
-        if (!isEmailConfigured()) {
-            return res.status(503).json({
-                error: 'Email service not configured. Please try again later.'
-            });
-        }
-
         // Create subscription
         const subscription = await SubscriptionModel.create(email, categories);
         if (!subscription) {
             return res.status(500).json({ error: 'Failed to create subscription' });
         }
 
-        // Send verification email
-        if (subscription.verificationToken) {
-            const sent = await sendVerificationEmail(
+        // Try to send verification email (optional - works without email config)
+        let emailSent = false;
+        if (isEmailConfigured() && subscription.verificationToken) {
+            emailSent = await sendVerificationEmail(
                 email,
                 subscription.verificationToken,
                 categories
             );
+        }
 
-            if (!sent) {
-                return res.status(500).json({
-                    error: 'Failed to send verification email. Please try again.'
-                });
-            }
+        // If email not configured, auto-verify the subscription
+        if (!isEmailConfigured()) {
+            await SubscriptionModel.verify(subscription.verificationToken || '');
+            return res.status(201).json({
+                message: 'Subscription created and auto-verified! (Email service not configured)',
+                data: { email, categories, verified: true },
+            });
+        }
+
+        if (!emailSent) {
+            return res.status(201).json({
+                message: 'Subscription created but verification email could not be sent. Please contact support.',
+                data: { email, categories, verified: false },
+            });
         }
 
         return res.status(201).json({
