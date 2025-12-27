@@ -28,16 +28,21 @@ export const SubscriptionModel = {
         const unsubscribeToken = generateToken();
 
         try {
+            // Format categories as PostgreSQL array literal
+            const categoriesArray = categories.length > 0
+                ? `{${categories.join(',')}}`
+                : '{}';
+
             const result = await pool.query(
                 `INSERT INTO email_subscriptions (email, categories, verification_token, unsubscribe_token)
-         VALUES ($1, $2, $3, $4)
+         VALUES ($1, $2::text[], $3, $4)
          ON CONFLICT (email) DO UPDATE SET
-           categories = $2,
+           categories = $2::text[],
            verification_token = $3,
            is_verified = false,
            updated_at = CURRENT_TIMESTAMP
          RETURNING *`,
-                [email, categories, verificationToken, unsubscribeToken]
+                [email, categoriesArray, verificationToken, unsubscribeToken]
             );
             return mapSubscription(result.rows[0]);
         } catch (error) {
