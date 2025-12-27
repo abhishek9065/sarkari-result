@@ -1,9 +1,40 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, createContext, useContext } from 'react';
 import './styles.css';
 import type { Announcement, ContentType, User } from './types';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 const apiBase = import.meta.env.VITE_API_BASE ?? '';
+
+// Theme context
+type Theme = 'light' | 'dark';
+const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void } | null>(null);
+
+function useTheme() {
+  const context = useContext(ThemeContext);
+  if (!context) throw new Error('useTheme must be used within ThemeProvider');
+  return context;
+}
+
+function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem('theme') as Theme;
+    if (saved) return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
 
 // Page types
 type PageType = 'home' | 'admin' | 'about' | 'contact' | 'privacy' | 'disclaimer';
@@ -762,21 +793,28 @@ interface HeaderProps {
 }
 
 function Header({ setCurrentPage, user, isAuthenticated, onLogin, onLogout }: HeaderProps) {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <header className="site-header">
       <h1 className="site-title" onClick={() => setCurrentPage('home')} style={{ cursor: 'pointer' }}>
         SARKARI RESULT
       </h1>
       <p className="site-subtitle">SarkariResult.com</p>
-      <div className="header-auth">
-        {isAuthenticated ? (
-          <div className="user-menu">
-            <span className="user-name">👤 {user?.name}</span>
-            <button className="auth-btn logout-btn" onClick={onLogout}>Logout</button>
-          </div>
-        ) : (
-          <button className="auth-btn login-btn" onClick={onLogin}>🔐 Login</button>
-        )}
+      <div className="header-controls">
+        <button className="theme-toggle" onClick={toggleTheme} title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}>
+          {theme === 'light' ? '🌙' : '☀️'}
+        </button>
+        <div className="header-auth">
+          {isAuthenticated ? (
+            <div className="user-menu">
+              <span className="user-name">👤 {user?.name}</span>
+              <button className="auth-btn logout-btn" onClick={onLogout}>Logout</button>
+            </div>
+          ) : (
+            <button className="auth-btn login-btn" onClick={onLogin}>🔐 Login</button>
+          )}
+        </div>
       </div>
     </header>
   );
@@ -1624,9 +1662,11 @@ function Footer({ setCurrentPage }: FooterProps) {
 
 function AppWrapper() {
   return (
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
