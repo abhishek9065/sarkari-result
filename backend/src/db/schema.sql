@@ -97,3 +97,19 @@ CREATE TRIGGER update_announcements_updated_at BEFORE UPDATE ON announcements
 
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Email subscriptions table for notifications
+CREATE TABLE IF NOT EXISTS email_subscriptions (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    categories TEXT[] DEFAULT '{}',
+    verification_token VARCHAR(255),
+    is_verified BOOLEAN DEFAULT false,
+    unsubscribe_token VARCHAR(255) UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(email)
+);
+
+CREATE INDEX idx_subscriptions_email ON email_subscriptions(email);
+CREATE INDEX idx_subscriptions_verified ON email_subscriptions(is_verified);

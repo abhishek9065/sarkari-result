@@ -3,8 +3,10 @@ import { z } from 'zod';
 
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { AnnouncementModel } from '../models/announcements.js';
+import { SubscriptionModel } from '../models/subscriptions.js';
 import { ContentType, CreateAnnouncementDto } from '../types.js';
 import { sendAnnouncementNotification } from '../services/telegram.js';
+import { sendAnnouncementEmail, isEmailConfigured } from '../services/email.js';
 
 const router = express.Router();
 
@@ -93,6 +95,22 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
     sendAnnouncementNotification(announcement).catch(err => {
       console.error('Failed to send Telegram notification:', err);
     });
+
+    // Send email notifications to subscribers (async, don't block response)
+    if (isEmailConfigured()) {
+      (async () => {
+        try {
+          const subscribers = await SubscriptionModel.getSubscribersForCategory(announcement.type);
+          if (subscribers.length > 0) {
+            const tokenMap = new Map(subscribers.map(s => [s.email, s.unsubscribeToken]));
+            const emails = subscribers.map(s => s.email);
+            await sendAnnouncementEmail(emails, announcement, tokenMap);
+          }
+        } catch (err) {
+          console.error('Failed to send email notifications:', err);
+        }
+      })();
+    }
 
     return res.status(201).json({ data: announcement });
   } catch (error) {

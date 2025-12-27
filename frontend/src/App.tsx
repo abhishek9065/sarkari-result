@@ -1303,17 +1303,116 @@ interface FooterProps {
   setCurrentPage: (page: PageType) => void;
 }
 
+function SubscribeBox() {
+  const [email, setEmail] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [message, setMessage] = useState('');
+
+  const categoryOptions = [
+    { value: 'job', label: 'Jobs' },
+    { value: 'result', label: 'Results' },
+    { value: 'admit-card', label: 'Admit Cards' },
+    { value: 'answer-key', label: 'Answer Keys' },
+    { value: 'admission', label: 'Admissions' },
+    { value: 'syllabus', label: 'Syllabus' },
+  ];
+
+  const handleCategoryToggle = (cat: string) => {
+    setCategories(prev =>
+      prev.includes(cat)
+        ? prev.filter(c => c !== cat)
+        : [...prev, cat]
+    );
+  };
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setStatus('loading');
+    setMessage('');
+
+    try {
+      const response = await fetch(`${apiBase}/api/subscriptions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, categories }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setStatus('success');
+        setMessage('✅ Verification email sent! Please check your inbox.');
+        setEmail('');
+        setCategories([]);
+      } else {
+        setStatus('error');
+        setMessage(result.error || 'Subscription failed. Try again.');
+      }
+    } catch {
+      setStatus('error');
+      setMessage('Network error. Please try again.');
+    }
+  };
+
+  return (
+    <div className="subscribe-box">
+      <h3>📧 Get Email Notifications</h3>
+      <p>Subscribe to receive the latest job alerts directly in your inbox!</p>
+
+      <form onSubmit={handleSubscribe} className="subscribe-form">
+        <div className="subscribe-categories">
+          {categoryOptions.map(cat => (
+            <label key={cat.value} className="category-checkbox">
+              <input
+                type="checkbox"
+                checked={categories.includes(cat.value)}
+                onChange={() => handleCategoryToggle(cat.value)}
+              />
+              {cat.label}
+            </label>
+          ))}
+          <span className="category-hint">(Leave empty for all)</span>
+        </div>
+
+        <div className="subscribe-input-row">
+          <input
+            type="email"
+            placeholder="Enter your email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={status === 'loading'}
+            required
+          />
+          <button type="submit" disabled={status === 'loading'}>
+            {status === 'loading' ? 'Sending...' : '🔔 Subscribe'}
+          </button>
+        </div>
+
+        {message && (
+          <p className={`subscribe-message ${status}`}>{message}</p>
+        )}
+      </form>
+    </div>
+  );
+}
+
 function Footer({ setCurrentPage }: FooterProps) {
   return (
-    <footer className="site-footer">
-      <p className="footer-text">© 2024 Sarkari Result | All Rights Reserved</p>
-      <div className="footer-links">
-        <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('about'); }}>About Us</a>
-        <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('contact'); }}>Contact</a>
-        <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('privacy'); }}>Privacy Policy</a>
-        <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('disclaimer'); }}>Disclaimer</a>
-      </div>
-    </footer>
+    <>
+      <SubscribeBox />
+      <footer className="site-footer">
+        <p className="footer-text">© 2024 Sarkari Result | All Rights Reserved</p>
+        <div className="footer-links">
+          <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('about'); }}>About Us</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('contact'); }}>Contact</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('privacy'); }}>Privacy Policy</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('disclaimer'); }}>Disclaimer</a>
+        </div>
+      </footer>
+    </>
   );
 }
 

@@ -5,6 +5,7 @@ import { config } from './config.js';
 import announcementsRouter from './routes/announcements.js';
 import authRouter from './routes/auth.js';
 import bookmarksRouter from './routes/bookmarks.js';
+import subscriptionsRouter from './routes/subscriptions.js';
 
 const app = express();
 
@@ -18,6 +19,8 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/bookmarks', bookmarksRouter);
 app.use('/api/announcements', announcementsRouter);
+app.use('/api/subscriptions', subscriptionsRouter);
+
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   // Basic error handler to avoid leaking stack traces in production.
