@@ -111,14 +111,29 @@ export const sendPushNotification = async (
         return 0;
     }
 
+    // Base URL for absolute paths
+    const baseUrl = config.frontendUrl || 'https://sarkari-result-gold.vercel.app';
+
+    // Rich notification payload with logo and enhanced options
     const payload = JSON.stringify({
-        title: `🆕 ${announcement.type.toUpperCase()}: ${announcement.organization}`,
-        body: announcement.title,
-        icon: '/icons/icon-192x192.png',
-        badge: '/icons/icon-192x192.png',
+        title: `Sarkari Result`,
+        body: `${announcement.title} - ${announcement.organization} ${announcement.totalPosts ? `(${announcement.totalPosts} पद)` : ''}`,
+        icon: `${baseUrl}/icons/icon-192x192.png`,
+        badge: `${baseUrl}/icons/icon-72x72.png`,
+        image: `${baseUrl}/og-image.png`,
+        tag: `sarkari-${announcement.type}-${announcement.id}`,
+        requireInteraction: true,
+        renotify: false,
+        vibrate: [200, 100, 200],
+        actions: [
+            { action: 'view', title: '🔍 View Details' },
+            { action: 'dismiss', title: '❌ Dismiss' }
+        ],
         data: {
-            url: `${config.frontendUrl}/?item=${announcement.slug}`,
+            url: `${baseUrl}/?item=${announcement.slug}`,
             type: announcement.type,
+            id: announcement.id,
+            timestamp: Date.now()
         },
     });
 
