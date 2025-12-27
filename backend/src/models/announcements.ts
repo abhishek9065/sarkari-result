@@ -10,6 +10,8 @@ export class AnnouncementModel {
     search?: string;
     category?: string;
     organization?: string;
+    qualification?: string;
+    sort?: 'newest' | 'oldest' | 'deadline';
     limit?: number;
     offset?: number;
   }): Promise<Announcement[]> {
@@ -50,13 +52,18 @@ export class AnnouncementModel {
       }
 
       if (filters?.category) {
-        query += ` AND a.category = $${++paramCount}`;
-        params.push(filters.category);
+        query += ` AND a.category ILIKE $${++paramCount}`;
+        params.push(`%${filters.category}%`);
       }
 
       if (filters?.organization) {
-        query += ` AND a.organization = $${++paramCount}`;
-        params.push(filters.organization);
+        query += ` AND a.organization ILIKE $${++paramCount}`;
+        params.push(`%${filters.organization}%`);
+      }
+
+      if (filters?.qualification) {
+        query += ` AND a.min_qualification ILIKE $${++paramCount}`;
+        params.push(`%${filters.qualification}%`);
       }
 
       if (filters?.search) {
@@ -71,7 +78,20 @@ export class AnnouncementModel {
         params.push(`%${filters.search}%`);
       }
 
-      query += ` GROUP BY a.id ORDER BY a.posted_at DESC`;
+      query += ` GROUP BY a.id`;
+
+      // Add sorting
+      const sortOrder = filters?.sort || 'newest';
+      switch (sortOrder) {
+        case 'oldest':
+          query += ` ORDER BY a.posted_at ASC`;
+          break;
+        case 'deadline':
+          query += ` ORDER BY CASE WHEN a.deadline IS NULL THEN 1 ELSE 0 END, a.deadline ASC`;
+          break;
+        default:
+          query += ` ORDER BY a.posted_at DESC`;
+      }
 
       if (filters?.limit) {
         query += ` LIMIT $${++paramCount}`;

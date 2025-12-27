@@ -149,14 +149,34 @@ function App() {
   // Advanced search states
   const [searchCategory, setSearchCategory] = useState('');
   const [searchType, setSearchType] = useState<ContentType | ''>('');
+  const [searchOrganization, setSearchOrganization] = useState('');
+  const [searchQualification, setSearchQualification] = useState('');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'deadline'>('newest');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  // Fetch announcements
+  // Get applied filters count
+  const appliedFiltersCount = [searchType, searchCategory, searchOrganization, searchQualification].filter(Boolean).length;
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSearchType('');
+    setSearchCategory('');
+    setSearchOrganization('');
+    setSearchQualification('');
+    setSortOrder('newest');
+  };
+
+  // Fetch announcements with enhanced filters
   useEffect(() => {
     const controller = new AbortController();
     const params = new URLSearchParams();
     if (searchQuery.trim()) params.set('search', searchQuery.trim());
     if (searchType) params.set('type', searchType);
     if (searchCategory) params.set('category', searchCategory);
+    if (searchOrganization) params.set('organization', searchOrganization);
+    if (searchQualification) params.set('qualification', searchQualification);
+    params.set('sort', sortOrder);
 
     setLoading(true);
     setError(null);
@@ -174,7 +194,7 @@ function App() {
       .finally(() => setLoading(false));
 
     return () => controller.abort();
-  }, [searchQuery, searchType, searchCategory]);
+  }, [searchQuery, searchType, searchCategory, searchOrganization, searchQualification, sortOrder]);
 
   // Fetch bookmarks when user is authenticated
   const fetchBookmarks = useCallback(async () => {
@@ -535,37 +555,116 @@ function App() {
       {/* Search Modal */}
       {showSearch && (
         <div className="search-overlay" onClick={() => setShowSearch(false)}>
-          <div className="search-modal" onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ marginBottom: '15px', color: '#333' }}>🔍 Search Announcements</h3>
+          <div className="search-modal advanced-search" onClick={(e) => e.stopPropagation()}>
+            <div className="search-header">
+              <h3>🔍 Advanced Search</h3>
+              <button className="close-btn" onClick={() => setShowSearch(false)}>×</button>
+            </div>
+
             <input
               type="text"
+              className="search-main-input"
               placeholder="Search jobs, results, admit cards..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               autoFocus
             />
-            <div className="search-filters">
+
+            {/* Quick Filters Row */}
+            <div className="search-filters-row">
               <select value={searchType} onChange={(e) => setSearchType(e.target.value as ContentType | '')}>
-                <option value="">All Types</option>
-                <option value="job">Jobs</option>
-                <option value="result">Results</option>
-                <option value="admit-card">Admit Card</option>
-                <option value="answer-key">Answer Key</option>
-                <option value="admission">Admission</option>
-                <option value="syllabus">Syllabus</option>
+                <option value="">📄 All Types</option>
+                <option value="job">💼 Jobs</option>
+                <option value="result">📊 Results</option>
+                <option value="admit-card">🎫 Admit Card</option>
+                <option value="answer-key">🔑 Answer Key</option>
+                <option value="admission">🎓 Admission</option>
+                <option value="syllabus">📚 Syllabus</option>
               </select>
               <select value={searchCategory} onChange={(e) => setSearchCategory(e.target.value)}>
-                <option value="">All Categories</option>
-                <option value="Central Government">Central Government</option>
-                <option value="State Government">State Government</option>
+                <option value="">🏛️ All Categories</option>
+                <option value="SSC">SSC</option>
+                <option value="UPSC">UPSC</option>
+                <option value="Railway">Railway</option>
                 <option value="Banking">Banking</option>
-                <option value="Railways">Railways</option>
                 <option value="Defence">Defence</option>
-                <option value="PSU">PSU</option>
+                <option value="State PSC">State PSC</option>
+                <option value="Teaching">Teaching</option>
+                <option value="Police">Police</option>
                 <option value="University">University</option>
+                <option value="PSU">PSU</option>
               </select>
             </div>
-            <button className="search-submit-btn" onClick={() => setShowSearch(false)}>Search</button>
+
+            {/* Toggle Advanced Filters */}
+            <button
+              className="toggle-advanced-btn"
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            >
+              {showAdvancedFilters ? '▲ Hide Advanced Filters' : '▼ Show Advanced Filters'}
+              {appliedFiltersCount > 0 && <span className="filter-badge">{appliedFiltersCount}</span>}
+            </button>
+
+            {/* Advanced Filters */}
+            {showAdvancedFilters && (
+              <div className="advanced-filters-panel">
+                <div className="filter-group">
+                  <label>🏢 Organization</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., SSC, UPSC, Railway..."
+                    value={searchOrganization}
+                    onChange={(e) => setSearchOrganization(e.target.value)}
+                  />
+                </div>
+                <div className="filter-group">
+                  <label>📜 Qualification</label>
+                  <select value={searchQualification} onChange={(e) => setSearchQualification(e.target.value)}>
+                    <option value="">All Qualifications</option>
+                    <option value="10th">10th Pass</option>
+                    <option value="12th">12th Pass</option>
+                    <option value="Graduate">Graduate</option>
+                    <option value="Post Graduate">Post Graduate</option>
+                    <option value="Diploma">Diploma</option>
+                    <option value="ITI">ITI</option>
+                    <option value="B.Tech">B.Tech / Engineering</option>
+                    <option value="MBA">MBA</option>
+                    <option value="MBBS">MBBS / Medical</option>
+                    <option value="LLB">LLB / Law</option>
+                  </select>
+                </div>
+                <div className="filter-group">
+                  <label>📋 Sort By</label>
+                  <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest' | 'deadline')}>
+                    <option value="newest">📅 Newest First</option>
+                    <option value="oldest">📅 Oldest First</option>
+                    <option value="deadline">⏰ Deadline Soon</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="search-actions">
+              {appliedFiltersCount > 0 && (
+                <button className="clear-filters-btn" onClick={clearFilters}>
+                  ❌ Clear All Filters ({appliedFiltersCount})
+                </button>
+              )}
+              <button className="search-submit-btn" onClick={() => setShowSearch(false)}>
+                🔍 Search
+              </button>
+            </div>
+
+            {/* Active Filters Tags */}
+            {appliedFiltersCount > 0 && (
+              <div className="active-filters">
+                {searchType && <span className="filter-tag">Type: {searchType} <button onClick={() => setSearchType('')}>×</button></span>}
+                {searchCategory && <span className="filter-tag">Category: {searchCategory} <button onClick={() => setSearchCategory('')}>×</button></span>}
+                {searchOrganization && <span className="filter-tag">Org: {searchOrganization} <button onClick={() => setSearchOrganization('')}>×</button></span>}
+                {searchQualification && <span className="filter-tag">Qualification: {searchQualification} <button onClick={() => setSearchQualification('')}>×</button></span>}
+              </div>
+            )}
           </div>
         </div>
       )}

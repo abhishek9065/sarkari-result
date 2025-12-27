@@ -18,6 +18,8 @@ const querySchema = z.object({
   search: z.string().trim().optional(),
   category: z.string().trim().optional(),
   organization: z.string().trim().optional(),
+  qualification: z.string().trim().optional(),
+  sort: z.enum(['newest', 'oldest', 'deadline']).default('newest'),
   limit: z.coerce.number().int().min(1).max(200).default(100),
   offset: z.coerce.number().int().min(0).default(0),
 });
