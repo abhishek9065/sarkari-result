@@ -42,6 +42,39 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get categories
+router.get('/meta/categories', async (_req, res) => {
+  try {
+    const categories = await AnnouncementModel.getCategories();
+    return res.json({ data: categories });
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return res.status(500).json({ error: 'Failed to fetch categories' });
+  }
+});
+
+// Get organizations
+router.get('/meta/organizations', async (_req, res) => {
+  try {
+    const organizations = await AnnouncementModel.getOrganizations();
+    return res.json({ data: organizations });
+  } catch (error) {
+    console.error('Error fetching organizations:', error);
+    return res.status(500).json({ error: 'Failed to fetch organizations' });
+  }
+});
+
+// Get tags
+router.get('/meta/tags', async (_req, res) => {
+  try {
+    const tags = await AnnouncementModel.getTags();
+    return res.json({ data: tags });
+  } catch (error) {
+    console.error('Error fetching tags:', error);
+    return res.status(500).json({ error: 'Failed to fetch tags' });
+  }
+});
+
 // Get single announcement by slug
 router.get('/:slug', async (req, res) => {
   try {
@@ -153,25 +186,25 @@ router.patch('/:id', authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// Get categories
-router.get('/meta/categories', async (_req, res) => {
-  try {
-    const categories = await AnnouncementModel.getCategories();
-    return res.json({ data: categories });
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    return res.status(500).json({ error: 'Failed to fetch categories' });
-  }
-});
 
-// Get organizations
-router.get('/meta/organizations', async (_req, res) => {
+
+// Delete announcement (admin only)
+router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const organizations = await AnnouncementModel.getOrganizations();
-    return res.json({ data: organizations });
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid announcement ID' });
+    }
+
+    const deleted = await AnnouncementModel.delete(id);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Announcement not found' });
+    }
+
+    return res.json({ message: 'Announcement deleted successfully' });
   } catch (error) {
-    console.error('Error fetching organizations:', error);
-    return res.status(500).json({ error: 'Failed to fetch organizations' });
+    console.error('Error deleting announcement:', error);
+    return res.status(500).json({ error: 'Failed to delete announcement' });
   }
 });
 

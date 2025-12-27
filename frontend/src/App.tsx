@@ -78,19 +78,60 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
 
 // Page types
 type PageType = 'home' | 'admin' | 'about' | 'contact' | 'privacy' | 'disclaimer';
-type TabType = ContentType | 'bookmarks' | undefined;
+type TabType = ContentType | 'bookmarks' | 'profile' | undefined;
 
 // Navigation menu items
 const navItems = [
-  { label: 'Home', type: undefined as ContentType | undefined | 'bookmarks' },
-  { label: 'Result', type: 'result' as ContentType | undefined | 'bookmarks' },
-  { label: 'Jobs', type: 'job' as ContentType | undefined | 'bookmarks' },
-  { label: 'Admit Card', type: 'admit-card' as ContentType | undefined | 'bookmarks' },
-  { label: 'Admission', type: 'admission' as ContentType | undefined | 'bookmarks' },
-  { label: 'Syllabus', type: 'syllabus' as ContentType | undefined | 'bookmarks' },
-  { label: 'Answer Key', type: 'answer-key' as ContentType | undefined | 'bookmarks' },
-  { label: '❤️ My Bookmarks', type: 'bookmarks' as ContentType | undefined | 'bookmarks' },
+  { label: 'Home', type: undefined as TabType },
+  { label: 'Result', type: 'result' as TabType },
+  { label: 'Jobs', type: 'job' as TabType },
+  { label: 'Admit Card', type: 'admit-card' as TabType },
+  { label: 'Admission', type: 'admission' as TabType },
+  { label: 'Syllabus', type: 'syllabus' as TabType },
+  { label: 'Answer Key', type: 'answer-key' as TabType },
+  { label: '❤️ My Bookmarks', type: 'bookmarks' as TabType },
 ];
+
+// ============ USER PROFILE ============
+
+function UserProfile({
+  bookmarks,
+  onItemClick,
+  user,
+  logout
+}: {
+  bookmarks: Announcement[],
+  onItemClick: (item: Announcement) => void,
+  user: any,
+  logout: () => void
+}) {
+  return (
+    <div className="user-profile">
+      <div className="profile-header card" style={{ padding: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <div>
+          <h2 style={{ margin: 0, marginBottom: '5px' }}>👤 My Profile</h2>
+          <p style={{ color: '#666', margin: 0 }}>{user?.email}</p>
+          <span className="type-badge" style={{ marginTop: '10px', display: 'inline-block' }}>{user?.role || 'User'}</span>
+        </div>
+        <button className="admin-btn logout" onClick={logout}>Logout</button>
+      </div>
+
+      <div className="profile-content">
+        <SectionTable
+          title="❤️ Saved Bookmarks"
+          items={bookmarks}
+          onItemClick={onItemClick}
+          fullWidth
+        />
+
+        <div style={{ marginTop: '20px', padding: '20px', background: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ marginTop: 0 }}>⚙️ Preferences</h3>
+          <p style={{ color: '#666', fontStyle: 'italic' }}>Notification settings coming soon...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Featured exams
 const featuredItems = [
@@ -468,7 +509,7 @@ function App() {
   if (currentPage === 'admin') {
     return (
       <div className="app">
-        <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} />
+        <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} onProfileClick={() => setActiveTab('profile')} />
         <Navigation
           activeTab={activeTab}
           setActiveTab={handleTabChange}
@@ -494,7 +535,7 @@ function App() {
   if (currentPage === 'about' || currentPage === 'contact' || currentPage === 'privacy' || currentPage === 'disclaimer') {
     return (
       <div className="app">
-        <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} />
+        <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} onProfileClick={() => setActiveTab('profile')} />
         <Navigation
           activeTab={activeTab}
           setActiveTab={handleTabChange}
@@ -514,7 +555,7 @@ function App() {
   if (selectedItem) {
     return (
       <div className="app">
-        <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} />
+        <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} onProfileClick={() => setActiveTab('profile')} />
         <Navigation
           activeTab={activeTab}
           setActiveTab={handleTabChange}
@@ -592,9 +633,60 @@ function App() {
                 <tr><td><strong>Official Website</strong></td><td><a href={selectedItem.externalLink || '#'} target="_blank" rel="noreferrer">{selectedItem.organization}</a></td></tr>
               </tbody>
             </table>
+
+            {/* Social Share Buttons */}
+            <div className="social-share">
+              <h4>📤 Share this post:</h4>
+              <div className="share-buttons">
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(selectedItem.title + ' - ' + window.location.href)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="share-btn whatsapp"
+                  title="Share on WhatsApp"
+                >
+                  📱 WhatsApp
+                </a>
+                <a
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(selectedItem.title)}&url=${encodeURIComponent(window.location.href)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="share-btn twitter"
+                  title="Share on Twitter"
+                >
+                  🐦 Twitter
+                </a>
+                <a
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="share-btn facebook"
+                  title="Share on Facebook"
+                >
+                  📘 Facebook
+                </a>
+                <a
+                  href={`https://telegram.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(selectedItem.title)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="share-btn telegram"
+                  title="Share on Telegram"
+                >
+                  ✈️ Telegram
+                </a>
+                <button
+                  className="share-btn copy"
+                  onClick={() => { navigator.clipboard.writeText(window.location.href); alert('Link copied!'); }}
+                  title="Copy Link"
+                >
+                  📋 Copy Link
+                </button>
+              </div>
+            </div>
           </div>
 
           <aside className="sidebar">
+            <TagsCloud />
             <SectionTable title="Latest Jobs" items={getByType('job').slice(0, 5)} onItemClick={handleItemClick} />
             <SectionTable title="Latest Result" items={getByType('result').slice(0, 5)} onItemClick={handleItemClick} />
           </aside>
@@ -609,7 +701,7 @@ function App() {
   return (
     <div className="app">
       <NotificationPrompt />
-      <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} />
+      <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} onProfileClick={() => setActiveTab('profile')} />
       <Navigation
         activeTab={activeTab}
         setActiveTab={handleTabChange}
@@ -754,12 +846,20 @@ function App() {
 
       {/* Main Content */}
       <main className="main-content">
+        <TagsCloud />
         {error && <div className="error-message">{error}</div>}
         {loading && <SkeletonLoader />}
 
         {!loading && !error && (
           <>
-            {activeTab === 'bookmarks' ? (
+            {activeTab === 'profile' ? (
+              <UserProfile
+                bookmarks={bookmarks}
+                onItemClick={handleItemClick}
+                user={user}
+                logout={logout}
+              />
+            ) : activeTab === 'bookmarks' ? (
               <div className="content-grid" style={{ gridTemplateColumns: '1fr' }}>
                 {isAuthenticated ? (
                   <SectionTable
@@ -826,13 +926,14 @@ function App() {
 
 interface HeaderProps {
   setCurrentPage: (page: PageType) => void;
-  user: User | null;
+  user: any;
   isAuthenticated: boolean;
   onLogin: () => void;
   onLogout: () => void;
+  onProfileClick?: () => void;
 }
 
-function Header({ setCurrentPage, user, isAuthenticated, onLogin, onLogout }: HeaderProps) {
+function Header({ setCurrentPage, user, isAuthenticated, onLogin, onLogout, onProfileClick }: HeaderProps) {
   const { theme, themeMode, toggleTheme } = useTheme();
 
   // Get icon and tooltip based on theme mode
@@ -861,7 +962,14 @@ function Header({ setCurrentPage, user, isAuthenticated, onLogin, onLogout }: He
         <div className="header-auth">
           {isAuthenticated ? (
             <div className="user-menu">
-              <span className="user-name">👤 {user?.name}</span>
+              <span
+                className="user-name"
+                onClick={onProfileClick}
+                style={{ cursor: 'pointer', borderBottom: '1px dashed transparent' }}
+                title="View Profile"
+              >
+                👤 {user?.name}
+              </span>
               <button className="auth-btn logout-btn" onClick={onLogout}>Logout</button>
             </div>
           ) : (
@@ -1283,6 +1391,59 @@ function AnalyticsDashboard({ adminToken }: { adminToken: string | null }) {
   );
 }
 
+// ============ TAGS CLOUD ============
+
+function TagsCloud() {
+  const [tags, setTags] = useState<{ name: string, count: number }[]>([]);
+
+  useEffect(() => {
+    fetch(`${apiBase}/api/announcements/meta/tags`)
+      .then(res => res.json())
+      .then(data => setTags(data.data || []))
+      .catch(console.error);
+  }, []);
+
+  if (tags.length === 0) return null;
+
+  return (
+    <div className="tags-cloud-section" style={{ background: 'white', padding: '15px', borderRadius: '8px', marginBottom: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+      <h3 style={{ fontSize: '1.1rem', marginBottom: '10px', color: '#333', borderBottom: '2px solid #e74c3c', paddingBottom: '5px', display: 'inline-block' }}>🏷️ Browse by Tags</h3>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+        {tags.map(tag => (
+          <span
+            key={tag.name}
+            className="tag-chip"
+            style={{
+              background: '#f0f2f5',
+              padding: '5px 10px',
+              borderRadius: '15px',
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              color: '#555',
+              border: '1px solid #ddd'
+            }}
+            onClick={() => {
+              // Simple search by tag
+              const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+              if (searchInput) {
+                searchInput.value = tag.name;
+                // Trigger change event if possible, or just focus
+                searchInput.focus();
+              }
+              // Ideally update a context or URL param provided by App
+              // For now, prompt user this filters by search
+              alert(`Searching for tag: ${tag.name}`);
+              window.location.href = `/?search=${encodeURIComponent(tag.name)}`;
+            }}
+          >
+            {tag.name} <small style={{ color: '#888' }}>({tag.count})</small>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ============ ADMIN PANEL ============
 
 interface AdminPanelProps {
@@ -1311,6 +1472,47 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
     applicationFee: '',
   });
   const [message, setMessage] = useState('');
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this announcement?')) return;
+    if (!adminToken) return;
+
+    try {
+      const response = await fetch(`${apiBase}/api/announcements/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+
+      if (response.ok) {
+        setMessage('Deleted successfully');
+        refreshData();
+      } else {
+        setMessage('Failed to delete');
+      }
+    } catch (err) {
+      setMessage('Error deleting announcement');
+    }
+  };
+
+  const handleEdit = (item: Announcement) => {
+    setFormData({
+      title: item.title,
+      type: item.type,
+      category: item.category,
+      organization: item.organization,
+      externalLink: item.externalLink || '',
+      location: item.location || '',
+      deadline: item.deadline ? item.deadline.split('T')[0] : '', // Format date for input
+      totalPosts: item.totalPosts ? item.totalPosts.toString() : '',
+      minQualification: item.minQualification || '',
+      ageLimit: item.ageLimit || '',
+      applicationFee: item.applicationFee || '',
+    });
+    setEditingId(item.id);
+    setActiveAdminTab('add');
+    setMessage(`Editing: ${item.title}`);
+  };
 
   // Handle login - call real auth API
   const handleLogin = async (e: React.FormEvent) => {
@@ -1349,10 +1551,10 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
     }
   };
 
-  // Handle form submit (create announcement)
+  // Handle form submit (create or update announcement)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage('Creating announcement...');
+    setMessage('Processing...');
 
     if (!adminToken) {
       setMessage('Not authenticated. Please log in again.');
@@ -1361,8 +1563,14 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
     }
 
     try {
-      const response = await fetch(`${apiBase}/api/announcements`, {
-        method: 'POST',
+      const url = editingId
+        ? `${apiBase}/api/announcements/${editingId}`
+        : `${apiBase}/api/announcements`;
+
+      const method = editingId ? 'PATCH' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${adminToken}`,
@@ -1374,18 +1582,20 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
       });
 
       if (response.ok) {
-        setMessage('Announcement created successfully!');
+        setMessage(editingId ? 'Announcement updated successfully!' : 'Announcement created successfully!');
         setFormData({
           title: '', type: 'job', category: 'Central Government', organization: '',
           externalLink: '', location: 'All India', deadline: '', totalPosts: '',
           minQualification: '', ageLimit: '', applicationFee: '',
         });
+        setEditingId(null);
         refreshData();
+        setActiveAdminTab('list');
       } else {
-        setMessage('Failed to create. Note: Admin API requires authentication.');
+        setMessage('Failed to save. Note: Admin API requires authentication.');
       }
     } catch (err) {
-      setMessage('Error creating announcement. Using mock data mode.');
+      setMessage('Error saving announcement.');
     }
   };
 
@@ -1471,8 +1681,8 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
                     <td>{item.organization}</td>
                     <td>{item.totalPosts || '-'}</td>
                     <td>
-                      <button className="action-btn edit">Edit</button>
-                      <button className="action-btn delete">Delete</button>
+                      <button className="action-btn edit" onClick={() => handleEdit(item)}>Edit</button>
+                      <button className="action-btn delete" onClick={() => handleDelete(item.id)}>Delete</button>
                     </td>
                   </tr>
                 ))}

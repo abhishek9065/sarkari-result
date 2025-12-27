@@ -8,6 +8,7 @@ import bookmarksRouter from './routes/bookmarks.js';
 import subscriptionsRouter from './routes/subscriptions.js';
 import pushRouter from './routes/push.js';
 import analyticsRouter from './routes/analytics.js';
+import rssRouter from './routes/rss.js';
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use('/api/announcements', announcementsRouter);
 app.use('/api/subscriptions', subscriptionsRouter);
 app.use('/api/push', pushRouter);
 app.use('/api/analytics', analyticsRouter);
+app.use('/api/rss', rssRouter);
 
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

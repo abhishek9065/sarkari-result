@@ -279,6 +279,26 @@ export class AnnouncementModel {
     await pool.query('UPDATE announcements SET view_count = view_count + 1 WHERE id = $1', [id]);
   }
 
+  static async delete(id: number): Promise<boolean> {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      // Delete related data first
+      await client.query('DELETE FROM announcement_tags WHERE announcement_id = $1', [id]);
+      await client.query('DELETE FROM important_dates WHERE announcement_id = $1', [id]);
+      // Delete announcement
+      const result = await client.query('DELETE FROM announcements WHERE id = $1', [id]);
+      await client.query('COMMIT');
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('Error in delete transaction:', error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
   static async getCategories(): Promise<string[]> {
     const result = await pool.query<{ category: string }>(
       'SELECT DISTINCT category FROM announcements WHERE is_active = true ORDER BY category'
@@ -291,6 +311,20 @@ export class AnnouncementModel {
       'SELECT DISTINCT organization FROM announcements WHERE is_active = true ORDER BY organization'
     );
     return result.rows.map(row => row.organization);
+  }
+
+  static async getTags(): Promise<{ name: string, count: number }[]> {
+    const result = await pool.query(
+      `SELECT t.name, COUNT(at.announcement_id) as count 
+       FROM tags t
+       JOIN announcement_tags at ON t.id = at.tag_id
+       JOIN announcements a ON at.announcement_id = a.id
+       WHERE a.is_active = true
+       GROUP BY t.id, t.name
+       ORDER BY count DESC
+       LIMIT 30`
+    );
+    return result.rows;
   }
 
   private static generateSlug(text: string): string {

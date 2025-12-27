@@ -2435,3 +2435,67 @@ a:hover {
     grid-template-columns: 80px 1fr 40px;
   }
 }
+
+/* ============ SOCIAL SHARE ============ */
+.social-share {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.social-share h4 {
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  color: var(--text-primary, #333);
+}
+
+.share-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  color: white;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: transform 0.2s, opacity 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.share-btn:hover {
+  transform: translateY(-2px);
+  text-decoration: none;
+  color: white;
+  opacity: 0.9;
+}
+
+.share-btn.whatsapp {
+  background: #25D366;
+}
+
+.share-btn.twitter {
+  background: #1DA1F2;
+}
+
+.share-btn.facebook {
+  background: #1877F2;
+}
+
+.share-btn.telegram {
+  background: #0088cc;
+}
+
+.share-btn.copy {
+  background: #6c757d;
+}
+
+[data-theme="dark"] .social-share {
+  border-top-color: var(--border-color);
+}
