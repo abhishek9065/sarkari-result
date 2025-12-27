@@ -724,14 +724,60 @@ function App() {
               <button className="close-btn" onClick={() => setShowSearch(false)}>×</button>
             </div>
 
-            <input
-              type="text"
-              className="search-main-input"
-              placeholder="Search jobs, results, admit cards..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              autoFocus
-            />
+            <div className="search-input-wrapper" style={{ position: 'relative' }}>
+              <input
+                type="text"
+                className="search-main-input"
+                placeholder="Search jobs, results, admit cards..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+              />
+              {/* Autocomplete suggestions */}
+              {searchQuery.length > 2 && (
+                <div className="autocomplete-dropdown" style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  background: 'white',
+                  border: '1px solid #ddd',
+                  borderRadius: '0 0 8px 8px',
+                  maxHeight: '200px',
+                  overflow: 'auto',
+                  zIndex: 100,
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                }}>
+                  {data
+                    .filter(item =>
+                      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      item.organization.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                    .slice(0, 5)
+                    .map(item => (
+                      <div
+                        key={item.id}
+                        onClick={() => {
+                          handleItemClick(item);
+                          setShowSearch(false);
+                        }}
+                        style={{
+                          padding: '10px 15px',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #eee',
+                          fontSize: '0.9rem'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#f5f5f5')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'white')}
+                      >
+                        <strong>{item.title.substring(0, 50)}...</strong>
+                        <div style={{ color: '#666', fontSize: '0.8rem' }}>{item.organization}</div>
+                      </div>
+                    ))
+                  }
+                </div>
+              )}
+            </div>
 
             {/* Quick Filters Row */}
             <div className="search-filters-row">
@@ -1456,7 +1502,7 @@ interface AdminPanelProps {
 
 function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goBack }: AdminPanelProps) {
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [activeAdminTab, setActiveAdminTab] = useState<'analytics' | 'list' | 'add'>('analytics');
+  const [activeAdminTab, setActiveAdminTab] = useState<'analytics' | 'list' | 'add' | 'bulk'>('analytics');
   const [adminToken, setAdminToken] = useState<string | null>(() => localStorage.getItem('adminToken'));
   const [formData, setFormData] = useState({
     title: '',
@@ -1473,6 +1519,7 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
   });
   const [message, setMessage] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [bulkJson, setBulkJson] = useState('');
 
   const handleDelete = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this announcement?')) return;
@@ -1651,6 +1698,9 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
             <button className={activeAdminTab === 'add' ? 'active' : ''} onClick={() => setActiveAdminTab('add')}>
               ➕ Add New
             </button>
+            <button className={activeAdminTab === 'bulk' ? 'active' : ''} onClick={() => setActiveAdminTab('bulk')}>
+              📥 Bulk Import
+            </button>
           </div>
           <button className="admin-btn logout" onClick={() => setIsLoggedIn(false)}>Logout</button>
         </div>
@@ -1688,6 +1738,66 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
                 ))}
               </tbody>
             </table>
+          </div>
+        ) : activeAdminTab === 'bulk' ? (
+          <div className="admin-form-container">
+            <h3>📥 Bulk Import Announcements</h3>
+            <p style={{ color: '#666', marginBottom: '15px' }}>Paste JSON array of announcements below. Required fields: title, type, category, organization.</p>
+            <textarea
+              value={bulkJson}
+              onChange={(e) => setBulkJson(e.target.value)}
+              placeholder={`{
+  "announcements": [
+    {
+      "title": "SSC CGL 2025",
+      "type": "job",
+      "category": "Central Government",
+      "organization": "SSC",
+      "totalPosts": 5000
+    }
+  ]
+}`}
+              style={{
+                width: '100%',
+                height: '300px',
+                fontFamily: 'monospace',
+                fontSize: '0.9rem',
+                padding: '15px',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                marginBottom: '15px'
+              }}
+            />
+            <button
+              className="admin-btn primary"
+              onClick={async () => {
+                if (!adminToken) {
+                  setMessage('Not authenticated');
+                  return;
+                }
+                try {
+                  const jsonData = JSON.parse(bulkJson);
+                  const response = await fetch(`${apiBase}/api/bulk/import`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${adminToken}`,
+                    },
+                    body: JSON.stringify(jsonData),
+                  });
+                  const result = await response.json();
+                  setMessage(result.message || 'Import complete');
+                  if (response.ok) {
+                    refreshData();
+                    setBulkJson('');
+                  }
+                } catch (err: any) {
+                  setMessage('Invalid JSON: ' + err.message);
+                }
+              }}
+            >
+              🚀 Import Announcements
+            </button>
           </div>
         ) : (
           <div className="admin-form-container">
