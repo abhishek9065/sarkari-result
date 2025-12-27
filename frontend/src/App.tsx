@@ -1334,26 +1334,41 @@ function SubscribeBox() {
     setMessage('');
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
       const response = await fetch(`${apiBase}/api/subscriptions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, categories }),
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
       const result = await response.json();
 
       if (response.ok) {
         setStatus('success');
-        setMessage('✅ Verification email sent! Please check your inbox.');
+        // Handle different success messages from backend
+        if (result.data?.verified) {
+          setMessage('✅ Subscribed successfully! You will receive notifications.');
+        } else {
+          setMessage(result.message || '✅ Subscription created! Check your email to verify.');
+        }
         setEmail('');
         setCategories([]);
       } else {
         setStatus('error');
         setMessage(result.error || 'Subscription failed. Try again.');
       }
-    } catch {
-      setStatus('error');
-      setMessage('Network error. Please try again.');
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        setStatus('error');
+        setMessage('Request timed out. Please try again.');
+      } else {
+        setStatus('error');
+        setMessage('Network error. Please try again.');
+      }
     }
   };
 
