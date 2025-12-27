@@ -40,6 +40,97 @@ const sections = [
   { title: 'Syllabus', type: 'syllabus' as ContentType },
 ];
 
+// Notification Prompt Component
+function NotificationPrompt() {
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [permission, setPermission] = useState<NotificationPermission>('default');
+
+  useEffect(() => {
+    // Check if notifications are supported
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+      return;
+    }
+
+    setPermission(Notification.permission);
+
+    // Show prompt if permission not decided and not dismissed recently
+    const dismissed = localStorage.getItem('notification_prompt_dismissed');
+    if (Notification.permission === 'default' && !dismissed) {
+      // Delay the prompt a bit for better UX
+      const timer = setTimeout(() => setShowPrompt(true), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleAllow = async () => {
+    try {
+      const perm = await Notification.requestPermission();
+      setPermission(perm);
+      setShowPrompt(false);
+
+      if (perm === 'granted') {
+        // Subscribe to push notifications
+        const registration = await navigator.serviceWorker.ready;
+
+        // Get VAPID public key from backend
+        const response = await fetch(`${apiBase}/api/push/vapid-public-key`);
+        const { publicKey } = await response.json();
+
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
+        });
+
+        // Send subscription to backend
+        await fetch(`${apiBase}/api/push/subscribe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(subscription.toJSON()),
+        });
+
+        console.log('Push subscription saved');
+      }
+    } catch (error) {
+      console.error('Failed to subscribe to push:', error);
+    }
+  };
+
+  const handleDismiss = () => {
+    setShowPrompt(false);
+    localStorage.setItem('notification_prompt_dismissed', Date.now().toString());
+  };
+
+  if (!showPrompt || permission !== 'default') return null;
+
+  return (
+    <div className="notification-prompt">
+      <div className="notification-prompt-content">
+        <span className="notification-icon">🔔</span>
+        <div className="notification-text">
+          <strong>Enable Notifications</strong>
+          <p>Get instant alerts for new jobs, results & admit cards!</p>
+        </div>
+        <div className="notification-buttons">
+          <button onClick={handleDismiss} className="notification-btn dismiss">Later</button>
+          <button onClick={handleAllow} className="notification-btn allow">Allow</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Helper function to convert VAPID key
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 function App() {
   const [data, setData] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -426,6 +517,7 @@ function App() {
   // Render homepage
   return (
     <div className="app">
+      <NotificationPrompt />
       <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} />
       <Navigation
         activeTab={activeTab}

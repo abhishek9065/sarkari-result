@@ -7,6 +7,7 @@ import { SubscriptionModel } from '../models/subscriptions.js';
 import { ContentType, CreateAnnouncementDto } from '../types.js';
 import { sendAnnouncementNotification } from '../services/telegram.js';
 import { sendAnnouncementEmail, isEmailConfigured } from '../services/email.js';
+import { sendPushNotification } from '../services/push.js';
 
 const router = express.Router();
 
@@ -111,6 +112,11 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
         }
       })();
     }
+
+    // Send push notifications to subscribers (async, don't block response)
+    sendPushNotification(announcement).catch(err => {
+      console.error('Failed to send push notifications:', err);
+    });
 
     return res.status(201).json({ data: announcement });
   } catch (error) {

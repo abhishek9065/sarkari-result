@@ -113,3 +113,15 @@ CREATE TABLE IF NOT EXISTS email_subscriptions (
 
 CREATE INDEX idx_subscriptions_email ON email_subscriptions(email);
 CREATE INDEX idx_subscriptions_verified ON email_subscriptions(is_verified);
+
+-- Push notification subscriptions table
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+    id SERIAL PRIMARY KEY,
+    endpoint TEXT NOT NULL UNIQUE,
+    p256dh TEXT NOT NULL,
+    auth TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_push_subscriptions_endpoint ON push_subscriptions(endpoint);

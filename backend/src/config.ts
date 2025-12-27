@@ -24,5 +24,8 @@ export const config = {
   emailFrom: process.env.EMAIL_FROM ?? 'Sarkari Result <noreply@sarkariresult.com>',
   // Frontend URL for links in emails
   frontendUrl: process.env.FRONTEND_URL ?? 'https://sarkari-result-gold.vercel.app',
+  // VAPID keys for web push notifications
+  vapidPublicKey: process.env.VAPID_PUBLIC_KEY ?? 'BGXdZJ-xHI4YwQlWX72BpfA_qTXGY8itPaFAU1aOb2-8iaexXReuv_NOV0svk45X-B0Dnd5uiPKZxnw7pN-yiYM',
+  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY ?? 'lgl-ZpNZjuYocz3KC09hq_xGQI1QoYeogK33x-VFL3U',
 };
 
