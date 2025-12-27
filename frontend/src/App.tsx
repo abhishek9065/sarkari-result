@@ -7,7 +7,14 @@ const apiBase = import.meta.env.VITE_API_BASE ?? '';
 
 // Theme context
 type Theme = 'light' | 'dark';
-const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void } | null>(null);
+type ThemeMode = 'auto' | 'light' | 'dark';
+const ThemeContext = createContext<{ theme: Theme; themeMode: ThemeMode; toggleTheme: () => void; setThemeMode: (mode: ThemeMode) => void } | null>(null);
+
+// Check if it's night time (7 PM to 6 AM)
+function isNightTime(): boolean {
+  const hour = new Date().getHours();
+  return hour >= 19 || hour < 6; // 7 PM (19:00) to 6 AM (06:00)
+}
 
 function useTheme() {
   const context = useContext(ThemeContext);
@@ -16,21 +23,54 @@ function useTheme() {
 }
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
+    const saved = localStorage.getItem('themeMode') as ThemeMode;
+    return saved || 'auto';
+  });
+
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('theme') as Theme;
-    if (saved) return saved;
+    const savedMode = localStorage.getItem('themeMode') as ThemeMode;
+    if (savedMode === 'light') return 'light';
+    if (savedMode === 'dark') return 'dark';
+    // Auto mode: check time or system preference
+    if (isNightTime()) return 'dark';
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
 
+  // Update theme based on time in auto mode
+  useEffect(() => {
+    if (themeMode === 'auto') {
+      const checkTime = () => {
+        setTheme(isNightTime() ? 'dark' : 'light');
+      };
+      checkTime();
+      // Check every minute
+      const interval = setInterval(checkTime, 60000);
+      return () => clearInterval(interval);
+    } else {
+      setTheme(themeMode);
+    }
+  }, [themeMode]);
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
   }, [theme]);
 
-  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  useEffect(() => {
+    localStorage.setItem('themeMode', themeMode);
+  }, [themeMode]);
+
+  const toggleTheme = () => {
+    // Cycle through: auto -> light -> dark -> auto
+    setThemeMode(prev => {
+      if (prev === 'auto') return 'light';
+      if (prev === 'light') return 'dark';
+      return 'auto';
+    });
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, themeMode, toggleTheme, setThemeMode }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -793,7 +833,20 @@ interface HeaderProps {
 }
 
 function Header({ setCurrentPage, user, isAuthenticated, onLogin, onLogout }: HeaderProps) {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, themeMode, toggleTheme } = useTheme();
+
+  // Get icon and tooltip based on theme mode
+  const getThemeIcon = () => {
+    if (themeMode === 'auto') return '🌓'; // Auto mode - half moon
+    if (themeMode === 'light') return '☀️'; // Light mode - sun
+    return '🌙'; // Dark mode - moon
+  };
+
+  const getThemeTooltip = () => {
+    if (themeMode === 'auto') return 'Auto Mode (Night: Dark, Day: Light) - Click for Light';
+    if (themeMode === 'light') return 'Light Mode - Click for Dark';
+    return 'Dark Mode - Click for Auto';
+  };
 
   return (
     <header className="site-header">
@@ -802,8 +855,8 @@ function Header({ setCurrentPage, user, isAuthenticated, onLogin, onLogout }: He
       </h1>
       <p className="site-subtitle">SarkariResult.com</p>
       <div className="header-controls">
-        <button className="theme-toggle" onClick={toggleTheme} title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}>
-          {theme === 'light' ? '🌙' : '☀️'}
+        <button className="theme-toggle" onClick={toggleTheme} title={getThemeTooltip()}>
+          {getThemeIcon()}
         </button>
         <div className="header-auth">
           {isAuthenticated ? (
