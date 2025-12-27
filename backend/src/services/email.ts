@@ -1,54 +1,48 @@
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 import { config } from '../config.js';
 import { Announcement } from '../types.js';
 
-// Create reusable transporter
-const createTransporter = () => {
-    if (!config.emailUser || !config.emailPass) {
-        console.warn('Email credentials not configured. Email notifications disabled.');
-        return null;
-    }
-
-    return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: config.emailUser,
-            pass: config.emailPass,
-        },
-    });
+// Initialize SendGrid
+const initSendGrid = () => {
+  if (!config.emailPass) {
+    console.warn('SENDGRID_API_KEY not configured. Email notifications disabled.');
+    return false;
+  }
+  sgMail.setApiKey(config.emailPass);
+  return true;
 };
 
-const transporter = createTransporter();
+const isConfigured = initSendGrid();
 
 /**
  * Check if email service is configured
  */
 export const isEmailConfigured = (): boolean => {
-    return !!transporter;
+  return isConfigured;
 };
 
 /**
  * Send verification email to new subscriber
  */
 export const sendVerificationEmail = async (
-    email: string,
-    verificationToken: string,
-    categories: string[]
+  email: string,
+  verificationToken: string,
+  categories: string[]
 ): Promise<boolean> => {
-    if (!transporter) {
-        console.log('Email not configured, skipping verification email');
-        return false;
-    }
+  if (!isConfigured) {
+    console.log('SendGrid not configured, skipping verification email');
+    return false;
+  }
 
-    const verifyUrl = `${config.frontendUrl}/verify?token=${verificationToken}`;
-    const categoryList = categories.length > 0 ? categories.join(', ') : 'All categories';
+  const verifyUrl = `${config.frontendUrl}/verify?token=${verificationToken}`;
+  const categoryList = categories.length > 0 ? categories.join(', ') : 'All categories';
 
-    try {
-        await transporter.sendMail({
-            from: config.emailFrom,
-            to: email,
-            subject: '📧 Verify your Sarkari Result subscription',
-            html: `
+  try {
+    await sgMail.send({
+      to: email,
+      from: config.emailFrom || 'noreply@sarkariresult.com',
+      subject: '📧 Verify your Sarkari Result subscription',
+      html: `
         <!DOCTYPE html>
         <html>
         <head>
@@ -81,40 +75,40 @@ export const sendVerificationEmail = async (
         </body>
         </html>
       `,
-        });
-        console.log(`Verification email sent to ${email}`);
-        return true;
-    } catch (error) {
-        console.error('Failed to send verification email:', error);
-        return false;
-    }
+    });
+    console.log(`Verification email sent to ${email}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to send verification email:', error);
+    return false;
+  }
 };
 
 /**
  * Send announcement notification email to subscribers
  */
 export const sendAnnouncementEmail = async (
-    emails: string[],
-    announcement: Announcement,
-    unsubscribeTokens: Map<string, string>
+  emails: string[],
+  announcement: Announcement,
+  unsubscribeTokens: Map<string, string>
 ): Promise<number> => {
-    if (!transporter || emails.length === 0) {
-        return 0;
-    }
+  if (!isConfigured || emails.length === 0) {
+    return 0;
+  }
 
-    const announcementUrl = `${config.frontendUrl}/?item=${announcement.slug}`;
-    let sentCount = 0;
+  const announcementUrl = `${config.frontendUrl}/?item=${announcement.slug}`;
+  let sentCount = 0;
 
-    for (const email of emails) {
-        const unsubscribeToken = unsubscribeTokens.get(email);
-        const unsubscribeUrl = `${config.frontendUrl}/unsubscribe?token=${unsubscribeToken}`;
+  for (const email of emails) {
+    const unsubscribeToken = unsubscribeTokens.get(email);
+    const unsubscribeUrl = `${config.frontendUrl}/unsubscribe?token=${unsubscribeToken}`;
 
-        try {
-            await transporter.sendMail({
-                from: config.emailFrom,
-                to: email,
-                subject: `🆕 New ${announcement.type}: ${announcement.title}`,
-                html: `
+    try {
+      await sgMail.send({
+        to: email,
+        from: config.emailFrom || 'noreply@sarkariresult.com',
+        subject: `🆕 New ${announcement.type}: ${announcement.title}`,
+        html: `
           <!DOCTYPE html>
           <html>
           <head>
@@ -154,13 +148,13 @@ export const sendAnnouncementEmail = async (
           </body>
           </html>
         `,
-            });
-            sentCount++;
-        } catch (error) {
-            console.error(`Failed to send email to ${email}:`, error);
-        }
+      });
+      sentCount++;
+    } catch (error) {
+      console.error(`Failed to send email to ${email}:`, error);
     }
+  }
 
-    console.log(`Sent ${sentCount}/${emails.length} announcement emails`);
-    return sentCount;
+  console.log(`Sent ${sentCount}/${emails.length} announcement emails`);
+  return sentCount;
 };

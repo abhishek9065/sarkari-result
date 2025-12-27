@@ -18,9 +18,9 @@ export const config = {
   // Telegram bot config (optional - notifications disabled if not set)
   telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? '',
   telegramChannelId: process.env.TELEGRAM_CHANNEL_ID ?? '',
-  // Email config (optional - email notifications disabled if not set)
-  emailUser: process.env.EMAIL_USER ?? '',
-  emailPass: process.env.EMAIL_PASS ?? '',
+  // SendGrid email config (optional - email notifications disabled if not set)
+  emailUser: process.env.EMAIL_USER ?? '',  // Not used with SendGrid but kept for compatibility
+  emailPass: process.env.SENDGRID_API_KEY ?? process.env.EMAIL_PASS ?? '',  // SendGrid API key
   emailFrom: process.env.EMAIL_FROM ?? 'Sarkari Result <noreply@sarkariresult.com>',
   // Frontend URL for links in emails
   frontendUrl: process.env.FRONTEND_URL ?? 'https://sarkari-result-gold.vercel.app',
