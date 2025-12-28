@@ -12,6 +12,9 @@ import rssRouter from './routes/rss.js';
 import sitemapRouter from './routes/sitemap.js';
 import bulkRouter from './routes/bulk.js';
 import uploadRouter from './routes/upload.js';
+import calendarRouter from './routes/calendar.js';
+import trendingRouter from './routes/trending.js';
+import searchRouter from './routes/search.js';
 import { rateLimit } from './middleware/rateLimit.js';
 
 const app = express();
@@ -36,7 +39,9 @@ app.use('/api/rss', rssRouter);
 app.use('/api/sitemap.xml', sitemapRouter);
 app.use('/api/bulk', bulkRouter);
 app.use('/api/upload', uploadRouter);
-
+app.use('/api/calendar', calendarRouter);
+app.use('/api/trending', trendingRouter);
+app.use('/api/search', searchRouter);
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   // Basic error handler to avoid leaking stack traces in production.
