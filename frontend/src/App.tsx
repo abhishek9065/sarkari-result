@@ -561,7 +561,7 @@ function App() {
     const isExpired = daysRemaining !== null && daysRemaining < 0;
     const isUrgent = daysRemaining !== null && daysRemaining <= 7 && daysRemaining >= 0;
 
-    // Get related jobs (same type or organization)
+    // Get related items (same type or organization)
     const relatedJobs = data
       .filter(item =>
         item.id !== selectedItem.id &&
@@ -569,25 +569,76 @@ function App() {
       )
       .slice(0, 5);
 
-    // FAQ data (state is at top level)
-    const faqs = [
-      {
-        q: `${selectedItem.organization} ${selectedItem.title} के लिए आवेदन कैसे करें?`,
-        a: `${selectedItem.organization} की आधिकारिक वेबसाइट पर जाएं और ऑनलाइन आवेदन लिंक पर क्लिक करें। सभी आवश्यक विवरण भरें और शुल्क का भुगतान करें।`
-      },
-      {
-        q: 'आवेदन की अंतिम तिथि क्या है?',
-        a: selectedItem.deadline ? `आवेदन की अंतिम तिथि ${formatDate(selectedItem.deadline)} है।` : 'अंतिम तिथि की घोषणा जल्द होगी।'
-      },
-      {
-        q: 'शैक्षिक योग्यता क्या है?',
-        a: selectedItem.minQualification || 'विस्तृत योग्यता के लिए आधिकारिक अधिसूचना देखें।'
-      },
-      {
-        q: 'आवेदन शुल्क कितना है?',
-        a: selectedItem.applicationFee ? `सामान्य/OBC: ${selectedItem.applicationFee}, SC/ST/PH: रियायती शुल्क` : 'शुल्क विवरण के लिए अधिसूचना देखें।'
+    // Type-specific labels
+    const typeLabels: Record<string, { action: string; dateLabel: string; relatedTitle: string }> = {
+      'job': { action: 'Apply Online', dateLabel: 'Last Date to Apply', relatedTitle: 'Similar Jobs' },
+      'result': { action: 'Check Result', dateLabel: 'Result Date', relatedTitle: 'Other Results' },
+      'admit-card': { action: 'Download Admit Card', dateLabel: 'Download Available', relatedTitle: 'Other Admit Cards' },
+      'answer-key': { action: 'Check Answer Key', dateLabel: 'Answer Key Date', relatedTitle: 'Other Answer Keys' },
+      'admission': { action: 'Apply for Admission', dateLabel: 'Last Date to Apply', relatedTitle: 'Other Admissions' },
+      'syllabus': { action: 'Download Syllabus', dateLabel: 'Syllabus Available', relatedTitle: 'Other Syllabus' }
+    };
+    const labels = typeLabels[selectedItem.type] || typeLabels['job'];
+
+    // Type-specific Mode of Selection
+    const modeOfSelection: Record<string, string[]> = {
+      'job': ['Online Written Examination', 'Document Verification', 'Skill Test / Interview (If Required)', 'Medical Examination'],
+      'result': ['Merit List Based', 'Cut-Off Marks', 'Category Wise Selection', 'Final Merit List'],
+      'admit-card': ['Online Exam Hall Ticket', 'Photo & Signature Verification', 'Exam Center Allocation'],
+      'answer-key': ['Provisional Answer Key', 'Objection Window', 'Final Answer Key', 'Result Declaration'],
+      'admission': ['Merit Based Selection', 'Entrance Exam (If Required)', 'Counselling Process', 'Document Verification'],
+      'syllabus': ['Subject Wise Topics', 'Exam Pattern', 'Important Topics', 'Previous Year Papers']
+    };
+    const selectionModes = modeOfSelection[selectedItem.type] || modeOfSelection['job'];
+
+    // Type-specific FAQ (Hindi)
+    const getFaqs = () => {
+      switch (selectedItem.type) {
+        case 'result':
+          return [
+            { q: `${selectedItem.organization} ${selectedItem.title} Result कब आएगा?`, a: selectedItem.deadline ? `Result ${formatDate(selectedItem.deadline)} को जारी होगा।` : 'Result की तारीख जल्द घोषित होगी।' },
+            { q: 'Result कैसे Check करें?', a: `${selectedItem.organization} की Official Website पर जाएं और अपना Roll Number / Registration Number दर्ज करें।` },
+            { q: 'Cut Off Marks क्या होंगे?', a: 'Cut Off Marks Category और Post के अनुसार अलग-अलग होंगे। Official Notification देखें।' },
+            { q: 'Merit List कब आएगी?', a: 'Result के बाद Merit List जारी की जाएगी।' }
+          ];
+        case 'admit-card':
+          return [
+            { q: `${selectedItem.organization} Admit Card कैसे Download करें?`, a: `Official Website पर जाएं, Login करें और Admit Card Download करें।` },
+            { q: 'Admit Card पर क्या Details होंगी?', a: 'Admit Card पर Candidate का नाम, Photo, Exam Center, Date और Time होगा।' },
+            { q: 'Exam Center कैसे पता करें?', a: 'Admit Card पर Exam Center का पता और निर्देश दिए होंगे।' },
+            { q: 'Admit Card नहीं मिल रहा?', a: 'Helpline Number पर संपर्क करें या Official Website पर FAQ देखें।' }
+          ];
+        case 'answer-key':
+          return [
+            { q: `${selectedItem.organization} Answer Key कैसे Check करें?`, a: 'Official Website पर Answer Key Section में जाएं।' },
+            { q: 'Answer Key पर Objection कैसे करें?', a: 'Online Portal पर Login करके Objection Submit करें। Fee भी लग सकती है।' },
+            { q: 'Final Answer Key कब आएगी?', a: 'Objection Window बंद होने के बाद Final Answer Key जारी होगी।' },
+            { q: 'Result कब आएगा?', a: 'Final Answer Key के बाद Result घोषित होगा।' }
+          ];
+        case 'admission':
+          return [
+            { q: `${selectedItem.organization} Admission के लिए Apply कैसे करें?`, a: `Official Website पर जाएं और Online Application Form भरें।` },
+            { q: 'Admission की Last Date क्या है?', a: selectedItem.deadline ? `Last Date ${formatDate(selectedItem.deadline)} है।` : 'Last Date जल्द घोषित होगी।' },
+            { q: 'Counselling Process क्या है?', a: 'Merit List के आधार पर Counselling होगी। Documents लेकर जाएं।' },
+            { q: 'Fee Structure क्या है?', a: 'Fee Details के लिए Official Prospectus देखें।' }
+          ];
+        case 'syllabus':
+          return [
+            { q: `${selectedItem.organization} Syllabus कैसे Download करें?`, a: 'नीचे दिए गए Link से PDF Download करें।' },
+            { q: 'Exam Pattern क्या है?', a: 'Syllabus PDF में Exam Pattern की पूरी जानकारी है।' },
+            { q: 'कौन से Topics Important हैं?', a: 'Previous Year Papers देखें और High Weightage Topics पर Focus करें।' },
+            { q: 'Negative Marking है क्या?', a: 'Exam Pattern में Negative Marking की जानकारी दी गई है।' }
+          ];
+        default:
+          return [
+            { q: `${selectedItem.organization} ${selectedItem.title} के लिए आवेदन कैसे करें?`, a: `${selectedItem.organization} की आधिकारिक वेबसाइट पर जाएं और ऑनलाइन आवेदन लिंक पर क्लिक करें। सभी आवश्यक विवरण भरें और शुल्क का भुगतान करें।` },
+            { q: 'आवेदन की अंतिम तिथि क्या है?', a: selectedItem.deadline ? `आवेदन की अंतिम तिथि ${formatDate(selectedItem.deadline)} है।` : 'अंतिम तिथि की घोषणा जल्द होगी।' },
+            { q: 'शैक्षिक योग्यता क्या है?', a: selectedItem.minQualification || 'विस्तृत योग्यता के लिए आधिकारिक अधिसूचना देखें।' },
+            { q: 'आवेदन शुल्क कितना है?', a: selectedItem.applicationFee ? `सामान्य/OBC: ${selectedItem.applicationFee}, SC/ST/PH: रियायती शुल्क` : 'शुल्क विवरण के लिए अधिसूचना देखें।' }
+          ];
       }
-    ];
+    };
+    const faqs = getFaqs();
 
     return (
       <div className="app">
@@ -778,12 +829,11 @@ function App() {
 
             {/* Mode of Selection */}
             <div className="mode-selection">
-              <h3>{selectedItem.organization} {selectedItem.title} : Mode Of Selection</h3>
+              <h3>{selectedItem.organization} {selectedItem.title} : {selectedItem.type === 'syllabus' ? 'Content Overview' : 'Selection Process'}</h3>
               <ul className="selection-list">
-                <li>Online Written Examination</li>
-                <li>Document Verification</li>
-                <li>Skill Test / Interview (If Required)</li>
-                <li>Medical Examination</li>
+                {selectionModes.map((mode, idx) => (
+                  <li key={idx}>{mode}</li>
+                ))}
               </ul>
             </div>
 
@@ -794,7 +844,7 @@ function App() {
               </thead>
               <tbody>
                 <tr>
-                  <td><strong>Apply Online</strong></td>
+                  <td><strong>{labels.action}</strong></td>
                   <td>
                     <a href={selectedItem.externalLink || '#'} target="_blank" rel="noreferrer" className="link-btn apply">
                       Click Here
@@ -838,10 +888,10 @@ function App() {
               ))}
             </div>
 
-            {/* Related Jobs */}
+            {/* Related Items */}
             {relatedJobs.length > 0 && (
               <div className="related-jobs">
-                <h3>📌 You May Also Check</h3>
+                <h3>📌 {labels.relatedTitle}</h3>
                 <ul>
                   {relatedJobs.map(job => (
                     <li key={job.id}>
