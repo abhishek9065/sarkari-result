@@ -16,14 +16,57 @@ import calendarRouter from './routes/calendar.js';
 import trendingRouter from './routes/trending.js';
 import searchRouter from './routes/search.js';
 import { rateLimit } from './middleware/rateLimit.js';
+import {
+  securityHeaders,
+  blockSuspiciousAgents,
+  sanitizeRequestBody
+} from './middleware/security.js';
 
 const app = express();
 
-app.use(cors());
-app.use(express.json({ limit: '10mb' })); // Increased limit for bulk imports and images
+// Trust proxy for accurate IP detection behind reverse proxies
+app.set('trust proxy', 1);
+
+// ============ SECURITY MIDDLEWARE ============
+// Apply security headers (Helmet)
+app.use(securityHeaders);
+
+// Block known vulnerability scanners
+app.use(blockSuspiciousAgents);
+
+// CORS configuration - restrict to known origins
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://sarkari-result-gold.vercel.app',
+  'https://sarkari-result.vercel.app'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log(`[SECURITY] Blocked CORS request from: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json({ limit: '5mb' })); // Reduced from 10mb for security
+
+// Sanitize all request bodies
+app.use(sanitizeRequestBody);
 
 // Apply rate limiting to all API routes
-app.use('/api', rateLimit({ windowMs: 60000, maxRequests: 200 }));
+app.use('/api', rateLimit({ windowMs: 60000, maxRequests: 100 })); // Reduced from 200
+
+// Stricter rate limiting for auth endpoints
+app.use('/api/auth', rateLimit({ windowMs: 60000, maxRequests: 10 }));
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
