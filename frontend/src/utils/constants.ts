@@ -1,0 +1,57 @@
+import type { ContentType } from '../types';
+
+export const API_BASE = import.meta.env.VITE_API_BASE ?? '';
+
+export type PageType = 'home' | 'admin' | 'about' | 'contact' | 'privacy' | 'disclaimer';
+export type TabType = ContentType | 'bookmarks' | 'profile' | undefined;
+
+// Navigation menu items
+export const NAV_ITEMS = [
+    { label: 'Home', type: undefined as TabType },
+    { label: 'Result', type: 'result' as TabType },
+    { label: 'Jobs', type: 'job' as TabType },
+    { label: 'Admit Card', type: 'admit-card' as TabType },
+    { label: 'Admission', type: 'admission' as TabType },
+    { label: 'Syllabus', type: 'syllabus' as TabType },
+    { label: 'Answer Key', type: 'answer-key' as TabType },
+    { label: '❤️ My Bookmarks', type: 'bookmarks' as TabType },
+];
+
+// Featured items on homepage
+export const FEATURED_ITEMS = [
+    { title: 'SSC GD 2025', subtitle: 'Apply Now', color: 'purple', type: 'job' as ContentType },
+    { title: 'Railway RRB', subtitle: 'Result Out', color: 'blue', type: 'result' as ContentType },
+    { title: 'UPSC CSE 2024', subtitle: 'Notification', color: 'red', type: 'job' as ContentType },
+    { title: 'Bank PO/Clerk', subtitle: 'Admit Card', color: 'orange', type: 'admit-card' as ContentType },
+    { title: 'State PSC', subtitle: 'Latest Jobs', color: 'green', type: 'job' as ContentType },
+];
+
+// Content sections
+export const SECTIONS = [
+    { title: 'Latest Jobs', type: 'job' as ContentType },
+    { title: 'Latest Result', type: 'result' as ContentType },
+    { title: 'Admit Card', type: 'admit-card' as ContentType },
+    { title: 'Answer Key', type: 'answer-key' as ContentType },
+    { title: 'Admission', type: 'admission' as ContentType },
+    { title: 'Syllabus', type: 'syllabus' as ContentType },
+];
+
+// Type-specific labels for detail pages
+export const TYPE_LABELS: Record<string, { action: string; dateLabel: string; relatedTitle: string }> = {
+    'job': { action: 'Apply Online', dateLabel: 'Last Date to Apply', relatedTitle: 'Similar Jobs' },
+    'result': { action: 'Check Result', dateLabel: 'Result Date', relatedTitle: 'Other Results' },
+    'admit-card': { action: 'Download Admit Card', dateLabel: 'Download Available', relatedTitle: 'Other Admit Cards' },
+    'answer-key': { action: 'Check Answer Key', dateLabel: 'Answer Key Date', relatedTitle: 'Other Answer Keys' },
+    'admission': { action: 'Apply for Admission', dateLabel: 'Last Date to Apply', relatedTitle: 'Other Admissions' },
+    'syllabus': { action: 'Download Syllabus', dateLabel: 'Syllabus Available', relatedTitle: 'Other Syllabus' }
+};
+
+// Type-specific selection modes
+export const SELECTION_MODES: Record<string, string[]> = {
+    'job': ['Online Written Examination', 'Document Verification', 'Skill Test / Interview (If Required)', 'Medical Examination'],
+    'result': ['Merit List Based', 'Cut-Off Marks', 'Category Wise Selection', 'Final Merit List'],
+    'admit-card': ['Online Exam Hall Ticket', 'Photo & Signature Verification', 'Exam Center Allocation'],
+    'answer-key': ['Provisional Answer Key', 'Objection Window', 'Final Answer Key', 'Result Declaration'],
+    'admission': ['Merit Based Selection', 'Entrance Exam (If Required)', 'Counselling Process', 'Document Verification'],
+    'syllabus': ['Subject Wise Topics', 'Exam Pattern', 'Important Topics', 'Previous Year Papers']
+};
