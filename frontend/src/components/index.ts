@@ -28,3 +28,15 @@ export {
     useToast,
     useInView
 } from './ui/InteractiveComponents';
+export {
+    Breadcrumbs,
+    StatCard,
+    StatsSection,
+    EmptyState,
+    ErrorState,
+    FilterChips,
+    SortDropdown,
+    Pagination,
+    QuickActions,
+    SearchBox
+} from './ui/UXComponents';
