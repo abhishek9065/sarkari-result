@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import { config } from '../config.js';
 import { JwtPayload } from '../types.js';
+import { isTokenBlacklisted, hasSuspiciousContent, logSecurityEvent } from '../utils/security.js';
 
 // Extend Express Request type to include user
 declare global {
@@ -19,6 +20,12 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
 
   if (!token) {
     res.status(401).json({ error: 'Access token required' });
+    return;
+  }
+
+  // Check if token is blacklisted (user logged out)
+  if (isTokenBlacklisted(token)) {
+    res.status(401).json({ error: 'Token has been revoked' });
     return;
   }
 
@@ -54,6 +61,6 @@ export function optionalAuth(req: Request, res: Response, next: NextFunction): v
   } catch (error) {
     // Invalid token is ignored for optional auth
   }
-  
+
   next();
 }

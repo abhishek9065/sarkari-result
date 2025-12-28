@@ -11,6 +11,7 @@ import {
   clearFailedLogins,
   getClientIP
 } from '../middleware/security.js';
+import { blacklistToken, logSecurityEvent } from '../utils/security.js';
 
 const router = express.Router();
 
@@ -102,6 +103,9 @@ router.post('/login', bruteForceProtection, async (req, res) => {
     // Clear failed login attempts on success
     clearFailedLogins(clientIP);
 
+    // Log successful login for audit
+    logSecurityEvent('LOGIN_SUCCESS', clientIP, req.headers['user-agent'] || '', userWithHash.id);
+
     const token = jwt.sign(
       { userId: userWithHash.id, email: userWithHash.email, role: userWithHash.role },
       config.jwtSecret,
@@ -118,6 +122,20 @@ router.post('/login', bruteForceProtection, async (req, res) => {
     console.error('Login error:', error);
     return res.status(500).json({ error: 'Login failed' });
   }
+});
+
+// Logout endpoint - blacklist the token
+router.post('/logout', (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (token) {
+    blacklistToken(token);
+    const clientIP = getClientIP(req);
+    logSecurityEvent('LOGOUT', clientIP, req.headers['user-agent'] || '');
+  }
+
+  return res.json({ message: 'Logged out successfully' });
 });
 
 export default router;
