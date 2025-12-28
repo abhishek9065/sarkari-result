@@ -10,6 +10,9 @@ export { FeaturedGrid } from './cards/FeaturedGrid';
 
 // Sections
 export { SectionTable } from './sections/SectionTable';
+export { ExamCalendar } from './sections/ExamCalendar';
+export { JobAlerts } from './sections/JobAlerts';
+export { CompareJobs } from './sections/CompareJobs';
 
 // UI
 export { SkeletonLoader } from './ui/SkeletonLoader';

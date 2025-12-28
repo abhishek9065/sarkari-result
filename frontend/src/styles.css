@@ -3463,3 +3463,453 @@ a:hover {
     display: none;
   }
 }
+/* ============ EXAM CALENDAR ============ */
+.exam-calendar {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: var(--shadow);
+}
+
+.exam-calendar .calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.exam-calendar .calendar-header h2 {
+  color: var(--text-primary);
+  font-size: 1.4rem;
+}
+
+.exam-calendar .calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.exam-calendar .calendar-nav button {
+  background: #8B0000;
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+
+.exam-calendar .calendar-nav button:hover {
+  background: #a00000;
+}
+
+.exam-calendar .current-month {
+  font-weight: 600;
+  min-width: 160px;
+  text-align: center;
+}
+
+.exam-calendar .calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 5px;
+}
+
+.exam-calendar .weekday {
+  text-align: center;
+  padding: 8px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.exam-calendar .calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.exam-calendar .day {
+  min-height: 60px;
+  padding: 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  position: relative;
+}
+
+.exam-calendar .day.empty {
+  background: transparent;
+}
+
+.exam-calendar .day.today {
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+}
+
+.exam-calendar .day.has-events {
+  background: #e8f5e9;
+}
+
+[data-theme="dark"] .exam-calendar .day.today {
+  background: #2d2a1a;
+}
+
+[data-theme="dark"] .exam-calendar .day.has-events {
+  background: #1a2e1a;
+}
+
+.exam-calendar .day-number {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.exam-calendar .day-events {
+  display: flex;
+  gap: 3px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.exam-calendar .event-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.exam-calendar .event-dot.job { background: #27AE60; }
+.exam-calendar .event-dot.result { background: #3498DB; }
+.exam-calendar .event-dot.admit-card { background: #9B59B6; }
+.exam-calendar .event-dot.answer-key { background: #E67E22; }
+
+.exam-calendar .upcoming-deadlines {
+  margin-top: 20px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 15px;
+}
+
+.exam-calendar .upcoming-deadlines h3 {
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+.exam-calendar .upcoming-deadlines ul {
+  list-style: none;
+}
+
+.exam-calendar .upcoming-deadlines li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border-color);
+  cursor: pointer;
+}
+
+.exam-calendar .upcoming-deadlines li:hover {
+  background: var(--bg-secondary);
+}
+
+.exam-calendar .event-title {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.exam-calendar .event-date {
+  color: #cc0000;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* ============ JOB ALERTS ============ */
+.job-alerts {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 25px;
+  margin: 20px 0;
+  color: white;
+}
+
+.job-alerts.success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  text-align: center;
+}
+
+.job-alerts .success-message {
+  padding: 30px;
+}
+
+.job-alerts .success-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 15px;
+}
+
+.job-alerts .alerts-header h2 {
+  margin-bottom: 5px;
+}
+
+.job-alerts .alerts-header p {
+  opacity: 0.9;
+  margin-bottom: 20px;
+}
+
+.job-alerts .form-group {
+  margin-bottom: 20px;
+}
+
+.job-alerts label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.job-alerts input[type="email"] {
+  width: 100%;
+  padding: 12px 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.job-alerts .category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.job-alerts .category-chip {
+  background: rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.4);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.job-alerts .category-chip.selected {
+  background: white;
+  color: #667eea;
+  border-color: white;
+}
+
+.job-alerts .frequency-options {
+  display: flex;
+  gap: 15px;
+}
+
+.job-alerts .frequency-option {
+  flex: 1;
+  padding: 12px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.job-alerts .frequency-option.selected {
+  background: rgba(255,255,255,0.3);
+}
+
+.job-alerts .frequency-option input {
+  display: none;
+}
+
+.job-alerts .subscribe-btn {
+  width: 100%;
+  padding: 14px;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.job-alerts .subscribe-btn:hover {
+  transform: translateY(-2px);
+}
+
+.job-alerts .error-message {
+  background: rgba(255,0,0,0.2);
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+/* ============ COMPARE JOBS ============ */
+.compare-jobs-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compare-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+}
+
+.compare-content {
+  position: relative;
+  background: var(--bg-card);
+  border-radius: 12px;
+  width: 95%;
+  max-width: 1000px;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.compare-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  z-index: 10;
+}
+
+.compare-header h2 {
+  margin: 0;
+}
+
+.compare-header .close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.compare-body {
+  padding: 20px;
+}
+
+.compare-selector h4 {
+  margin-bottom: 10px;
+}
+
+.compare-search {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 15px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.compare-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.compare-item {
+  padding: 12px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.compare-item:hover {
+  border-color: #667eea;
+}
+
+.compare-item.selected {
+  border-color: #27AE60;
+  background: rgba(39, 174, 96, 0.1);
+}
+
+.compare-item .item-title {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+.compare-item .item-org {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.compare-table-wrapper {
+  overflow-x: auto;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.compare-table th,
+.compare-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.compare-table th {
+  background: #8B0000;
+  color: white;
+  position: relative;
+}
+
+.compare-table th .job-name {
+  display: block;
+  font-size: 0.9rem;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compare-table th .remove-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(255,255,255,0.3);
+  border: none;
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+
+.compare-table td.highlight {
+  color: #27AE60;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.compare-table td.date {
+  color: #cc0000;
+  font-weight: 600;
+}
+
+.compare-empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
