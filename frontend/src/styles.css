@@ -2692,6 +2692,27 @@ a:hover {
   }
 }
 
+/* Competitor-Style Table Headers */
+.dates-table thead th {
+  background: linear-gradient(135deg, #8B0000 0%, #600000 100%) !important;
+  color: white !important;
+}
+
+.fee-table thead th {
+  background: linear-gradient(135deg, #8B0000 0%, #600000 100%) !important;
+  color: white !important;
+}
+
+.vacancy-table thead th {
+  background: linear-gradient(135deg, #8B0000 0%, #600000 100%) !important;
+  color: white !important;
+}
+
+.links-table thead th {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+  color: #333 !important;
+}
+
 /* Enhanced Table Styles */
 .dates-table .date-value.start {
   color: #27AE60;
@@ -2724,45 +2745,88 @@ a:hover {
   font-size: 1.1rem;
 }
 
-/* How to Apply */
+/* How to Apply - Competitor Style */
 .how-to-apply {
-  background: #f0f8ff;
-  border: 2px solid #0066cc;
-  border-radius: 8px;
-  padding: 20px;
   margin-bottom: 20px;
+  border: 2px solid #1a1a2e;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .how-to-apply h3 {
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+  color: white;
+  padding: 12px 15px;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.how-to-list {
+  list-style: disc;
+  background: #f9f9f9;
+  padding: 15px 15px 15px 35px;
+  margin: 0;
+}
+
+.how-to-list li {
+  padding: 8px 0;
+  border-bottom: 1px dotted #ccc;
+  line-height: 1.6;
+}
+
+.how-to-list li:last-child {
+  border-bottom: none;
+}
+
+.how-to-list li strong {
   color: #0066cc;
-  margin-bottom: 15px;
 }
 
-.how-to-apply ol {
-  margin-left: 20px;
-  line-height: 2;
+.how-to-list .hindi-note {
+  color: #cc0000;
+  font-style: italic;
 }
 
-.how-to-apply li {
-  margin-bottom: 8px;
+[data-theme="dark"] .how-to-list {
+  background: var(--bg-card);
 }
 
-.apply-note {
-  background: #fff3cd;
-  color: #856404;
-  padding: 12px;
-  border-radius: 5px;
-  margin-top: 15px;
+/* Mode of Selection - Competitor Style */
+.mode-selection {
+  margin-bottom: 20px;
+  border: 2px solid #1a1a2e;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mode-selection h3 {
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+  color: white;
+  padding: 12px 15px;
+  margin: 0;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.selection-list {
+  list-style: disc;
+  background: #f9f9f9;
+  padding: 15px 15px 15px 35px;
+  margin: 0;
+}
+
+.selection-list li {
+  padding: 8px 0;
   font-weight: 500;
 }
 
-[data-theme="dark"] .how-to-apply {
-  background: rgba(0, 102, 204, 0.1);
+[data-theme="dark"] .mode-selection h3,
+[data-theme="dark"] .how-to-apply h3 {
+  background: var(--bg-tertiary);
 }
 
-[data-theme="dark"] .apply-note {
-  background: rgba(255, 193, 7, 0.2);
-  color: #ffc107;
+[data-theme="dark"] .selection-list {
+  background: var(--bg-card);
 }
 
 /* Enhanced Links Table */

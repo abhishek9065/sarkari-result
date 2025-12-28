@@ -766,19 +766,25 @@ function App() {
 
             {/* How to Apply */}
             <div className="how-to-apply">
-              <h3>📝 How to Apply</h3>
-              <ol>
-                <li>Visit the official website of <strong>{selectedItem.organization}</strong></li>
-                <li>Click on "Apply Online" link under Important Links section</li>
-                <li>Register with valid email and mobile number</li>
-                <li>Fill the application form with required details</li>
-                <li>Upload photo, signature and required documents</li>
-                <li>Pay the application fee through online mode</li>
-                <li>Submit and take printout for future reference</li>
-              </ol>
-              <div className="apply-note">
-                ⚠️ Note: कृपया आवेदन करने से पहले Official Notification को ध्यान से पढ़ें।
-              </div>
+              <h3>📝 How to Fill {selectedItem.organization} Online Form 2025</h3>
+              <ul className="how-to-list">
+                <li>Interested Candidates Can Apply For The <strong>{selectedItem.organization}</strong> Post Can Submit Their Application Online Before <strong>{selectedItem.deadline ? formatDate(selectedItem.deadline) : 'Last Date'}</strong>.</li>
+                <li>Use The Click Here Link Provided Below Under Important Link Section To Apply Directly.</li>
+                <li>Alternatively, Visit The <strong>Official Website Of {selectedItem.organization}</strong> To Complete The Application Process Online.</li>
+                <li>Make Sure To Complete The Application Before The Deadline <strong>{selectedItem.deadline ? formatDate(selectedItem.deadline) : 'Last Date'}</strong>.</li>
+                <li className="hindi-note">Note – छात्रों से ये अनुरोध किया जाता है की वो अपना फॉर्म भरने से पहले Official Notification को ध्यान से जरूर पढ़े उसके बाद ही अपना फॉर्म भरे। (Last Date, Age Limit, & Education Qualification)</li>
+              </ul>
+            </div>
+
+            {/* Mode of Selection */}
+            <div className="mode-selection">
+              <h3>{selectedItem.organization} {selectedItem.title} : Mode Of Selection</h3>
+              <ul className="selection-list">
+                <li>Online Written Examination</li>
+                <li>Document Verification</li>
+                <li>Skill Test / Interview (If Required)</li>
+                <li>Medical Examination</li>
+              </ul>
             </div>
 
             {/* Important Links */}
