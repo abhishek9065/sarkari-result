@@ -1,57 +1,65 @@
-import { useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Header, Navigation, Footer, Marquee, ScrollToTop, SocialButtons } from '../components';
-import { useAuth } from '../context/AuthContext';
-import AuthModal from '../components/modals/AuthModal';
+import { ReactNode } from 'react';
+import { Header, Navigation, Footer, Marquee, ScrollToTop } from '../components';
 
-export function MainLayout() {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { user, logout, isAuthenticated } = useAuth();
-    const [showAuthModal, setShowAuthModal] = useState(false);
-    const [showSearch, setShowSearch] = useState(false);
-    const [activeTab, setActiveTab] = useState<any>(undefined);
+interface MainLayoutProps {
+    children: ReactNode;
+    activeTab?: string;
+    setActiveTab?: (tab: any) => void;
+    setShowSearch?: (show: boolean) => void;
+    goBack?: () => void;
+    setCurrentPage?: (page: any) => void;
+    isAuthenticated?: boolean;
+    user?: any;
+    onShowAuth?: () => void;
+    onLogin?: () => void;
+    onLogout?: () => void;
+    onProfileClick?: () => void;
+}
 
-    // Helper to handle navigation
-    const handleNavigation = (path: string) => {
-        navigate(path);
-    };
-
+export function MainLayout({
+    children,
+    activeTab,
+    setActiveTab,
+    setShowSearch,
+    goBack,
+    setCurrentPage,
+    isAuthenticated = false,
+    user,
+    onShowAuth,
+    onLogin,
+    onLogout,
+    onProfileClick
+}: MainLayoutProps) {
     return (
         <div className="app-container">
             <Header
-                setCurrentPage={(page) => page === 'admin' ? handleNavigation('/admin') : handleNavigation('/' + page)}
+                setCurrentPage={setCurrentPage || (() => { })}
                 user={user}
                 isAuthenticated={isAuthenticated}
-                onLogin={() => setShowAuthModal(true)}
-                onLogout={logout}
-                onProfileClick={() => handleNavigation('/profile')}
+                onLogin={onLogin || (() => { })}
+                onLogout={onLogout || (() => { })}
+                onProfileClick={onProfileClick}
             />
 
             <Navigation
                 activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                setShowSearch={setShowSearch}
-                goBack={() => navigate(-1)}
-                setCurrentPage={(page) => handleNavigation('/' + page)}
+                setActiveTab={setActiveTab || (() => { })}
+                setShowSearch={setShowSearch || (() => { })}
+                goBack={goBack || (() => { })}
+                setCurrentPage={setCurrentPage || (() => { })}
                 isAuthenticated={isAuthenticated}
-                onShowAuth={() => setShowAuthModal(true)}
+                onShowAuth={onShowAuth || (() => { })}
             />
 
             <Marquee />
 
             <main className="main-content">
-                <Outlet />
+                {children}
             </main>
 
-            <Footer setCurrentPage={(page) => handleNavigation('/' + page)} />
+            <Footer setCurrentPage={setCurrentPage || (() => { })} />
 
-            <SocialButtons />
             <ScrollToTop />
-
-            {showAuthModal && (
-                <AuthModal show={showAuthModal} onClose={() => setShowAuthModal(false)} />
-            )}
         </div>
     );
 }
