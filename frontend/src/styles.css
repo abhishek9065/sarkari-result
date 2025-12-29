@@ -114,6 +114,7 @@ a:hover {
   top: 0;
   z-index: 90;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  min-height: 48px;
 }
 
 .nav-container {
@@ -6490,4 +6491,471 @@ h4 {
 [data-theme="dark"] .section-table-footer {
   background: rgba(255, 255, 255, 0.05) !important;
   border-top-color: var(--border-color) !important;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN - COMPREHENSIVE MOBILE & TABLET STYLES
+   ============================================================ */
+
+/* ============ HAMBURGER MENU ============ */
+.hamburger-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  padding: 12px;
+  cursor: pointer;
+  z-index: 100;
+}
+
+.hamburger-icon {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 18px;
+}
+
+.hamburger-icon span {
+  display: block;
+  width: 100%;
+  height: 3px;
+  background: #fff;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.hamburger-icon.open span:nth-child(1) {
+  transform: translateY(7.5px) rotate(45deg);
+}
+
+.hamburger-icon.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-icon.open span:nth-child(3) {
+  transform: translateY(-7.5px) rotate(-45deg);
+}
+
+.mobile-menu-overlay {
+  display: none;
+}
+
+/* ============ TABLET STYLES (768px - 1024px) ============ */
+@media (max-width: 1024px) {
+  .sections-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 15px;
+  }
+
+  .featured-box {
+    padding: 12px 15px;
+  }
+
+  .site-header {
+    padding: 15px 10px;
+  }
+
+  .site-title {
+    font-size: 1.8rem;
+  }
+}
+
+/* ============ SMALL TABLET STYLES (max-width: 768px) ============ */
+@media (max-width: 768px) {
+
+  /* Show hamburger menu */
+  .hamburger-btn {
+    display: block;
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .main-nav {
+    position: relative;
+    padding: 0 10px;
+  }
+
+  .nav-container {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #1a1a2e;
+    flex-direction: column;
+    align-items: stretch;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 99;
+  }
+
+  .nav-container.mobile-open {
+    display: flex;
+  }
+
+  .nav-link {
+    padding: 15px 20px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .nav-link:after {
+    display: none;
+  }
+
+  .nav-search {
+    padding: 15px 20px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .admin-link {
+    background: rgba(139, 0, 0, 0.2);
+  }
+
+  .mobile-menu-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 98;
+  }
+
+  /* Featured boxes - 2 columns on tablet */
+  .featured-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .featured-box {
+    padding: 10px 12px;
+  }
+
+  .featured-title {
+    font-size: 0.9rem;
+  }
+
+  .featured-btn {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+  }
+
+  /* Section tables - single column on tablet */
+  .sections-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px;
+    padding: 0 10px;
+  }
+
+  /* Header compact */
+  .site-header {
+    padding: 12px 10px;
+  }
+
+  .site-title {
+    font-size: 1.5rem;
+  }
+
+  .site-subtitle {
+    font-size: 0.8rem;
+  }
+
+  /* Social buttons smaller */
+  .social-buttons {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .social-big {
+    padding: 8px 15px;
+    font-size: 0.85rem;
+  }
+
+  /* Detail page tables responsive */
+  .detail-table,
+  .links-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .detail-table th,
+  .detail-table td,
+  .links-table th,
+  .links-table td {
+    min-width: 100px;
+    padding: 10px 8px;
+    font-size: 0.85rem;
+  }
+
+  /* Center View More buttons */
+  .section-table-footer {
+    text-align: center;
+  }
+
+  .view-more-btn {
+    width: 80%;
+    max-width: 300px;
+  }
+}
+
+/* ============ MOBILE STYLES (max-width: 480px) ============ */
+@media (max-width: 480px) {
+
+  /* Even more compact header */
+  .site-header {
+    padding: 10px 8px;
+  }
+
+  .site-title {
+    font-size: 1.3rem;
+    margin-bottom: 2px;
+  }
+
+  .site-subtitle {
+    font-size: 0.7rem;
+    margin-bottom: 5px;
+  }
+
+  .header-controls {
+    gap: 5px;
+  }
+
+  .theme-toggle {
+    padding: 6px;
+    font-size: 1rem;
+  }
+
+  .auth-btn {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+
+  /* Featured boxes - single column on mobile */
+  .featured-container {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .featured-box {
+    padding: 12px 15px;
+  }
+
+  .featured-title {
+    font-size: 1rem;
+  }
+
+  .featured-btn {
+    font-size: 0.75rem;
+    padding: 5px 12px;
+  }
+
+  /* Section tables full width */
+  .sections-grid {
+    padding: 0 5px;
+    gap: 10px;
+  }
+
+  .section-table-content {
+    padding: 8px 10px;
+    min-height: 200px;
+    max-height: 300px;
+  }
+
+  .section-table-content li {
+    padding: 10px 5px;
+    font-size: 0.9rem;
+  }
+
+  .section-table-content a {
+    font-size: 0.85rem;
+  }
+
+  /* Social buttons stack */
+  .social-buttons {
+    flex-direction: column;
+    padding: 8px;
+  }
+
+  .social-big {
+    width: 100%;
+    text-align: center;
+    padding: 10px 15px;
+  }
+
+  /* Detail page optimizations */
+  .detail-page {
+    padding: 0 10px;
+    margin: 10px auto;
+  }
+
+  .detail-title {
+    font-size: 1.2rem;
+    padding: 12px;
+  }
+
+  .post-meta {
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px;
+  }
+
+  /* Tables on mobile */
+  .detail-table th,
+  .detail-table td {
+    padding: 8px 6px;
+    font-size: 0.8rem;
+    min-width: 80px;
+  }
+
+  .links-table td {
+    padding: 8px;
+  }
+
+  .links-table .link-btn {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+
+  /* View More buttons full width */
+  .view-more-btn {
+    width: 100%;
+    padding: 12px 20px;
+  }
+
+  /* Footer adjustments */
+  .site-footer {
+    padding: 20px 10px;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .footer-section {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Email subscription */
+  .email-subscription {
+    padding: 15px 10px;
+  }
+
+  .subscription-form {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .subscription-form input {
+    width: 100%;
+  }
+
+  .subscription-form button {
+    width: 100%;
+  }
+
+  /* PWA Install Prompt - Compact mobile version */
+  .notification-prompt {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    max-width: none;
+    padding: 12px 15px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .notification-prompt-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .notification-prompt-buttons {
+    width: 100%;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .notification-prompt-buttons button {
+    flex: 1;
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+
+  /* Marquee smaller */
+  .marquee-wrapper {
+    padding: 8px 0;
+    font-size: 0.85rem;
+  }
+
+  /* FAQ section */
+  .faq-question {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+
+  .faq-answer {
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+}
+
+/* ============ SMALL MOBILE STYLES (max-width: 375px) ============ */
+@media (max-width: 375px) {
+  .site-title {
+    font-size: 1.1rem;
+  }
+
+  .featured-title {
+    font-size: 0.9rem;
+  }
+
+  .section-table-header {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .section-table-content li {
+    font-size: 0.85rem;
+  }
+
+  .detail-title {
+    font-size: 1.1rem;
+  }
+
+  .nav-link {
+    font-size: 0.9rem;
+    padding: 12px 15px;
+  }
+}
+
+/* ============ DARK MODE RESPONSIVE FIXES ============ */
+@media (max-width: 768px) {
+  [data-theme="dark"] .nav-container {
+    background: #0f0f1a;
+    border-top: 1px solid #333;
+  }
+
+  [data-theme="dark"] .nav-link {
+    border-bottom-color: #333;
+  }
+
+  [data-theme="dark"] .hamburger-icon span {
+    background: #f5f5f5;
+  }
+
+  [data-theme="dark"] .mobile-menu-overlay {
+    background: rgba(0, 0, 0, 0.7);
+  }
 }
