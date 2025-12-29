@@ -6178,3 +6178,106 @@ h4 {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
 }
+
+/* ============ DARK MODE FIXES ============ */
+/* Detail tables dark mode */
+[data-theme="dark"] .detail-table {
+  border-color: #444;
+}
+
+[data-theme="dark"] .detail-table td {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: #444;
+}
+
+[data-theme="dark"] .detail-table tr:nth-child(even) td {
+  background: #1e1e2e;
+}
+
+[data-theme="dark"] .detail-table tr:hover td {
+  background: rgba(139, 0, 0, 0.1);
+}
+
+/* Links table dark mode */
+[data-theme="dark"] .links-table {
+  border-color: #444;
+}
+
+[data-theme="dark"] .links-table td {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: #444;
+}
+
+[data-theme="dark"] .links-table tr:nth-child(even) td {
+  background: #1e1e2e;
+}
+
+/* Age limits and other info sections */
+[data-theme="dark"] .age-info,
+[data-theme="dark"] .info-section,
+[data-theme="dark"] .important-dates,
+[data-theme="dark"] .fee-section,
+[data-theme="dark"] .qualification-section,
+[data-theme="dark"] .application-fee {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary);
+}
+
+/* Fix any white backgrounds */
+[data-theme="dark"] table,
+[data-theme="dark"] tbody,
+[data-theme="dark"] tr {
+  background: transparent;
+}
+
+[data-theme="dark"] td {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* Total posts section */
+[data-theme="dark"] .total-posts,
+[data-theme="dark"] .vacancy-info,
+[data-theme="dark"] .post-info {
+  background: var(--bg-secondary) !important;
+}
+
+/* Cards and boxes */
+[data-theme="dark"] .card,
+[data-theme="dark"] .box,
+[data-theme="dark"] .panel {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* White text fix */
+[data-theme="dark"] .detail-section,
+[data-theme="dark"] .job-detail,
+[data-theme="dark"] .result-detail {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* Ensure all table cells are dark */
+[data-theme="dark"] table td,
+[data-theme="dark"] table th {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: #444;
+}
+
+[data-theme="dark"] table th {
+  background: linear-gradient(180deg, #2a2a4a 0%, #1a1a2e 100%) !important;
+}
+
+/* Blue header tables */
+[data-theme="dark"] .detail-table th {
+  background: linear-gradient(180deg, #2a4a8a 0%, #1a3060 100%) !important;
+}
+
+/* Red header tables */
+[data-theme="dark"] .links-table th {
+  background: linear-gradient(180deg, #8B0000 0%, #5a0000 100%) !important;
+}
