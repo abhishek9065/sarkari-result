@@ -507,6 +507,49 @@ a:hover {
   border-top: 1px solid #ddd;
 }
 
+/* ============ SECTION TABLE DARK MODE ============ */
+[data-theme="dark"] .section-table {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .section-table-header {
+  background: linear-gradient(180deg, #2a4a8a 0%, #1a3060 100%);
+}
+
+[data-theme="dark"] .section-table-content {
+  background: var(--bg-card) !important;
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .section-table-content ul {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .section-table-content li {
+  border-bottom-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .section-table-content li:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .section-table-content a {
+  color: var(--link-color);
+}
+
+[data-theme="dark"] .section-table-content a:hover {
+  color: var(--link-hover);
+}
+
+[data-theme="dark"] .section-table-footer {
+  background: rgba(255, 255, 255, 0.08);
+  border-top-color: var(--border-color);
+}
+
+
 .view-more-btn {
   background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
   color: #fff;
