@@ -1,108 +1,145 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Header, Navigation, Footer, Marquee, FeaturedGrid, SectionTable, SkeletonLoader, SocialButtons } from '../components';
-import { useAuth } from '../context/AuthContext';
-import { API_BASE, SECTIONS, type TabType, type PageType } from '../utils';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { SectionTable, SkeletonLoader } from '../components';
+import { SearchFilters, TagsCloud, SubscribeBox, NotificationPrompt } from '../components';
+import { API_BASE } from '../utils';
 import type { Announcement, ContentType } from '../types';
 
 export function HomePage() {
     const [data, setData] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<TabType>(undefined);
-    const [showSearch, setShowSearch] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { user, logout, isAuthenticated } = useAuth();
-    const [showAuthModal, setShowAuthModal] = useState(false);
 
-    // Fetch announcements
+    // Cache for home data
+    const homeDataCache = useRef<Announcement[] | null>(null);
+
+    // Derived state from URL params
+    const searchQuery = searchParams.get('search') || '';
+    const searchType = (searchParams.get('type') as ContentType) || '';
+    const searchCategory = searchParams.get('category') || '';
+    const searchOrganization = searchParams.get('organization') || '';
+    const searchQualification = searchParams.get('qualification') || '';
+    const sortOrder = (searchParams.get('sort') as 'newest' | 'oldest' | 'deadline') || 'newest';
+
+    const appliedFiltersCount = [searchType, searchCategory, searchOrganization, searchQualification].filter(Boolean).length;
+
+    // Fetch data
     useEffect(() => {
-        fetch(`${API_BASE}/api/announcements`)
-            .then(res => res.json())
-            .then(setData)
-            .catch(console.error)
+        const isHomeRequest = !searchQuery && !searchType && !searchCategory && !searchOrganization && !searchQualification && sortOrder === 'newest';
+
+        if (isHomeRequest && homeDataCache.current) {
+            setData(homeDataCache.current);
+            setLoading(false);
+            return;
+        }
+
+        const controller = new AbortController();
+        const params = new URLSearchParams();
+        if (searchQuery) params.set('search', searchQuery);
+        if (searchType) params.set('type', searchType);
+        if (searchCategory) params.set('category', searchCategory);
+        if (searchOrganization) params.set('organization', searchOrganization);
+        if (searchQualification) params.set('qualification', searchQualification);
+        params.set('sort', sortOrder);
+
+        setLoading(true);
+        setError(null);
+
+        fetch(`${API_BASE}/api/announcements?${params.toString()}`, { signal: controller.signal })
+            .then(async (res) => {
+                if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+                const body = (await res.json()) as { data: Announcement[] };
+                const fetchedData = body.data ?? [];
+                setData(fetchedData);
+
+                if (isHomeRequest) {
+                    homeDataCache.current = fetchedData;
+                }
+            })
+            .catch((err) => {
+                if (err.name === 'AbortError') return;
+                setError(err.message);
+            })
             .finally(() => setLoading(false));
-    }, []);
 
-    // Filter by type
-    const getByType = (type: ContentType) => data.filter(item => item.type === type);
+        return () => controller.abort();
+    }, [searchQuery, searchType, searchCategory, searchOrganization, searchQualification, sortOrder]);
 
-    // Handle item click - navigate to SEO-friendly URL
+    const handleFilterChange = (filters: any) => {
+        setSearchParams(prev => {
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value && value !== 'newest') prev.set(key, String(value));
+                else prev.delete(key);
+            });
+            // Preserve search query if it exists separately
+            if (searchQuery) prev.set('search', searchQuery);
+            return prev;
+        });
+    };
+
+    const clearFilters = () => {
+        setSearchParams({});
+    };
+
     const handleItemClick = (item: Announcement) => {
         navigate(`/${item.type}/${item.slug}`);
     };
 
-    // Navigate to category
-    const handleCategoryClick = (type: ContentType) => {
-        const paths: Record<ContentType, string> = {
-            'job': '/jobs',
-            'result': '/results',
-            'admit-card': '/admit-card',
-            'answer-key': '/answer-key',
-            'admission': '/admission',
-            'syllabus': '/syllabus'
-        };
-        navigate(paths[type]);
-    };
-
-    // Filter data by active tab
-    const filteredData = activeTab && activeTab !== 'bookmarks' && activeTab !== 'profile'
-        ? data.filter(item => item.type === activeTab)
-        : data;
-
-    // Search filter
-    const searchedData = searchQuery
-        ? filteredData.filter(item =>
-            item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.organization.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        : filteredData;
+    // Filter data for sections (only for main home view without search)
+    const isFiltered = searchQuery || searchType || searchCategory || searchOrganization || searchQualification;
+    const latestJobs = data.filter(item => item.type === 'job').slice(0, 6);
+    const outcomes = data.filter(item => ['result', 'answer-key', 'admit-card'].includes(item.type)).slice(0, 6);
 
     return (
-        <div className="app">
-            <Header
-                setCurrentPage={(page) => page === 'admin' ? navigate('/admin') : navigate('/' + page)}
-                user={user}
-                isAuthenticated={isAuthenticated}
-                onLogin={() => setShowAuthModal(true)}
-                onLogout={logout}
-                onProfileClick={() => { }}
-            />
-            <Navigation
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                setShowSearch={setShowSearch}
-                goBack={() => { }}
-                setCurrentPage={(page) => navigate('/' + page)}
-                isAuthenticated={isAuthenticated}
-                onShowAuth={() => setShowAuthModal(true)}
-            />
-            <Marquee />
+        <main className="main-content">
+            <NotificationPrompt />
 
-            <main className="main-content">
-                <FeaturedGrid onItemClick={handleCategoryClick} />
-                <SocialButtons />
+            <div className="content-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: '20px' }}>
+                <div className="main-column">
+                    <SearchFilters
+                        onFilterChange={handleFilterChange}
+                    />
 
-                {loading ? (
-                    <SkeletonLoader />
-                ) : (
-                    <div className="home-sections">
-                        <div className="sections-grid">
-                            {SECTIONS.map(section => (
-                                <SectionTable
-                                    key={section.type}
-                                    title={section.title}
-                                    items={getByType(section.type)}
-                                    onItemClick={handleItemClick}
-                                    onViewMore={() => handleCategoryClick(section.type)}
-                                />
-                            ))}
-                        </div>
+                    {loading ? (
+                        <SkeletonLoader />
+                    ) : error ? (
+                        <div className="error-message">⚠️ {error}</div>
+                    ) : isFiltered ? (
+                        <SectionTable
+                            title={`Search Results (${data.length})`}
+                            items={data}
+                            onItemClick={handleItemClick}
+                            fullWidth
+                        />
+                    ) : (
+                        <>
+                            <SectionTable
+                                title="🔥 Latest Jobs"
+                                items={latestJobs}
+                                onItemClick={handleItemClick}
+                                onViewMore={() => navigate('/jobs')}
+                            />
+                            <SectionTable
+                                title="📋 Results & Cards"
+                                items={outcomes}
+                                onItemClick={handleItemClick}
+                                onViewMore={() => navigate('/results')}
+                            />
+                        </>
+                    )}
+                </div>
+
+                <aside className="sidebar">
+                    <SubscribeBox />
+                    <TagsCloud />
+
+                    <div className="ad-placeholder sticky">
+                        <div className="ad-label">Advertisement</div>
                     </div>
-                )}
-            </main>
-
-            <Footer setCurrentPage={(page) => navigate('/' + page)} />
-        </div>
+                </aside>
+            </div>
+        </main>
     );
 }

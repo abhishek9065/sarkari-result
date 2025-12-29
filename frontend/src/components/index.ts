@@ -1,18 +1,21 @@
-// Common components
-export { Header } from './common/Header';
-export { Navigation } from './common/Navigation';
-export { Footer } from './common/Footer';
-export { Marquee } from './common/Marquee';
-export { SocialButtons } from './common/SocialButtons';
+// Layout Components
+export * from './common/Header';
+export * from './common/Navigation';
+export * from './common/Footer';
+export * from './common/Marquee';
+export * from './sections/SectionTable';
+export * from './common/SocialButtons';
 
 // Cards
 export { FeaturedGrid } from './cards/FeaturedGrid';
 
 // Sections
-export { SectionTable } from './sections/SectionTable';
 export { ExamCalendar } from './sections/ExamCalendar';
 export { JobAlerts } from './sections/JobAlerts';
 export { CompareJobs } from './sections/CompareJobs';
+
+// Admin
+export { AnalyticsDashboard } from './admin/AnalyticsDashboard';
 
 // UI
 export { SkeletonLoader } from './ui/SkeletonLoader';
@@ -20,6 +23,8 @@ export { ShareButtons } from './ui/ShareButtons';
 export { PWAInstallPrompt } from './ui/PWAInstallPrompt';
 export { SearchFilters } from './ui/SearchFilters';
 export type { FilterState } from './ui/SearchFilters';
+export { NotificationPrompt } from './ui/NotificationPrompt';
+export { UserProfile } from './ui/UserProfile';
 export {
     ToastContainer,
     ScrollToTop,
@@ -45,3 +50,6 @@ export {
     SearchBox
 } from './ui/UXComponents';
 
+// Common Components
+export * from './common/TagsCloud';
+export * from './common/SubscribeBox';
