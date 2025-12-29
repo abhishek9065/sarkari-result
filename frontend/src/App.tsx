@@ -839,51 +839,10 @@ function App() {
             {/* Social Share Buttons */}
             <div className="social-share">
               <h4>📤 Share this post:</h4>
-              <div className="share-buttons">
-                <a
-                  href={`https://wa.me/?text=${encodeURIComponent(selectedItem.title + ' - ' + window.location.href)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="share-btn whatsapp"
-                  title="Share on WhatsApp"
-                >
-                  📱 WhatsApp
-                </a>
-                <a
-                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(selectedItem.title)}&url=${encodeURIComponent(window.location.href)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="share-btn twitter"
-                  title="Share on Twitter"
-                >
-                  🐦 Twitter
-                </a>
-                <a
-                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="share-btn facebook"
-                  title="Share on Facebook"
-                >
-                  📘 Facebook
-                </a>
-                <a
-                  href={`https://telegram.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(selectedItem.title)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="share-btn telegram"
-                  title="Share on Telegram"
-                >
-                  ✈️ Telegram
-                </a>
-                <button
-                  className="share-btn copy"
-                  onClick={() => { navigator.clipboard.writeText(window.location.href); alert('Link copied!'); }}
-                  title="Copy Link"
-                >
-                  📋 Copy Link
-                </button>
-              </div>
+              <ShareButtons
+                title={selectedItem.title}
+                description={selectedItem.organization}
+              />
             </div>
           </div>
 
