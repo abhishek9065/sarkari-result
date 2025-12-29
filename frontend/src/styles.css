@@ -2147,6 +2147,42 @@ a:hover {
   transform: scale(1.1);
 }
 
+/* Auth buttons in header */
+.auth-btn {
+  height: 42px;
+  padding: 0 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 21px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+}
+
+.auth-btn.login-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+
+.auth-btn.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.auth-btn.logout-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.auth-btn.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 /* ============ DARK MODE COMPONENT STYLES ============ */
 [data-theme="dark"] .site-header {
   background: var(--header-bg);
