@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { getCache, setCache } from '../utils/cache';
+import { getCache, setCache } from '../utils/cache.js';
 
 interface CacheOptions {
     ttl?: number; // Time to live in seconds
