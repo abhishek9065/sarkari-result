@@ -438,6 +438,8 @@ function App() {
     setTimeout(() => setSearchQuery(searchQuery.trim()), 100);
   };
 
+
+
   // Render admin panel
   if (currentPage === 'admin') {
     return (
@@ -1254,12 +1256,15 @@ function Navigation({ activeTab, setActiveTab, setShowSearch, goBack, setCurrent
               key={item.label}
               className={`nav-link ${activeTab === item.type && (item.type || !activeTab) ? 'active' : (!activeTab && !item.type ? 'active' : '')}`}
               onClick={() => {
+
                 if (item.type === 'bookmarks' && !isAuthenticated) {
                   onShowAuth();
                   return;
                 }
+                // handleTabChange already sets currentPage to 'home'
+                // DO NOT call setCurrentPage here - it goes through handlePageChange 
+                // which resets activeTab to undefined!
                 setActiveTab(item.type);
-                setCurrentPage('home');
                 if (!item.type) goBack();
               }}
             >

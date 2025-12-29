@@ -25,8 +25,10 @@ export function Navigation({ activeTab, setActiveTab, setShowSearch, goBack, set
                                     onShowAuth();
                                     return;
                                 }
+                                // handleTabChange already sets currentPage to 'home'
+                                // DO NOT call setCurrentPage here - it goes through handlePageChange
+                                // which resets activeTab to undefined!
                                 setActiveTab(item.type);
-                                setCurrentPage('home');
                                 if (!item.type) goBack();
                             }}
                         >
