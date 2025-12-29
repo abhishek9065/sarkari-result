@@ -5923,6 +5923,7 @@ h4 {
     0 20px 40px rgba(255, 107, 107, 0.1),
     0 0 30px rgba(255, 107, 107, 0.05);
 }
+
 /* ============ SHARE BUTTONS ============ */
 .share-buttons {
   display: flex;
@@ -6010,8 +6011,15 @@ h4 {
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .filter-row {
@@ -6090,8 +6098,15 @@ h4 {
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(100%); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .pwa-prompt-content {
@@ -6280,4 +6295,155 @@ h4 {
 /* Red header tables */
 [data-theme="dark"] .links-table th {
   background: linear-gradient(180deg, #8B0000 0%, #5a0000 100%) !important;
+}
+
+/* ============ DARK MODE HOVER FIXES ============ */
+/* Fix: Ensure all hover states in dark mode use dark backgrounds with light text */
+
+/* Detail table rows */
+[data-theme="dark"] .detail-table tr:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .detail-table tr:hover td {
+  color: var(--text-primary) !important;
+}
+
+/* Links table rows */
+[data-theme="dark"] .links-table tr:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .links-table tr:hover td {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .links-table tr:hover a {
+  color: var(--link-color) !important;
+}
+
+/* Admin table rows */
+[data-theme="dark"] .admin-table tr:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .admin-table tr:hover td {
+  color: var(--text-primary) !important;
+}
+
+/* Section table content list items */
+[data-theme="dark"] .section-table-content li:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .section-table-content li:hover a {
+  color: var(--link-color) !important;
+}
+
+/* Content table rows */
+[data-theme="dark"] .content-table tr:hover td {
+  color: var(--text-primary) !important;
+}
+
+/* Generic table rows for dark mode */
+[data-theme="dark"] table tr:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] table tr:hover td {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] table tr:hover td a {
+  color: var(--link-color) !important;
+}
+
+/* Fix hover for featured boxes */
+[data-theme="dark"] .featured-box:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Fix hover for buttons */
+[data-theme="dark"] .view-more-btn:hover,
+[data-theme="dark"] .apply-btn:hover,
+[data-theme="dark"] .back-btn:hover {
+  color: #fff !important;
+}
+
+[data-theme="dark"] .back-btn:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Fix hover for nav links */
+[data-theme="dark"] .nav-link:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+/* Fix hover for stat cards */
+[data-theme="dark"] .stat-card:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Fix hover for FAQ items */
+[data-theme="dark"] .faq-question:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Fix hover for related jobs */
+[data-theme="dark"] .related-jobs a:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Fix hover for calendar items */
+[data-theme="dark"] .exam-calendar .upcoming-deadlines li:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Fix hover for filter tags */
+[data-theme="dark"] .filter-tag:hover,
+[data-theme="dark"] .filter-tag button:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Fix hover for category checkboxes */
+[data-theme="dark"] .category-checkbox:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Fix hover for social buttons */
+[data-theme="dark"] .share-btn:hover,
+[data-theme="dark"] .social-big:hover {
+  opacity: 0.9;
+}
+
+/* Fix marquee item hover */
+[data-theme="dark"] .marquee-item a:hover {
+  color: var(--link-hover) !important;
+}
+
+/* Section table alternate rows dark mode */
+[data-theme="dark"] .detail-table tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .links-table tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Ensure section table content has proper dark background */
+[data-theme="dark"] .section-table-content {
+  background: var(--bg-card) !important;
+}
+
+[data-theme="dark"] .section-table-footer {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-top-color: var(--border-color) !important;
 }
