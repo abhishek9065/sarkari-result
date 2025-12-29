@@ -1,0 +1,131 @@
+src/middleware/auth.ts:import { Request, Response, NextFunction } from 'express';
+src/middleware/auth.ts:import jwt from 'jsonwebtoken';
+src/middleware/auth.ts:import { config } from '../config.js';
+src/middleware/auth.ts:import { JwtPayload } from '../types.js';
+src/middleware/auth.ts:import { isTokenBlacklisted, hasSuspiciousContent, logSecurityEvent } from '../utils/security.js';
+src/middleware/rateLimit.ts:import { Request, Response, NextFunction } from 'express';
+src/middleware/security.ts:import { Request, Response, NextFunction } from 'express';
+src/middleware/security.ts:import helmet from 'helmet';
+src/middleware/cache.ts:import { Request, Response, NextFunction } from 'express';
+src/middleware/cache.ts:import { getCache, setCache } from '../utils/cache.js';
+src/db/migrate.ts:import fs from 'fs';
+src/db/migrate.ts:import path from 'path';
+src/db/migrate.ts:import { fileURLToPath } from 'url';
+src/db/migrate.ts:import { pool } from '../db.js';
+src/db/seed.sql:('UPSC Civil Services 2024 - IAS/IPS/IFS Recruitment', 'upsc-civil-services-2024', 'job', 'Central Government', 'Union Public Service Commission', 'Applications invited for Civil Services Examination 2024 for various Group A services including IAS, IPS, IFS.', 'https://upsc.gov.in', 'All India', '2024-03-15', 'Graduate from recognized university', '21-32 years (relaxation as per rules)', '₹100 (Exempted for SC/ST/PH/Female)', 1056, true),
+src/db/seed.sql:('SSC CGL 2024 - Combined Graduate Level Examination', 'ssc-cgl-2024', 'job', 'Central Government', 'Staff Selection Commission', 'SSC CGL 2024 notification for recruitment to Group B and C posts in various ministries.', 'https://ssc.nic.in', 'All India', '2024-02-28', 'Bachelor Degree from recognized university', '18-27 years (relaxation as per rules)', '₹100 (Exempted for Female/SC/ST/PH)', 8000, true),
+src/db/seed.sql:('NEET UG 2024 Admit Card Released', 'neet-ug-2024-admit-card', 'admit-card', 'Medical', 'National Testing Agency', 'NEET UG 2024 admit card has been released. Download from official website.', 'https://neet.nta.nic.in', 'All India', '2024-05-05', NULL, NULL, NULL, NULL, true),
+src/services/telegram.ts:import { config } from '../config.js';
+src/services/telegram.ts:import { Announcement } from '../types.js';
+src/services/email.ts:import sgMail from '@sendgrid/mail';
+src/services/email.ts:import { config } from '../config.js';
+src/services/email.ts:import { Announcement } from '../types.js';
+src/services/email.ts:      from: config.emailFrom || 'noreply@sarkariresult.com',
+src/services/email.ts:        from: config.emailFrom || 'noreply@sarkariresult.com',
+src/services/email.ts:                <p><a href="${unsubscribeUrl}">Unsubscribe</a> from these notifications</p>
+src/services/push.ts:import webpush from 'web-push';
+src/services/push.ts:import { pool } from '../db.js';
+src/services/push.ts:import { config } from '../config.js';
+src/services/push.ts:import { Announcement } from '../types.js';
+src/config.ts:import dotenv from 'dotenv';
+src/routes/rss.ts:import express from 'express';
+src/routes/rss.ts:import { pool } from '../db.js';
+src/routes/rss.ts:import { config } from '../config.js';
+src/routes/rss.ts:    <description>Latest Government Jobs, Results, Admit Cards, Answer Keys and more from SarkariResult.com</description>
+src/routes/auth.ts:import express from 'express';
+src/routes/auth.ts:import jwt from 'jsonwebtoken';
+src/routes/auth.ts:import bcrypt from 'bcryptjs';
+src/routes/auth.ts:import { z } from 'zod';
+src/routes/auth.ts:import { config } from '../config.js';
+src/routes/auth.ts:import { UserModel } from '../models/users.js';
+src/routes/auth.ts:} from '../middleware/security.js';
+src/routes/auth.ts:import { blacklistToken, logSecurityEvent } from '../utils/security.js';
+src/routes/bookmarks.ts:import express from 'express';
+src/routes/bookmarks.ts:import { z } from 'zod';
+src/routes/bookmarks.ts:import { authenticateToken } from '../middleware/auth.js';
+src/routes/bookmarks.ts:import { BookmarkModel } from '../models/bookmarks.js';
+src/routes/trending.ts:import express from 'express';
+src/routes/trending.ts:import { z } from 'zod';
+src/routes/trending.ts:import { AnnouncementModel } from '../models/announcements.js';
+src/routes/trending.ts:import { cacheMiddleware, cacheKeys } from '../middleware/cache.js';
+src/routes/bulk.ts:import express from 'express';
+src/routes/bulk.ts:import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+src/routes/bulk.ts:import { AnnouncementModel } from '../models/announcements.js';
+src/routes/bulk.ts:import { CreateAnnouncementDto, ContentType } from '../types.js';
+src/routes/bulk.ts: * Bulk import announcements from CSV-like JSON array
+src/routes/search.ts:import express from 'express';
+src/routes/search.ts:import { z } from 'zod';
+src/routes/search.ts:import { AnnouncementModel } from '../models/announcements.js';
+src/routes/search.ts:import { cacheMiddleware, cacheKeys } from '../middleware/cache.js';
+src/routes/search.ts:            suggestions: Array.from(suggestions).slice(0, 10)
+src/routes/sitemap.ts:import express from 'express';
+src/routes/sitemap.ts:import { pool } from '../db.js';
+src/routes/sitemap.ts:import { config } from '../config.js';
+src/routes/upload.ts:import express from 'express';
+src/routes/upload.ts:import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+src/routes/upload.ts:import { pool } from '../db.js';
+src/routes/upload.ts:import { config } from '../config.js';
+src/routes/upload.ts:        const sizeInBytes = Buffer.from(imageData.split(',')[1] || '', 'base64').length;
+src/routes/push.ts:import express from 'express';
+src/routes/push.ts:import { z } from 'zod';
+src/routes/push.ts:import { savePushSubscription, removePushSubscription, getVapidPublicKey } from '../services/push.js';
+src/routes/push.ts: * Unsubscribe from push notifications
+src/routes/push.ts:        return res.json({ message: 'Unsubscribed from push notifications' });
+src/routes/push.ts:        console.error('Error unsubscribing from push:', error);
+src/routes/subscriptions.ts:import express from 'express';
+src/routes/subscriptions.ts:import { z } from 'zod';
+src/routes/subscriptions.ts:import { SubscriptionModel } from '../models/subscriptions.js';
+src/routes/subscriptions.ts:import { sendVerificationEmail, isEmailConfigured } from '../services/email.js';
+src/routes/subscriptions.ts: * Unsubscribe from email notifications
+src/routes/subscriptions.ts:            message: 'You have been unsubscribed from email notifications.',
+src/routes/analytics.ts:import express from 'express';
+src/routes/analytics.ts:import { pool } from '../db.js';
+src/routes/analytics.ts:import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+src/routes/announcements.ts:import express from 'express';
+src/routes/announcements.ts:import { z } from 'zod';
+src/routes/announcements.ts:import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+src/routes/announcements.ts:import { AnnouncementModel } from '../models/announcements.js';
+src/routes/announcements.ts:import { SubscriptionModel } from '../models/subscriptions.js';
+src/routes/announcements.ts:import { ContentType, CreateAnnouncementDto } from '../types.js';
+src/routes/announcements.ts:import { sendAnnouncementNotification } from '../services/telegram.js';
+src/routes/announcements.ts:import { sendAnnouncementEmail, isEmailConfigured } from '../services/email.js';
+src/routes/announcements.ts:import { sendPushNotification } from '../services/push.js';
+src/routes/calendar.ts:import express from 'express';
+src/routes/calendar.ts:import { z } from 'zod';
+src/routes/calendar.ts:import { AnnouncementModel } from '../models/announcements.js';
+src/routes/calendar.ts:import { cacheMiddleware, cacheKeys } from '../middleware/cache.js';
+src/models/users.ts:import { pool } from '../db.js';
+src/models/users.ts:import { User } from '../types.js';
+src/models/bookmarks.ts:import { pool } from '../db.js';
+src/models/bookmarks.ts:import { Announcement } from '../types.js';
+src/models/mockData.ts:import { Announcement, ContentType } from '../types.js';
+src/models/subscriptions.ts:import crypto from 'crypto';
+src/models/subscriptions.ts:import { pool } from '../db.js';
+src/models/announcements.ts:import { pool } from '../db.js';
+src/models/announcements.ts:import { Announcement, ContentType, CreateAnnouncementDto, Tag, ImportantDate } from '../types.js';
+src/models/announcements.ts:import { filterMockAnnouncements, findMockBySlug, mockAnnouncements } from './mockData.js';
+src/db.ts:import { Pool } from 'pg';
+src/db.ts:import { config } from './config.js';
+src/utils/security.ts:import crypto from 'crypto';
+src/utils/security.ts:    /(\b(union|select|insert|update|delete|drop|create|alter|exec|execute)\b.*\b(from|into|where|table)\b)/i,
+src/server.ts:import cors from 'cors';
+src/server.ts:import express from 'express';
+src/server.ts:import { config } from './config.js';
+src/server.ts:import announcementsRouter from './routes/announcements.js';
+src/server.ts:import authRouter from './routes/auth.js';
+src/server.ts:import bookmarksRouter from './routes/bookmarks.js';
+src/server.ts:import subscriptionsRouter from './routes/subscriptions.js';
+src/server.ts:import pushRouter from './routes/push.js';
+src/server.ts:import analyticsRouter from './routes/analytics.js';
+src/server.ts:import rssRouter from './routes/rss.js';
+src/server.ts:import sitemapRouter from './routes/sitemap.js';
+src/server.ts:import bulkRouter from './routes/bulk.js';
+src/server.ts:import uploadRouter from './routes/upload.js';
+src/server.ts:import calendarRouter from './routes/calendar.js';
+src/server.ts:import trendingRouter from './routes/trending.js';
+src/server.ts:import searchRouter from './routes/search.js';
+src/server.ts:import { rateLimit } from './middleware/rateLimit.js';
+src/server.ts:} from './middleware/security.js';
+src/server.ts:      console.log(`[SECURITY] Blocked CORS request from: ${origin}`);
+src/server.ts:app.use(express.json({ limit: '5mb' })); // Reduced from 10mb for security
+src/server.ts:app.use('/api', rateLimit({ windowMs: 60000, maxRequests: 100 })); // Reduced from 200

@@ -80,6 +80,8 @@ a:hover {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
   text-transform: uppercase;
   line-height: 1.2;
+  position: relative;
+  z-index: 1;
 }
 
 .site-subtitle {
@@ -88,6 +90,8 @@ a:hover {
   margin-top: 4px;
   letter-spacing: 1px;
   font-weight: 500;
+  position: relative;
+  z-index: 1;
 }
 
 .header-controls {
@@ -98,7 +102,8 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 15px;
-  z-index: 10;
+  z-index: 1000;
+  pointer-events: auto;
 }
 
 /* ============ NAVIGATION ============ */
@@ -4021,6 +4026,8 @@ html {
   height: 200%;
   background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
   animation: headerShine 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
 }
 
 @keyframes headerShine {
