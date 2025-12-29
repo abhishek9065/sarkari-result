@@ -3,7 +3,7 @@ import './styles.css';
 import type { Announcement, ContentType, User } from './types';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
-import { Header } from './components';
+import { Header, PWAInstallPrompt, ShareButtons } from './components';
 
 const apiBase = import.meta.env.VITE_API_BASE ?? '';
 
@@ -2356,6 +2356,7 @@ function AppWrapper() {
     <ThemeProvider>
       <AuthProvider>
         <App />
+        <PWAInstallPrompt />
       </AuthProvider>
     </ThemeProvider>
   );
