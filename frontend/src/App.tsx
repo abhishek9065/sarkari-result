@@ -144,12 +144,12 @@ const featuredItems = [
 
 // Content sections
 const sections = [
-  { title: 'Latest Jobs', type: 'job' as ContentType },
   { title: 'Latest Result', type: 'result' as ContentType },
   { title: 'Admit Card', type: 'admit-card' as ContentType },
+  { title: 'Latest Jobs', type: 'job' as ContentType },
   { title: 'Answer Key', type: 'answer-key' as ContentType },
-  { title: 'Admission', type: 'admission' as ContentType },
   { title: 'Syllabus', type: 'syllabus' as ContentType },
+  { title: 'Admission', type: 'admission' as ContentType },
 ];
 
 // Notification Prompt Component
