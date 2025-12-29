@@ -2,6 +2,8 @@ import express from 'express';
 import { z } from 'zod';
 
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+import { cacheMiddleware, cacheKeys } from '../middleware/cache.js';
+import { cacheControl } from '../middleware/cacheControl.js';
 import { AnnouncementModel } from '../models/announcements.js';
 import { SubscriptionModel } from '../models/subscriptions.js';
 import { ContentType, CreateAnnouncementDto } from '../types.js';
@@ -24,8 +26,8 @@ const querySchema = z.object({
   offset: z.coerce.number().int().min(0).default(0),
 });
 
-// Get all announcements
-router.get('/', async (req, res) => {
+// Get all announcements - with caching (5 min server, 2 min browser)
+router.get('/', cacheMiddleware({ ttl: 300, keyGenerator: cacheKeys.announcements }), cacheControl(120), async (req, res) => {
   try {
     const parseResult = querySchema.safeParse(req.query);
     if (!parseResult.success) {
@@ -42,8 +44,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get categories
-router.get('/meta/categories', async (_req, res) => {
+// Get categories - long cache (1 hour)
+router.get('/meta/categories', cacheMiddleware({ ttl: 3600 }), cacheControl(1800), async (_req, res) => {
   try {
     const categories = await AnnouncementModel.getCategories();
     return res.json({ data: categories });
@@ -53,8 +55,8 @@ router.get('/meta/categories', async (_req, res) => {
   }
 });
 
-// Get organizations
-router.get('/meta/organizations', async (_req, res) => {
+// Get organizations - long cache (1 hour)
+router.get('/meta/organizations', cacheMiddleware({ ttl: 3600 }), cacheControl(1800), async (_req, res) => {
   try {
     const organizations = await AnnouncementModel.getOrganizations();
     return res.json({ data: organizations });
@@ -64,8 +66,8 @@ router.get('/meta/organizations', async (_req, res) => {
   }
 });
 
-// Get tags
-router.get('/meta/tags', async (_req, res) => {
+// Get tags - medium cache (30 min)
+router.get('/meta/tags', cacheMiddleware({ ttl: 1800 }), cacheControl(600), async (_req, res) => {
   try {
     const tags = await AnnouncementModel.getTags();
     return res.json({ data: tags });
@@ -75,8 +77,8 @@ router.get('/meta/tags', async (_req, res) => {
   }
 });
 
-// Get single announcement by slug
-router.get('/:slug', async (req, res) => {
+// Get single announcement by slug - with caching (10 min server, 5 min browser)
+router.get('/:slug', cacheMiddleware({ ttl: 600, keyGenerator: cacheKeys.announcementBySlug }), cacheControl(300), async (req, res) => {
   try {
     const announcement = await AnnouncementModel.findBySlug(req.params.slug);
 
@@ -84,8 +86,8 @@ router.get('/:slug', async (req, res) => {
       return res.status(404).json({ error: 'Announcement not found' });
     }
 
-    // Increment view count
-    await AnnouncementModel.incrementViewCount(announcement.id);
+    // Increment view count (fire and forget, don't block response)
+    AnnouncementModel.incrementViewCount(announcement.id).catch(console.error);
 
     return res.json({ data: announcement });
   } catch (error) {

@@ -1,9 +1,26 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { SectionTable, SkeletonLoader } from '../components';
 import { SearchFilters, TagsCloud, SubscribeBox, NotificationPrompt } from '../components';
 import { API_BASE } from '../utils';
 import type { Announcement, ContentType } from '../types';
+
+// Cache utilities
+const CACHE_KEY = 'sarkari_home_cache';
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getFromCache(): { data: Announcement[], timestamp: number } | null {
+    try {
+        const cached = sessionStorage.getItem(CACHE_KEY);
+        return cached ? JSON.parse(cached) : null;
+    } catch { return null; }
+}
+
+function saveToCache(data: Announcement[]) {
+    try {
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+    } catch { /* ignore quota errors */ }
+}
 
 export function HomePage() {
     const [data, setData] = useState<Announcement[]>([]);
@@ -11,9 +28,6 @@ export function HomePage() {
     const [error, setError] = useState<string | null>(null);
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
-
-    // Cache for home data
-    const homeDataCache = useRef<Announcement[] | null>(null);
 
     // Derived state from URL params
     const searchQuery = searchParams.get('search') || '';
@@ -25,14 +39,23 @@ export function HomePage() {
 
     const appliedFiltersCount = [searchType, searchCategory, searchOrganization, searchQualification].filter(Boolean).length;
 
-    // Fetch data
+    // Stale-While-Revalidate Pattern
     useEffect(() => {
         const isHomeRequest = !searchQuery && !searchType && !searchCategory && !searchOrganization && !searchQualification && sortOrder === 'newest';
 
-        if (isHomeRequest && homeDataCache.current) {
-            setData(homeDataCache.current);
-            setLoading(false);
-            return;
+        // Check sessionStorage cache for home requests
+        if (isHomeRequest) {
+            const cached = getFromCache();
+            if (cached) {
+                setData(cached.data);
+                setLoading(false);
+
+                // If cache is fresh (< TTL), don't refetch
+                if (Date.now() - cached.timestamp < CACHE_TTL) {
+                    return;
+                }
+                // Otherwise, revalidate in background (stale-while-revalidate)
+            }
         }
 
         const controller = new AbortController();
@@ -44,7 +67,8 @@ export function HomePage() {
         if (searchQualification) params.set('qualification', searchQualification);
         params.set('sort', sortOrder);
 
-        setLoading(true);
+        // Only show loading if no cached data
+        if (data.length === 0) setLoading(true);
         setError(null);
 
         fetch(`${API_BASE}/api/announcements?${params.toString()}`, { signal: controller.signal })
@@ -54,8 +78,9 @@ export function HomePage() {
                 const fetchedData = body.data ?? [];
                 setData(fetchedData);
 
+                // Save to sessionStorage for home requests
                 if (isHomeRequest) {
-                    homeDataCache.current = fetchedData;
+                    saveToCache(fetchedData);
                 }
             })
             .catch((err) => {
