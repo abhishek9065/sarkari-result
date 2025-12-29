@@ -208,4 +208,37 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
+// Export announcements as CSV (admin only)
+router.get('/export/csv', authenticateToken, requireAdmin, async (_req, res) => {
+  try {
+    const announcements = await AnnouncementModel.findAll({ limit: 1000 });
+
+    // CSV headers
+    const headers = ['ID', 'Title', 'Type', 'Category', 'Organization', 'Location', 'Total Posts', 'Deadline', 'External Link'];
+
+    // Convert to CSV rows
+    const rows = announcements.map(a => [
+      a.id,
+      `"${(a.title || '').replace(/"/g, '""')}"`,
+      a.type,
+      `"${(a.category || '').replace(/"/g, '""')}"`,
+      `"${(a.organization || '').replace(/"/g, '""')}"`,
+      `"${(a.location || '').replace(/"/g, '""')}"`,
+      a.totalPosts || '',
+      a.deadline || '',
+      a.externalLink || ''
+    ].join(','));
+
+    const csv = [headers.join(','), ...rows].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="announcements-${new Date().toISOString().split('T')[0]}.csv"`);
+
+    return res.send(csv);
+  } catch (error) {
+    console.error('Error exporting announcements:', error);
+    return res.status(500).json({ error: 'Failed to export announcements' });
+  }
+});
+
 export default router;

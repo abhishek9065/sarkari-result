@@ -16,6 +16,10 @@ export { CompareJobs } from './sections/CompareJobs';
 
 // UI
 export { SkeletonLoader } from './ui/SkeletonLoader';
+export { ShareButtons } from './ui/ShareButtons';
+export { PWAInstallPrompt } from './ui/PWAInstallPrompt';
+export { SearchFilters } from './ui/SearchFilters';
+export type { FilterState } from './ui/SearchFilters';
 export {
     ToastContainer,
     ScrollToTop,
@@ -40,3 +44,4 @@ export {
     QuickActions,
     SearchBox
 } from './ui/UXComponents';
+
