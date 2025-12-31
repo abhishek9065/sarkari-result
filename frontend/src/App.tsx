@@ -4,12 +4,14 @@ import type { Announcement, ContentType, User } from './types';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { Header, PWAInstallPrompt, ShareButtons } from './components';
+import UPPoliceJobDetail from './pages/UPPoliceJobDetail';
 
 const apiBase = import.meta.env.VITE_API_BASE ?? '';
 
 
 // Page types
-type PageType = 'home' | 'admin' | 'about' | 'contact' | 'privacy' | 'disclaimer';
+// Page types
+type PageType = 'home' | 'admin' | 'about' | 'contact' | 'privacy' | 'disclaimer' | 'up-police-2026';
 type TabType = ContentType | 'bookmarks' | 'profile' | undefined;
 
 // Navigation menu items
@@ -67,11 +69,11 @@ function UserProfile({
 
 // Featured exams
 const featuredItems = [
+  { title: 'UP Police 2026', subtitle: '32,679 Posts', color: 'blue', type: 'job' as ContentType, page: 'up-police-2026' as PageType },
   { title: 'SSC GD 2025', subtitle: 'Apply Now', color: 'purple', type: 'job' as ContentType },
-  { title: 'Railway RRB', subtitle: 'Result Out', color: 'blue', type: 'result' as ContentType },
+  { title: 'Railway RRB', subtitle: 'Result Out', color: 'green', type: 'result' as ContentType },
   { title: 'UPSC CSE 2024', subtitle: 'Notification', color: 'red', type: 'job' as ContentType },
   { title: 'Bank PO/Clerk', subtitle: 'Admit Card', color: 'orange', type: 'admit-card' as ContentType },
-  { title: 'State PSC', subtitle: 'Latest Jobs', color: 'green', type: 'job' as ContentType },
 ];
 
 // Content sections
@@ -467,7 +469,7 @@ function App() {
   }
 
   // Render other pages
-  if (currentPage === 'about' || currentPage === 'contact' || currentPage === 'privacy' || currentPage === 'disclaimer') {
+  if (currentPage === 'about' || currentPage === 'contact' || currentPage === 'privacy' || currentPage === 'disclaimer' || currentPage === 'up-police-2026') {
     return (
       <div className="app">
         <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} onProfileClick={() => setActiveTab('profile')} />
@@ -480,7 +482,11 @@ function App() {
           isAuthenticated={isAuthenticated}
           onShowAuth={() => setShowAuthModal(true)}
         />
-        <StaticPage type={currentPage} goBack={goBack} />
+        {currentPage === 'up-police-2026' ? (
+          <UPPoliceJobDetail />
+        ) : (
+          <StaticPage type={currentPage} goBack={goBack} />
+        )}
         <Footer setCurrentPage={setCurrentPage} />
       </div>
     );
@@ -1045,8 +1051,22 @@ function App() {
       <section className="featured-section">
         <div className="featured-grid">
           {featuredItems.map((item, idx) => (
-            <div key={idx} className={`featured-box ${item.color}`} onClick={() => handleTabChange(item.type)}>
-              <div className="featured-title">{item.title}</div>
+            <div
+              key={idx}
+              className={`featured-box ${item.color}`}
+              onClick={() => {
+                if ('page' in item && item.page) {
+                  setCurrentPage(item.page as PageType);
+                } else {
+                  handleTabChange(item.type);
+                }
+              }}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="featured-title">
+                {item.title}
+                {item.title.includes('UP Police') && <span className="new-badge">New</span>}
+              </div>
               <div className="featured-subtitle">{item.subtitle}</div>
             </div>
           ))}
