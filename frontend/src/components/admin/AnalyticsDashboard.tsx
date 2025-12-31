@@ -19,6 +19,38 @@ interface PopularAnnouncement {
     viewCount: number;
 }
 
+// CSS-based Donut Chart using conic-gradient
+const TYPE_COLORS: Record<string, string> = {
+    job: '#2563EB',
+    result: '#10B981',
+    'admit-card': '#8B5CF6',
+    'answer-key': '#F59E0B',
+    syllabus: '#EC4899',
+    admission: '#06B6D4',
+};
+
+function DonutChart({ data, total }: { data: { type: string; count: number }[]; total: number }) {
+    if (total === 0) return null;
+
+    // Build conic-gradient segments
+    let currentAngle = 0;
+    const segments = data.map((item) => {
+        const percentage = (item.count / total) * 100;
+        const segment = `${TYPE_COLORS[item.type] || '#6B7280'} ${currentAngle}deg ${currentAngle + percentage * 3.6}deg`;
+        currentAngle += percentage * 3.6;
+        return segment;
+    });
+
+    return (
+        <div
+            className="donut-ring"
+            style={{
+                background: `conic-gradient(${segments.join(', ')})`,
+            }}
+        />
+    );
+}
+
 export function AnalyticsDashboard({ adminToken }: { adminToken: string | null }) {
     const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
     const [popular, setPopular] = useState<PopularAnnouncement[]>([]);
@@ -105,22 +137,33 @@ export function AnalyticsDashboard({ adminToken }: { adminToken: string | null }
                 </div>
             </div>
 
-            {/* Type Breakdown */}
+            {/* Type Breakdown with Donut Chart */}
             <div className="analytics-section">
                 <h3>📊 Posts by Type</h3>
-                <div className="type-breakdown">
-                    {analytics.typeBreakdown.map((item) => (
-                        <div key={item.type} className="breakdown-item">
-                            <span className={`type-badge ${item.type}`}>{item.type}</span>
-                            <div className="breakdown-bar">
-                                <div
-                                    className="breakdown-fill"
-                                    style={{ width: `${(item.count / analytics.totalAnnouncements) * 100}%` }}
-                                />
-                            </div>
-                            <span className="breakdown-count">{item.count}</span>
+                <div className="chart-container">
+                    {/* CSS Donut Chart */}
+                    <div className="donut-chart">
+                        <DonutChart data={analytics.typeBreakdown} total={analytics.totalAnnouncements} />
+                        <div className="donut-center">
+                            <span className="donut-value">{analytics.totalAnnouncements}</span>
+                            <span className="donut-label">Total</span>
                         </div>
-                    ))}
+                    </div>
+                    {/* Breakdown Bars */}
+                    <div className="type-breakdown">
+                        {analytics.typeBreakdown.map((item) => (
+                            <div key={item.type} className="breakdown-item">
+                                <span className={`type-badge ${item.type}`}>{item.type}</span>
+                                <div className="breakdown-bar">
+                                    <div
+                                        className="breakdown-fill"
+                                        style={{ width: `${(item.count / analytics.totalAnnouncements) * 100}%` }}
+                                    />
+                                </div>
+                                <span className="breakdown-count">{item.count}</span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
 
