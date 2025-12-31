@@ -28,6 +28,9 @@ export { NotificationPrompt } from './ui/NotificationPrompt';
 export { UserProfile } from './ui/UserProfile';
 export { ExportButtons } from './ui/ExportButtons';
 export { LazyImage } from './ui/LazyImage';
+export { DeadlineCountdown } from './ui/DeadlineCountdown';
+export { ImportantDatesTable } from './ui/ImportantDatesTable';
+export { QuickActionsBar } from './ui/QuickActionsBar';
 export {
     ToastContainer,
     ScrollToTop,

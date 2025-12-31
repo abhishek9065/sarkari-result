@@ -7117,3 +7117,285 @@ h4 {
     background: rgba(0, 0, 0, 0.7);
   }
 }
+/* ============ SARKARI RESULT UX COMPONENTS ============ */
+
+/* Deadline Countdown Timer */
+.deadline-countdown {
+  background: linear-gradient(135deg, #fff 0%, #f8f8f8 100%);
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+  margin: 15px 0;
+}
+
+.deadline-countdown.compact {
+  display: inline-flex;
+  padding: 6px 12px;
+}
+
+.deadline-countdown.critical {
+  border-color: #DC2626;
+  background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+}
+
+.deadline-countdown.urgent {
+  border-color: #F59E0B;
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+}
+
+.deadline-countdown.warning {
+  border-color: #3B82F6;
+  background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+}
+
+.deadline-countdown.expired {
+  border-color: #6B7280;
+  background: #F3F4F6;
+  opacity: 0.7;
+}
+
+.deadline-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.countdown-timer {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.time-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.time-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+  line-height: 1;
+}
+
+.time-label {
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.urgency-message {
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #DC2626;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.deadline-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.deadline-badge.critical { background: #FEE2E2; color: #DC2626; }
+.deadline-badge.urgent { background: #FEF3C7; color: #D97706; }
+.deadline-badge.warning { background: #DBEAFE; color: #2563EB; }
+.deadline-badge.normal { background: #D1FAE5; color: #059669; }
+
+/* Important Dates Table */
+.important-dates-table {
+  border: 2px solid #8B0000;
+  border-radius: 0;
+  overflow: hidden;
+  margin: 15px 0;
+}
+
+.dates-header {
+  background: linear-gradient(180deg, #8B0000 0%, #600000 100%);
+  color: #fff;
+  padding: 10px 15px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+.important-dates-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.important-dates-table tr {
+  border-bottom: 1px solid #ddd;
+}
+
+.important-dates-table tr:last-child {
+  border-bottom: none;
+}
+
+.important-dates-table td {
+  padding: 10px 15px;
+  font-size: 13px;
+}
+
+.important-dates-table .date-label {
+  font-weight: 500;
+  color: #333;
+}
+
+.important-dates-table .date-value {
+  text-align: right;
+  font-weight: 600;
+  color: #0000cc;
+}
+
+.important-dates-table tr.past-date {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+/* Quick Actions Bar */
+.quick-actions-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 15px 0;
+}
+
+.quick-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-action-btn.apply {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: white;
+}
+
+.quick-action-btn.apply:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.quick-action-btn.notification {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  color: white;
+}
+
+.quick-action-btn.admit {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  color: white;
+}
+
+.quick-action-btn.result {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  color: white;
+}
+
+.quick-action-btn.syllabus {
+  background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%);
+  color: white;
+}
+
+.quick-action-btn.bookmark {
+  background: #fff;
+  border: 2px solid #ddd;
+  color: #333;
+}
+
+.quick-action-btn.bookmark.active {
+  background: #FEF3C7;
+  border-color: #F59E0B;
+  color: #D97706;
+}
+
+/* New Badge */
+.new-badge {
+  display: inline-block;
+  background: #DC2626;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-left: 6px;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Lazy Image */
+.lazy-image {
+  transition: opacity 0.3s ease;
+}
+
+.lazy-image-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.lazy-image.loaded {
+  opacity: 1;
+}
+
+/* Dark Mode for UX Components */
+[data-theme="dark"] .deadline-countdown {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-color: #333;
+}
+
+[data-theme="dark"] .deadline-label,
+[data-theme="dark"] .time-value {
+  color: #f5f5f5;
+}
+
+[data-theme="dark"] .important-dates-table {
+  border-color: #333;
+}
+
+[data-theme="dark"] .important-dates-table td {
+  background: #1a1a2e;
+  color: #f5f5f5;
+}
+
+[data-theme="dark"] .quick-actions-bar {
+  background: #1a1a2e;
+}
+
+[data-theme="dark"] .quick-action-btn.bookmark {
+  background: #252540;
+  border-color: #444;
+  color: #f5f5f5;
+}
