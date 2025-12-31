@@ -27,6 +27,7 @@ export type { FilterState } from './ui/SearchFilters';
 export { NotificationPrompt } from './ui/NotificationPrompt';
 export { UserProfile } from './ui/UserProfile';
 export { ExportButtons } from './ui/ExportButtons';
+export { LazyImage } from './ui/LazyImage';
 export {
     ToastContainer,
     ScrollToTop,
