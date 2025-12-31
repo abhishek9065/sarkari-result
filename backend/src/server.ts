@@ -42,15 +42,31 @@ const allowedOrigins = [
   'https://sarkari-result.vercel.app'
 ];
 
+// Regex pattern to match Vercel preview URLs
+const vercelPreviewPattern = /^https:\/\/sarkari-result(-[a-z0-9]+)?(-[a-z0-9-]+)?\.vercel\.app$/;
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) {
       callback(null, true);
-    } else {
-      console.log(`[SECURITY] Blocked CORS request from: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
+      return;
     }
+
+    // Check exact matches
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    // Check Vercel preview URL pattern (handles dynamic deployment URLs)
+    if (vercelPreviewPattern.test(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    console.log(`[SECURITY] Blocked CORS request from: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
