@@ -44,6 +44,46 @@ export function SEO({ title, description, announcement, canonicalUrl }: SEOProps
             canonicalLink.href = canonicalUrl;
         }
 
+        // ========== Open Graph Meta Tags ==========
+        const baseUrl = 'https://sarkari-result-gold.vercel.app';
+        const ogImage = `${baseUrl}/og-image.png`;
+
+        const ogTags: Record<string, string> = {
+            'og:title': pageTitle,
+            'og:description': pageDescription,
+            'og:type': announcement ? 'article' : 'website',
+            'og:url': canonicalUrl || baseUrl,
+            'og:image': ogImage,
+            'og:site_name': siteName,
+            'og:locale': 'en_IN',
+            // Twitter Card
+            'twitter:card': 'summary_large_image',
+            'twitter:title': pageTitle,
+            'twitter:description': pageDescription,
+            'twitter:image': ogImage,
+        };
+
+        // Add announcement-specific OG tags
+        if (announcement) {
+            ogTags['article:published_time'] = announcement.postedAt;
+            if (announcement.updatedAt) {
+                ogTags['article:modified_time'] = announcement.updatedAt;
+            }
+            ogTags['article:section'] = announcement.type;
+            ogTags['article:tag'] = announcement.category;
+        }
+
+        // Apply OG meta tags
+        Object.entries(ogTags).forEach(([property, content]) => {
+            let meta = document.querySelector(`meta[property="${property}"], meta[name="${property}"]`);
+            if (!meta) {
+                meta = document.createElement('meta');
+                meta.setAttribute(property.startsWith('twitter:') ? 'name' : 'property', property);
+                document.head.appendChild(meta);
+            }
+            meta.setAttribute('content', content);
+        });
+
         // Add JSON-LD structured data for announcements
         if (announcement) {
             const existingScript = document.querySelector('script[type="application/ld+json"]');

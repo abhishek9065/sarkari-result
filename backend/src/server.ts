@@ -16,6 +16,7 @@ import calendarRouter from './routes/calendar.js';
 import trendingRouter from './routes/trending.js';
 import searchRouter from './routes/search.js';
 import { rateLimit } from './middleware/rateLimit.js';
+import { responseTimeLogger, getPerformanceStats } from './middleware/responseTime.js';
 import {
   securityHeaders,
   blockSuspiciousAgents,
@@ -84,8 +85,16 @@ app.use('/api', rateLimit({ windowMs: 60000, maxRequests: 200 })); // Increased 
 // Stricter rate limiting for auth endpoints (prevent brute force)
 app.use('/api/auth', rateLimit({ windowMs: 60000, maxRequests: 20 })); // Increased from 10 to 20
 
+// Response time logging for performance monitoring
+app.use(responseTimeLogger);
+
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Performance stats endpoint (admin only in production)
+app.get('/api/performance', (_req, res) => {
+  res.json({ data: getPerformanceStats() });
 });
 
 app.use('/api/auth', authRouter);

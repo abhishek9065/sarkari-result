@@ -1,29 +1,146 @@
-# Sarkari Hub (Full-Stack Starter)
+# Sarkari Result - Government Jobs Portal
 
-A modernized take on SarkariResult with a TypeScript Express API, PostgreSQL-ready persistence, and a React + Vite frontend.
+A modern, fast, and feature-rich government jobs portal built with React + Vite (Frontend) and Node.js + Express + PostgreSQL (Backend).
 
-## Stack
-- Backend: Node.js, Express, TypeScript, pg, Zod, JWT-ready
-- Frontend: React 18, Vite, TypeScript
-- Database: PostgreSQL (connection via `DATABASE_URL`)
+## 🚀 Features
 
-## Quickstart
-1. **Backend**
-   - Copy env: `cp backend/.env.example backend/.env`
-   - Install deps: `cd backend && npm install`
-   - Run dev API: `npm run dev`
-   - Health check: `GET http://localhost:5000/api/health`
-2. **Frontend**
-   - Install deps: `cd frontend && npm install`
-   - Run dev UI: `npm run dev`
-   - UI served at: `http://localhost:4173` (proxy to backend `/api`)
+- **Job Listings** - Latest government jobs, results, admit cards, answer keys
+- **PWA Support** - Install as mobile app, offline access
+- **Dark Mode** - Eye-friendly dark theme
+- **Push Notifications** - Get notified about new jobs
+- **Email Subscriptions** - Daily/weekly job alerts
+- **Search & Filters** - Find jobs by location, qualification, category
+- **Bookmarks** - Save jobs for later with CSV/PDF export
+- **SEO Optimized** - JSON-LD schema for Google Jobs
 
-## Configuration
-- Backend env vars: see `backend/.env.example`
-- Frontend can point to a remote API by setting `VITE_API_BASE` (defaults to same origin)
+## 🛠️ Tech Stack
 
-## Notes / Next Steps
-- Wire PostgreSQL schema + migrations (jobs/results/admit cards tables, auth users, bookmarks).
-- Replace mock in-memory announcements with DB queries.
-- Add authentication, admin posting dashboard, and search facets.
-- Harden validation and logging; add tests.
+| Component | Technology |
+|-----------|------------|
+| Frontend | React 18, TypeScript, Vite |
+| Styling | CSS3 with CSS Variables |
+| Backend | Node.js, Express, TypeScript |
+| Database | PostgreSQL |
+| Hosting | Vercel (Frontend), Render (Backend) |
+
+## 📦 Quick Start
+
+### Prerequisites
+- Node.js 18+
+- PostgreSQL 14+
+- npm or yarn
+
+### Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Backend Setup
+```bash
+cd backend
+npm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your database credentials
+
+# Run migrations
+npm run migrate
+
+# Start server
+npm run dev
+```
+
+## 🔧 Environment Variables
+
+### Backend (.env)
+```env
+DATABASE_URL=postgres://user:pass@localhost:5432/sarkari
+JWT_SECRET=your-secret-key
+PORT=5000
+
+# Optional
+SENDGRID_API_KEY=your-sendgrid-key
+TELEGRAM_BOT_TOKEN=your-bot-token
+VAPID_PUBLIC_KEY=your-vapid-public
+VAPID_PRIVATE_KEY=your-vapid-private
+```
+
+### Frontend (.env)
+```env
+VITE_API_BASE=http://localhost:5000
+```
+
+## 📁 Project Structure
+
+```
+├── frontend/
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   ├── pages/         # Page components
+│   │   ├── hooks/         # Custom hooks
+│   │   ├── context/       # React context
+│   │   └── styles.css     # Global styles
+│   └── tests/             # Playwright E2E tests
+│
+├── backend/
+│   ├── src/
+│   │   ├── routes/        # API endpoints
+│   │   ├── models/        # Database models
+│   │   ├── middleware/    # Express middleware
+│   │   └── services/      # Business logic
+│   └── dist/              # Compiled output
+```
+
+## 🧪 Testing
+
+```bash
+# Run E2E tests
+cd frontend
+npx playwright install
+npx playwright test
+
+# Run with UI
+npx playwright test --ui
+```
+
+## 🚀 Deployment
+
+### Frontend (Vercel)
+1. Connect GitHub repo to Vercel
+2. Set root directory to `frontend`
+3. Add environment variable: `VITE_API_BASE`
+
+### Backend (Render)
+1. Create Web Service on Render
+2. Set root directory to `backend`
+3. Build command: `npm install && npm run build`
+4. Start command: `npm start`
+5. Add environment variables
+
+## 📊 Performance
+
+- **Database Pool**: 50 connections (optimized)
+- **Rate Limiting**: 200 req/min per IP
+- **Caching**: In-memory cache (5min TTL)
+- **PWA**: Service worker for offline support
+
+## 📄 License
+
+MIT License - feel free to use for personal or commercial projects.
+
+## 🤝 Contributing
+
+1. Fork the repo
+2. Create feature branch (`git checkout -b feature/amazing`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing`)
+5. Open Pull Request
+
+---
+
+**Live Demo**: https://sarkari-result-gold.vercel.app
+
+**API**: https://sarkari-api.onrender.com
