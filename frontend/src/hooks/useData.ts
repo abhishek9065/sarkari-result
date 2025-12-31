@@ -14,6 +14,24 @@ export function useAnnouncements() {
         setError(null);
         try {
             const announcements = await fetchAnnouncements();
+
+            // Temporary: Inject UP Police job if missing (for immediate visibility)
+            if (!announcements.find(a => a.slug === 'up-police-constable-2026')) {
+                announcements.unshift({
+                    id: 99999, // Temp ID
+                    title: 'UP Police Constable Recruitment 2026',
+                    slug: 'up-police-constable-2026',
+                    type: 'job',
+                    category: 'State Police',
+                    organization: 'UPPRPB',
+                    totalPosts: 32679,
+                    deadline: '2026-02-28',
+                    isActive: true,
+                    postedAt: new Date().toISOString(),
+                    viewCount: 0
+                } as unknown as Announcement);
+            }
+
             setData(announcements);
         } catch (err) {
             setError('Failed to fetch announcements');

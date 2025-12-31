@@ -405,6 +405,13 @@ function App() {
 
   // Handle item click - now with history
   const handleItemClick = (item: Announcement) => {
+    // Special handling for UP Police 2026 page
+    if (item.slug === 'up-police-constable-2026') {
+      setCurrentPage('up-police-2026');
+      pushNavState({ currentPage: 'up-police-2026' });
+      return;
+    }
+
     setSelectedItem(item);
     setCurrentPage('home');
     pushNavState({ selectedItemSlug: item.slug, currentPage: 'home' });
