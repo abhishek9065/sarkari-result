@@ -78,11 +78,11 @@ app.use(express.json({ limit: '5mb' })); // Reduced from 10mb for security
 // Sanitize all request bodies
 app.use(sanitizeRequestBody);
 
-// Apply rate limiting to all API routes
-app.use('/api', rateLimit({ windowMs: 60000, maxRequests: 100 })); // Reduced from 200
+// Apply rate limiting to all API routes (optimized for 2000+ users)
+app.use('/api', rateLimit({ windowMs: 60000, maxRequests: 200 })); // Increased from 100 to 200
 
-// Stricter rate limiting for auth endpoints
-app.use('/api/auth', rateLimit({ windowMs: 60000, maxRequests: 10 }));
+// Stricter rate limiting for auth endpoints (prevent brute force)
+app.use('/api/auth', rateLimit({ windowMs: 60000, maxRequests: 20 })); // Increased from 10 to 20
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
