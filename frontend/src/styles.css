@@ -8120,3 +8120,42 @@ h4 {
     margin: 0 auto;
   }
 }
+
+/* Emergency Banner for UP Police */
+.upp-banner {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.upp-banner:hover {
+  transform: translateY(-2px);
+}
+
+.upp-content h3 {
+  margin: 0 0 5px 0;
+  font-size: 18px;
+}
+
+.upp-content p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 14px;
+}
+
+.upp-action {
+  background: white;
+  color: #1e3a8a;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
