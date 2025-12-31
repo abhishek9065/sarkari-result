@@ -48,7 +48,41 @@ VALUES
 
 ('SSC CGL 2024 Syllabus & Exam Pattern', 'ssc-cgl-2024-syllabus', 'syllabus', 'Central Government', 'Staff Selection Commission', 'SSC CGL 2024 detailed syllabus and exam pattern for all tiers.', 'https://ssc.nic.in', 'All India', NULL, NULL, NULL, NULL, NULL, true),
 
-('GATE 2024 Syllabus - All Subjects', 'gate-2024-syllabus', 'syllabus', 'Engineering', 'IIT Delhi', 'GATE 2024 complete syllabus for all 29 subjects.', 'https://gate2024.iisc.ac.in', 'All India', NULL, NULL, NULL, NULL, NULL, true);
+('GATE 2024 Syllabus - All Subjects', 'gate-2024-syllabus', 'syllabus', 'Engineering', 'IIT Delhi', 'GATE 2024 complete syllabus for all 29 subjects.', 'https://gate2024.iisc.ac.in', 'All India', NULL, NULL, NULL, NULL, NULL, true),
+
+-- MORE JOBS (State PSC, Police, etc.)
+('BPSC 70th Combined Competitive Exam 2024', 'bpsc-70th-cce-2024', 'job', 'State Government', 'Bihar Public Service Commission', 'BPSC 70th CCE for recruitment to various state services in Bihar.', 'https://bpsc.bih.nic.in', 'Bihar', '2024-04-30', 'Graduate from recognized university', '20-37 years', '₹600', 2000, true),
+
+('UP Police Constable 2024', 'up-police-constable-2024', 'job', 'Police', 'Uttar Pradesh Police Recruitment Board', 'UP Police Constable recruitment for 52000+ vacancies.', 'https://uppbpb.gov.in', 'Uttar Pradesh', '2024-03-28', '12th Pass', '18-25 years', '₹400', 52000, true),
+
+('Delhi Police Head Constable 2024', 'delhi-police-hc-2024', 'job', 'Police', 'Staff Selection Commission', 'Delhi Police Head Constable (AWO/TPO) recruitment.', 'https://ssc.nic.in', 'Delhi', '2024-03-15', '12th Pass', '18-27 years', '₹100', 1500, true),
+
+('RBI Assistant 2024 Recruitment', 'rbi-assistant-2024', 'job', 'Banking', 'Reserve Bank of India', 'RBI Assistant recruitment for various offices across India.', 'https://rbi.org.in', 'All India', '2024-04-10', 'Graduate', '20-28 years', '₹450', 450, true),
+
+('CISF Constable Fire 2024', 'cisf-constable-fire-2024', 'job', 'Defence', 'Central Industrial Security Force', 'CISF Constable Fire recruitment 2024.', 'https://cisfrectt.in', 'All India', '2024-04-05', '12th Pass with Science', '18-23 years', '₹100', 1130, true),
+
+('UPPSC PCS 2024 - Combined State Services', 'uppsc-pcs-2024', 'job', 'State Government', 'Uttar Pradesh Public Service Commission', 'UPPSC Combined State/Upper Subordinate Services Exam 2024.', 'https://uppsc.up.nic.in', 'Uttar Pradesh', '2024-05-15', 'Graduate', '21-40 years', '₹125', 411, true),
+
+('MPPSC State Service Exam 2024', 'mppsc-sse-2024', 'job', 'State Government', 'Madhya Pradesh Public Service Commission', 'MPPSC State Service Examination 2024 notification.', 'https://mppsc.nic.in', 'Madhya Pradesh', '2024-04-20', 'Graduate', '21-40 years', '₹500', 350, true),
+
+('UGC NET December 2024', 'ugc-net-dec-2024', 'job', 'Teaching', 'National Testing Agency', 'UGC NET for JRF and Assistant Professor eligibility.', 'https://ugcnet.nta.nic.in', 'All India', '2024-05-10', 'Post Graduate', 'No age limit for AP, 30 for JRF', '₹1100', NULL, true),
+
+-- MORE RESULTS
+('IBPS PO Final Result 2024', 'ibps-po-final-result-2024', 'result', 'Banking', 'IBPS', 'IBPS PO XIV final result and provisional allotment.', 'https://ibps.in', 'All India', NULL, NULL, NULL, NULL, NULL, true),
+
+('SBI Clerk Mains Result 2024', 'sbi-clerk-mains-result-2024', 'result', 'Banking', 'State Bank of India', 'SBI Clerk Mains result declared with marks.', 'https://sbi.co.in', 'All India', NULL, NULL, NULL, NULL, NULL, true),
+
+('UPPSC PCS Prelims Result 2024', 'uppsc-pcs-prelims-result-2024', 'result', 'State Government', 'UPPSC', 'UPPSC PCS Preliminary examination result declared.', 'https://uppsc.up.nic.in', 'Uttar Pradesh', NULL, NULL, NULL, NULL, NULL, true),
+
+-- MORE ADMIT CARDS
+('RBI Assistant Prelims Admit Card 2024', 'rbi-assistant-admit-2024', 'admit-card', 'Banking', 'Reserve Bank of India', 'RBI Assistant Prelims call letter released.', 'https://ibpsonline.ibps.in', 'All India', '2024-04-01', NULL, NULL, NULL, NULL, true),
+
+('UPSC CAPF AC Admit Card 2024', 'upsc-capf-admit-2024', 'admit-card', 'Defence', 'UPSC', 'UPSC CAPF Assistant Commandant admit card released.', 'https://upsc.gov.in', 'All India', '2024-03-08', NULL, NULL, NULL, NULL, true),
+
+-- MORE ANSWER KEYS
+('UPSC CSE Prelims Answer Key 2024', 'upsc-cse-prelims-answer-key-2024', 'answer-key', 'Central Government', 'UPSC', 'UPSC Civil Services Prelims 2024 answer key.', 'https://upsc.gov.in', 'All India', NULL, NULL, NULL, NULL, NULL, true),
+
+('IBPS PO Prelims Answer Key 2024', 'ibps-po-prelims-answer-key-2024', 'answer-key', 'Banking', 'IBPS', 'IBPS PO Prelims 2024 provisional answer key.', 'https://ibps.in', 'All India', NULL, NULL, NULL, NULL, NULL, true);
 
 -- Add some tags
 INSERT INTO tags (name, slug) VALUES
