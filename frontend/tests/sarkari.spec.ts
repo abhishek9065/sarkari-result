@@ -8,13 +8,13 @@ test.describe('Homepage', () => {
     });
 
     test('should load homepage with title', async ({ page }) => {
-        await expect(page).toHaveTitle(/Sarkari Result/);
+        await expect(page).toHaveTitle(/SarkariExams.me/);
     });
 
     test('should display header with site name', async ({ page }) => {
         const header = page.locator('.site-header');
         await expect(header).toBeVisible();
-        await expect(header).toContainText('SARKARI RESULT');
+        await expect(header).toContainText('SARKARIEXAMS.ME');
     });
 
     test('should display navigation menu', async ({ page }) => {

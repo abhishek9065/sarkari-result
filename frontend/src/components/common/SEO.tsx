@@ -13,9 +13,9 @@ interface SEOProps {
  * Supports Job Posting schema for Google Jobs
  */
 export function SEO({ title, description, announcement, canonicalUrl }: SEOProps) {
-    const siteName = 'Sarkari Result Gold';
-    const defaultTitle = 'Sarkari Result - Government Jobs, Results, Admit Cards 2024-25';
-    const defaultDescription = 'Get latest Sarkari Result, Government Jobs, UPSC, SSC, Railway, Bank Recruitment notifications, Results and Admit Cards.';
+    const siteName = 'SarkariExams.me';
+    const defaultTitle = 'SarkariExams.me - Government Jobs, Results, Admit Cards 2024-25';
+    const defaultDescription = 'Get latest SarkariExams.me updates, Government Jobs, UPSC, SSC, Railway, Bank Recruitment notifications, Results and Admit Cards.';
 
     const pageTitle = title ? `${title} | ${siteName}` : defaultTitle;
     const pageDescription = description || defaultDescription;

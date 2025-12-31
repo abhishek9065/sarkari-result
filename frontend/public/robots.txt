@@ -1,4 +1,4 @@
-# Sarkari Result - robots.txt
+# SarkariExams.me - robots.txt
 # Allow all search engines to crawl the entire site
 
 User-agent: *

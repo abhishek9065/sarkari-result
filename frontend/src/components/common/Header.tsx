@@ -28,9 +28,9 @@ export function Header({ setCurrentPage, user, isAuthenticated, onLogin, onLogou
     return (
         <header className="site-header">
             <h1 className="site-title" onClick={() => setCurrentPage('home')} style={{ cursor: 'pointer' }}>
-                SARKARI RESULT
+                SARKARIEXAMS.ME
             </h1>
-            <p className="site-subtitle">SarkariResult.com</p>
+            <p className="site-subtitle">SarkariExams.me</p>
             <div className="header-controls">
                 <button className="theme-toggle" onClick={toggleTheme} title={getThemeTooltip()}>
                     {getThemeIcon()}

@@ -4,8 +4,8 @@ const pages = {
   about: {
     title: 'About Us',
     content: `
-        <h3>Welcome to Sarkari Result</h3>
-        <p>Sarkari Result is India's leading platform for government job notifications, exam results, admit cards, and application forms.</p>
+        <h3>Welcome to SarkariExams.me</h3>
+        <p>SarkariExams.me is India's leading platform for government job notifications, exam results, admit cards, and application forms.</p>
         
         <h4>Our Mission</h4>
         <p>To provide accurate, timely, and comprehensive information about government employment opportunities to millions of job seekers across India.</p>

@@ -1332,7 +1332,7 @@ function Marquee() {
       <span className="live-badge">🔴 LIVE</span>
       <div className="marquee-track">
         <div className="marquee-content">
-          <span className="marquee-item">✨ Welcome to Sarkari Result - Your #1 Source for Government Jobs!</span>
+          <span className="marquee-item">✨ Welcome to SarkariExams.me - Your #1 Source for Government Jobs!</span>
           <span className="marquee-item">🔥 SSC GD Constable 2025 Notification Released - Apply Now</span>
           <span className="marquee-item">📢 UPSC CSE 2024 Final Result Declared - Check Result</span>
           <span className="marquee-item">⚡ Railway RRB NTPC Result 2024 - Download Scorecard</span>
@@ -2108,8 +2108,8 @@ function StaticPage({ type, goBack }: StaticPageProps) {
     about: {
       title: 'About Us',
       content: `
-        <h3>Welcome to Sarkari Result</h3>
-        <p>Sarkari Result is India's leading platform for government job notifications, exam results, admit cards, and application forms.</p>
+        <h3>Welcome to SarkariExams.me</h3>
+        <p>SarkariExams.me is India's leading platform for government job notifications, exam results, admit cards, and application forms.</p>
         
         <h4>Our Mission</h4>
         <p>To provide accurate, timely, and comprehensive information about government employment opportunities to millions of job seekers across India.</p>
@@ -2350,7 +2350,7 @@ function Footer({ setCurrentPage }: FooterProps) {
     <>
       <SubscribeBox />
       <footer className="site-footer">
-        <p className="footer-text">© 2024 Sarkari Result | All Rights Reserved</p>
+        <p className="footer-text">© 2024 SarkariExams.me | All Rights Reserved</p>
         <div className="footer-links">
           <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('about'); }}>About Us</a>
           <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('contact'); }}>Contact</a>

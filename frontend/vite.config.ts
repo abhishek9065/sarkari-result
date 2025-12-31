@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt', 'icons/*.png'],
       manifest: {
-        name: 'Sarkari Result - Government Jobs & Results',
-        short_name: 'Sarkari Result',
+        name: 'SarkariExams.me - Government Jobs & Results',
+        short_name: 'SarkariExams.me',
         description: 'Latest Government Jobs, Results, Admit Cards, Syllabus & Answer Keys',
         theme_color: '#1a365d',
         background_color: '#ffffff',
