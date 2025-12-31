@@ -5,6 +5,7 @@ export * from './common/Footer';
 export * from './common/Marquee';
 export * from './sections/SectionTable';
 export * from './common/SocialButtons';
+export { SEO } from './common/SEO';
 
 // Cards
 export { FeaturedGrid } from './cards/FeaturedGrid';
@@ -25,6 +26,7 @@ export { SearchFilters } from './ui/SearchFilters';
 export type { FilterState } from './ui/SearchFilters';
 export { NotificationPrompt } from './ui/NotificationPrompt';
 export { UserProfile } from './ui/UserProfile';
+export { ExportButtons } from './ui/ExportButtons';
 export {
     ToastContainer,
     ScrollToTop,
