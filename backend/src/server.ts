@@ -43,7 +43,9 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'https://sarkari-result-gold.vercel.app',
-  'https://sarkari-result.vercel.app'
+  'https://sarkari-result.vercel.app',
+  'https://sarkariexams.me',
+  'https://www.sarkariexams.me'
 ];
 
 // Regex pattern to match Vercel preview URLs
