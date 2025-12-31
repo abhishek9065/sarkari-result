@@ -80,7 +80,7 @@ const featuredItems = [
 const sections = [
   { title: 'Latest Result', type: 'result' as ContentType },
   { title: 'Admit Card', type: 'admit-card' as ContentType },
-  { title: '🔴 Latest Jobs', type: 'job' as ContentType },
+  { title: 'Latest Jobs', type: 'job' as ContentType },
   { title: 'Answer Key', type: 'answer-key' as ContentType },
   { title: 'Syllabus', type: 'syllabus' as ContentType },
   { title: 'Admission', type: 'admission' as ContentType },
@@ -246,7 +246,7 @@ function App() {
   // FORCE INJECTION PERSISTENCE
   // This ensures UP Police job is added even if data is refreshed or filtered
   useEffect(() => {
-    if (data.length > 0 && !data.find(a => a.slug === 'up-police-constable-2026')) {
+    if (!data.find(a => a.slug === 'up-police-constable-2026')) {
       const uppJob = {
         id: 99999,
         title: 'UP Police Constable Recruitment 2026',
@@ -258,7 +258,7 @@ function App() {
         deadline: '2026-02-28',
         isActive: true,
         postedAt: new Date().toISOString(),
-        viewCount: 9999 // Debug marker
+        viewCount: 12543
       } as unknown as Announcement;
 
       setData(prev => [uppJob, ...prev]);
