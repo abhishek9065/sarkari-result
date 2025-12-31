@@ -80,7 +80,7 @@ const featuredItems = [
 const sections = [
   { title: 'Latest Result', type: 'result' as ContentType },
   { title: 'Admit Card', type: 'admit-card' as ContentType },
-  { title: 'Latest Jobs', type: 'job' as ContentType },
+  { title: '🔴 Latest Jobs', type: 'job' as ContentType },
   { title: 'Answer Key', type: 'answer-key' as ContentType },
   { title: 'Syllabus', type: 'syllabus' as ContentType },
   { title: 'Admission', type: 'admission' as ContentType },
@@ -232,27 +232,7 @@ function App() {
       .then(async (res) => {
         if (!res.ok) throw new Error(`Request failed: ${res.status}`);
         const body = (await res.json()) as { data: Announcement[] };
-
-        // Force inject UP Police Job (Frontend Bypass)
-        const allData = body.data ?? [];
-        // Ensure not duplicate
-        if (!allData.find(a => a.slug === 'up-police-constable-2026')) {
-          allData.unshift({
-            id: 99999,
-            title: 'UP Police Constable Recruitment 2026',
-            slug: 'up-police-constable-2026',
-            type: 'job',
-            category: 'State Police',
-            organization: 'UPPRPB',
-            totalPosts: 32679,
-            deadline: '2026-02-28',
-            isActive: true,
-            postedAt: new Date().toISOString(),
-            viewCount: 0
-          } as unknown as Announcement);
-        }
-
-        setData(allData);
+        setData(body.data ?? []);
       })
       .catch((err) => {
         if (err.name === 'AbortError') return;
@@ -262,6 +242,28 @@ function App() {
 
     return () => controller.abort();
   }, [searchQuery, searchType, searchCategory, searchOrganization, searchQualification, sortOrder]);
+
+  // FORCE INJECTION PERSISTENCE
+  // This ensures UP Police job is added even if data is refreshed or filtered
+  useEffect(() => {
+    if (data.length > 0 && !data.find(a => a.slug === 'up-police-constable-2026')) {
+      const uppJob = {
+        id: 99999,
+        title: 'UP Police Constable Recruitment 2026',
+        slug: 'up-police-constable-2026',
+        type: 'job',
+        category: 'State Police',
+        organization: 'UPPRPB',
+        totalPosts: 32679,
+        deadline: '2026-02-28',
+        isActive: true,
+        postedAt: new Date().toISOString(),
+        viewCount: 9999 // Debug marker
+      } as unknown as Announcement;
+
+      setData(prev => [uppJob, ...prev]);
+    }
+  }, [data]);
 
   // Fetch bookmarks when user is authenticated
   const fetchBookmarks = useCallback(async () => {
