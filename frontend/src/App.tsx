@@ -1142,18 +1142,6 @@ function App() {
               </div>
             ) : (
               <>
-                {/* EMERGENCY BANNER - UP POLICE */}
-                <div className="upp-banner" onClick={() => {
-                  setCurrentPage('up-police-2026');
-                  pushNavState({ currentPage: 'up-police-2026' });
-                }}>
-                  <div className="upp-content">
-                    <h3>🚔 UP Police Constable 2026</h3>
-                    <p>32,679 Vacancies • Apply Now</p>
-                  </div>
-                  <div className="upp-action">View Details →</div>
-                </div>
-
                 <div className="content-grid">
                   {sections.slice(0, 3).map((section) => (
                     <SectionTable
