@@ -31,7 +31,7 @@ export function Footer({ setCurrentPage }: FooterProps) {
                 </div>
             </div>
             <div className="footer-bottom">
-                <p>© 2024 Sarkari Result. All Rights Reserved.</p>
+                <p>© 2024 Sarkari Result. All Rights Reserved. (v1.2.1)</p>
                 <p>This is an informational website. We are not affiliated with any government organization.</p>
             </div>
         </footer>
