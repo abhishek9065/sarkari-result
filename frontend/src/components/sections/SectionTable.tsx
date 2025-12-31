@@ -57,9 +57,16 @@ export function SectionTable({ title, items, onViewMore, onItemClick, fullWidth 
                                     <span className="item-title">{item.title}</span>
                                     {item.totalPosts && <span className="item-posts">{item.totalPosts} Post</span>}
                                 </a>
-                                {item.deadline && (
-                                    <span className="item-date">{formatShortDate(item.deadline)}</span>
-                                )}
+                                <div className="item-meta">
+                                    {item.deadline && (
+                                        <span className="item-date">{formatShortDate(item.deadline)}</span>
+                                    )}
+                                    {item.viewCount > 100 && (
+                                        <span className="item-views" title={`${item.viewCount} views`}>
+                                            🔥 {item.viewCount > 1000 ? `${(item.viewCount / 1000).toFixed(1)}k` : item.viewCount}
+                                        </span>
+                                    )}
+                                </div>
                             </li>
                         ))
                     ) : (

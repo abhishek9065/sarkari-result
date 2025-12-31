@@ -568,6 +568,22 @@ a:hover {
   text-decoration: underline;
 }
 
+/* Item Meta - Date and Views */
+.item-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.item-views {
+  font-size: 10px;
+  color: #D97706;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .section-table-footer {
   padding: 12px;
   text-align: center;
@@ -617,6 +633,27 @@ a:hover {
   border-top-color: #333 !important;
 }
 
+/* Dark mode for new elements */
+[data-theme="dark"] .item-org {
+  color: #ff7b7b !important;
+}
+
+[data-theme="dark"] .item-title {
+  color: #6db3f2 !important;
+}
+
+[data-theme="dark"] .item-date {
+  background: #333 !important;
+  color: #b0b0b0 !important;
+}
+
+[data-theme="dark"] .item-views {
+  color: #FCD34D !important;
+}
+
+[data-theme="dark"] .no-items {
+  color: #888 !important;
+}
 
 
 .view-more-btn {
