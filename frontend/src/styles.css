@@ -7075,6 +7075,11 @@ h4 {
     font-size: 1.1rem;
   }
 
+  .site-subtitle {
+    font-size: 0.7rem;
+    margin-top: 2px;
+  }
+
   .featured-title {
     font-size: 0.9rem;
   }
@@ -7095,6 +7100,18 @@ h4 {
   .nav-link {
     font-size: 0.9rem;
     padding: 12px 15px;
+  }
+
+  /* Stack quick action buttons on very narrow screens */
+  .quick-actions-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .quick-action-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
   }
 }
 
@@ -7117,6 +7134,7 @@ h4 {
     background: rgba(0, 0, 0, 0.7);
   }
 }
+
 /* ============ SARKARI RESULT UX COMPONENTS ============ */
 
 /* Deadline Countdown Timer */
@@ -7196,8 +7214,15 @@ h4 {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .deadline-badge {
@@ -7208,10 +7233,25 @@ h4 {
   font-weight: 600;
 }
 
-.deadline-badge.critical { background: #FEE2E2; color: #DC2626; }
-.deadline-badge.urgent { background: #FEF3C7; color: #D97706; }
-.deadline-badge.warning { background: #DBEAFE; color: #2563EB; }
-.deadline-badge.normal { background: #D1FAE5; color: #059669; }
+.deadline-badge.critical {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.deadline-badge.urgent {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.deadline-badge.warning {
+  background: #DBEAFE;
+  color: #2563EB;
+}
+
+.deadline-badge.normal {
+  background: #D1FAE5;
+  color: #059669;
+}
 
 /* Important Dates Table */
 .important-dates-table {
@@ -7346,8 +7386,15 @@ h4 {
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
 }
 
 /* Lazy Image */
@@ -7362,8 +7409,13 @@ h4 {
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .lazy-image.loaded {
@@ -7626,9 +7678,11 @@ h4 {
   .form-row {
     flex-direction: column;
   }
+
   .form-actions {
     flex-direction: column;
   }
+
   .matched-job-card {
     flex-direction: column;
     text-align: center;
@@ -7708,18 +7762,53 @@ h4 {
   color: white;
 }
 
-.section-header.maroon { background: linear-gradient(135deg, #8B0000 0%, #600000 100%); }
-.section-header.blue { background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); }
-.section-header.green { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
-.section-header.orange { background: linear-gradient(135deg, #EA580C 0%, #C2410C 100%); }
-.section-header.purple { background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); }
-.section-header.teal { background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%); }
-.section-header.red { background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%); }
-.section-header.indigo { background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%); }
-.section-header.cyan { background: linear-gradient(135deg, #0891B2 0%, #0E7490 100%); }
-.section-header.pink { background: linear-gradient(135deg, #DB2777 0%, #BE185D 100%); }
-.section-header.dark { background: linear-gradient(135deg, #374151 0%, #1F2937 100%); }
-.section-header.gray { background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%); }
+.section-header.maroon {
+  background: linear-gradient(135deg, #8B0000 0%, #600000 100%);
+}
+
+.section-header.blue {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+}
+
+.section-header.green {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.section-header.orange {
+  background: linear-gradient(135deg, #EA580C 0%, #C2410C 100%);
+}
+
+.section-header.purple {
+  background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+}
+
+.section-header.teal {
+  background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%);
+}
+
+.section-header.red {
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+}
+
+.section-header.indigo {
+  background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%);
+}
+
+.section-header.cyan {
+  background: linear-gradient(135deg, #0891B2 0%, #0E7490 100%);
+}
+
+.section-header.pink {
+  background: linear-gradient(135deg, #DB2777 0%, #BE185D 100%);
+}
+
+.section-header.dark {
+  background: linear-gradient(135deg, #374151 0%, #1F2937 100%);
+}
+
+.section-header.gray {
+  background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+}
 
 /* Info Tables */
 .info-table {
@@ -7745,7 +7834,10 @@ h4 {
   border-bottom: none;
 }
 
-.date-cell, .fee-cell, .age-cell, .total-cell {
+.date-cell,
+.fee-cell,
+.age-cell,
+.total-cell {
   font-weight: 600;
   color: #0000cc;
 }
@@ -7994,9 +8086,17 @@ h4 {
   text-decoration: none;
 }
 
-.link-btn.green { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
-.link-btn.blue { background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); }
-.link-btn.orange { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
+.link-btn.green {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+.link-btn.blue {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+}
+
+.link-btn.orange {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
 
 /* FAQ */
 .faq-list {
@@ -8097,25 +8197,25 @@ h4 {
   .job-header h1 {
     font-size: 20px;
   }
-  
+
   .job-highlight {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .age-box {
     flex-direction: column;
   }
-  
+
   .salary-box {
     flex-direction: column;
   }
-  
+
   .selection-step {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .step-number {
     margin: 0 auto;
   }
@@ -8131,7 +8231,7 @@ h4 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   transition: transform 0.2s;
 }
@@ -8158,4 +8258,144 @@ h4 {
   border-radius: 20px;
   font-weight: 600;
   font-size: 13px;
+}
+/* ============ ENHANCED MICRO-ANIMATIONS ============ */
+
+/* Smooth card transitions */
+.section-table {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.section-table:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Button press effect */
+.quick-action-btn:active,
+.social-btn:active,
+.view-more-btn:active {
+  transform: scale(0.97);
+}
+
+/* Smooth link underline animation */
+.section-item a .item-title {
+  position: relative;
+  display: inline;
+}
+
+.section-item a .item-title::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 1px;
+  bottom: -2px;
+  left: 0;
+  background-color: currentColor;
+  transition: width 0.2s ease;
+}
+
+.section-item a:hover .item-title::after {
+  width: 100%;
+}
+
+/* Subtle pulse for live badge */
+.live-badge {
+  animation: livePulse 2s infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 6px rgba(220, 38, 38, 0);
+  }
+}
+
+/* Fade-in animation for page transitions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.main-content,
+.detail-page,
+.job-detail-page {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* Dark mode enhancements for UniversalJobDetail */
+[data-theme="dark"] .job-header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+  border-color: #333;
+}
+
+[data-theme="dark"] .job-org {
+  color: #aaa;
+}
+
+[data-theme="dark"] .detail-footer {
+  background: #1a1a2e;
+}
+
+[data-theme="dark"] .detail-footer p {
+  color: #ccc;
+}
+
+[data-theme="dark"] .faq-item {
+  border-color: #333;
+}
+
+[data-theme="dark"] .faq-item.active .faq-question {
+  background: #252540;
+}
+
+[data-theme="dark"] .links-table {
+  border-color: #333;
+}
+
+[data-theme="dark"] .links-table td {
+  border-color: #333;
+  background: #1a1a2e;
+}
+
+[data-theme="dark"] .links-table th {
+  background: linear-gradient(180deg, #8B0000 0%, #600000 100%);
+}
+
+[data-theme="dark"] .link-btn {
+  opacity: 0.95;
+}
+
+[data-theme="dark"] .link-btn:hover {
+  opacity: 1;
+}
+
+/* Focus states for accessibility */
+.nav-link:focus-visible,
+.quick-action-btn:focus-visible,
+.social-btn:focus-visible,
+button:focus-visible {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
