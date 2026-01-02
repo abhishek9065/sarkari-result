@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { Header, PWAInstallPrompt, ShareButtons } from './components';
 import UPPoliceJobDetail from './pages/UPPoliceJobDetail';
+import UniversalJobDetail from './pages/UniversalJobDetail';
 
 const apiBase = import.meta.env.VITE_API_BASE ?? '';
 
@@ -523,95 +524,10 @@ function App() {
 
   // Render detail page
   if (selectedItem) {
-    // Calculate days remaining
-    const daysRemaining = selectedItem.deadline
-      ? Math.ceil((new Date(selectedItem.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-      : null;
-    const isExpired = daysRemaining !== null && daysRemaining < 0;
-    const isUrgent = daysRemaining !== null && daysRemaining <= 7 && daysRemaining >= 0;
-
-    // Get related items (same type or organization)
-    const relatedJobs = data
-      .filter(item =>
-        item.id !== selectedItem.id &&
-        (item.type === selectedItem.type || item.organization === selectedItem.organization)
-      )
-      .slice(0, 5);
-
-    // Type-specific labels
-    const typeLabels: Record<string, { action: string; dateLabel: string; relatedTitle: string }> = {
-      'job': { action: 'Apply Online', dateLabel: 'Last Date to Apply', relatedTitle: 'Similar Jobs' },
-      'result': { action: 'Check Result', dateLabel: 'Result Date', relatedTitle: 'Other Results' },
-      'admit-card': { action: 'Download Admit Card', dateLabel: 'Download Available', relatedTitle: 'Other Admit Cards' },
-      'answer-key': { action: 'Check Answer Key', dateLabel: 'Answer Key Date', relatedTitle: 'Other Answer Keys' },
-      'admission': { action: 'Apply for Admission', dateLabel: 'Last Date to Apply', relatedTitle: 'Other Admissions' },
-      'syllabus': { action: 'Download Syllabus', dateLabel: 'Syllabus Available', relatedTitle: 'Other Syllabus' }
-    };
-    const labels = typeLabels[selectedItem.type] || typeLabels['job'];
-
-    // Type-specific Mode of Selection
-    const modeOfSelection: Record<string, string[]> = {
-      'job': ['Online Written Examination', 'Document Verification', 'Skill Test / Interview (If Required)', 'Medical Examination'],
-      'result': ['Merit List Based', 'Cut-Off Marks', 'Category Wise Selection', 'Final Merit List'],
-      'admit-card': ['Online Exam Hall Ticket', 'Photo & Signature Verification', 'Exam Center Allocation'],
-      'answer-key': ['Provisional Answer Key', 'Objection Window', 'Final Answer Key', 'Result Declaration'],
-      'admission': ['Merit Based Selection', 'Entrance Exam (If Required)', 'Counselling Process', 'Document Verification'],
-      'syllabus': ['Subject Wise Topics', 'Exam Pattern', 'Important Topics', 'Previous Year Papers']
-    };
-    const selectionModes = modeOfSelection[selectedItem.type] || modeOfSelection['job'];
-
-    // Type-specific FAQ (Hindi)
-    const getFaqs = () => {
-      switch (selectedItem.type) {
-        case 'result':
-          return [
-            { q: `${selectedItem.organization} ${selectedItem.title} Result कब आएगा?`, a: selectedItem.deadline ? `Result ${formatDate(selectedItem.deadline)} को जारी होगा।` : 'Result की तारीख जल्द घोषित होगी।' },
-            { q: 'Result कैसे Check करें?', a: `${selectedItem.organization} की Official Website पर जाएं और अपना Roll Number / Registration Number दर्ज करें।` },
-            { q: 'Cut Off Marks क्या होंगे?', a: 'Cut Off Marks Category और Post के अनुसार अलग-अलग होंगे। Official Notification देखें।' },
-            { q: 'Merit List कब आएगी?', a: 'Result के बाद Merit List जारी की जाएगी।' }
-          ];
-        case 'admit-card':
-          return [
-            { q: `${selectedItem.organization} Admit Card कैसे Download करें?`, a: `Official Website पर जाएं, Login करें और Admit Card Download करें।` },
-            { q: 'Admit Card पर क्या Details होंगी?', a: 'Admit Card पर Candidate का नाम, Photo, Exam Center, Date और Time होगा।' },
-            { q: 'Exam Center कैसे पता करें?', a: 'Admit Card पर Exam Center का पता और निर्देश दिए होंगे।' },
-            { q: 'Admit Card नहीं मिल रहा?', a: 'Helpline Number पर संपर्क करें या Official Website पर FAQ देखें।' }
-          ];
-        case 'answer-key':
-          return [
-            { q: `${selectedItem.organization} Answer Key कैसे Check करें?`, a: 'Official Website पर Answer Key Section में जाएं।' },
-            { q: 'Answer Key पर Objection कैसे करें?', a: 'Online Portal पर Login करके Objection Submit करें। Fee भी लग सकती है।' },
-            { q: 'Final Answer Key कब आएगी?', a: 'Objection Window बंद होने के बाद Final Answer Key जारी होगी।' },
-            { q: 'Result कब आएगा?', a: 'Final Answer Key के बाद Result घोषित होगा।' }
-          ];
-        case 'admission':
-          return [
-            { q: `${selectedItem.organization} Admission के लिए Apply कैसे करें?`, a: `Official Website पर जाएं और Online Application Form भरें।` },
-            { q: 'Admission की Last Date क्या है?', a: selectedItem.deadline ? `Last Date ${formatDate(selectedItem.deadline)} है।` : 'Last Date जल्द घोषित होगी।' },
-            { q: 'Counselling Process क्या है?', a: 'Merit List के आधार पर Counselling होगी। Documents लेकर जाएं।' },
-            { q: 'Fee Structure क्या है?', a: 'Fee Details के लिए Official Prospectus देखें।' }
-          ];
-        case 'syllabus':
-          return [
-            { q: `${selectedItem.organization} Syllabus कैसे Download करें?`, a: 'नीचे दिए गए Link से PDF Download करें।' },
-            { q: 'Exam Pattern क्या है?', a: 'Syllabus PDF में Exam Pattern की पूरी जानकारी है।' },
-            { q: 'कौन से Topics Important हैं?', a: 'Previous Year Papers देखें और High Weightage Topics पर Focus करें।' },
-            { q: 'Negative Marking है क्या?', a: 'Exam Pattern में Negative Marking की जानकारी दी गई है।' }
-          ];
-        default:
-          return [
-            { q: `${selectedItem.organization} ${selectedItem.title} के लिए आवेदन कैसे करें?`, a: `${selectedItem.organization} की आधिकारिक वेबसाइट पर जाएं और ऑनलाइन आवेदन लिंक पर क्लिक करें। सभी आवश्यक विवरण भरें और शुल्क का भुगतान करें।` },
-            { q: 'आवेदन की अंतिम तिथि क्या है?', a: selectedItem.deadline ? `आवेदन की अंतिम तिथि ${formatDate(selectedItem.deadline)} है।` : 'अंतिम तिथि की घोषणा जल्द होगी।' },
-            { q: 'शैक्षिक योग्यता क्या है?', a: selectedItem.minQualification || 'विस्तृत योग्यता के लिए आधिकारिक अधिसूचना देखें।' },
-            { q: 'आवेदन शुल्क कितना है?', a: selectedItem.applicationFee ? `सामान्य/OBC: ${selectedItem.applicationFee}, SC/ST/PH: रियायती शुल्क` : 'शुल्क विवरण के लिए अधिसूचना देखें।' }
-          ];
-      }
-    };
-    const faqs = getFaqs();
-
     return (
       <div className="app">
         <Header setCurrentPage={setCurrentPage} user={user} isAuthenticated={isAuthenticated} onLogin={() => setShowAuthModal(true)} onLogout={logout} onProfileClick={() => setActiveTab('profile')} />
+
         <Navigation
           activeTab={activeTab}
           setActiveTab={handleTabChange}
@@ -623,274 +539,23 @@ function App() {
         />
 
         <div className="page-with-sidebar">
-          <div className="detail-page enhanced-detail">
-            <button className="back-btn" onClick={goBack}>← Back to Home</button>
-
-            {/* Header Banner */}
-            <div className="detail-header-banner">
-              <div className="banner-content">
-                <span className="type-badge">{selectedItem.type.toUpperCase()}</span>
-                <h1>{selectedItem.title}</h1>
-                <div className="org-badge">🏛️ {selectedItem.organization}</div>
-              </div>
-              {selectedItem.totalPosts && (
-                <div className="posts-highlight">
-                  <span className="posts-number">{selectedItem.totalPosts.toLocaleString()}</span>
-                  <span className="posts-label">Total Posts</span>
-                </div>
-              )}
+          <div className="detail-container">
+            <div className="main-content">
+              <button className="back-btn" onClick={() => setSelectedItem(null)}>
+                ← Back to List
+              </button>
+              <UniversalJobDetail item={selectedItem} />
             </div>
 
-            {/* Countdown Timer */}
-            {daysRemaining !== null && (
-              <div className={`countdown-bar ${isExpired ? 'expired' : isUrgent ? 'urgent' : 'active'}`}>
-                {isExpired ? (
-                  <span>❌ Application Closed</span>
-                ) : (
-                  <>
-                    <span className="countdown-icon">⏰</span>
-                    <span className="countdown-text">
-                      {daysRemaining === 0 ? 'Last Day to Apply!' : `${daysRemaining} Days Remaining`}
-                    </span>
-                    <span className="deadline-date">Last Date: {formatDate(selectedItem.deadline)}</span>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Quick Meta Badges */}
-            <div className="detail-meta enhanced">
-              <span className="meta-badge">📅 Posted: {formatDate(selectedItem.postedAt)}</span>
-              <span className="meta-badge">📍 {selectedItem.location || 'All India'}</span>
-              {selectedItem.category && <span className="meta-badge">📁 {selectedItem.category}</span>}
-            </div>
-
-            {/* Brief Summary */}
-            <div className="brief-summary">
-              <h3>📋 Brief Information</h3>
-              <p>
-                <strong>{selectedItem.organization}</strong> has released a notification for the recruitment of{' '}
-                <strong>{selectedItem.title}</strong>.
-                {selectedItem.totalPosts && ` This recruitment is for ${selectedItem.totalPosts.toLocaleString()} positions.`}
-                {selectedItem.deadline && ` Candidates can apply till ${formatDate(selectedItem.deadline)}.`}
-                {selectedItem.minQualification && ` Minimum qualification required is ${selectedItem.minQualification}.`}
-                {' '}Check the complete details below.
-              </p>
-            </div>
-
-            {/* Social Buttons - Prominent */}
-            <div className="social-prominent">
-              <a href="https://whatsapp.com" target="_blank" rel="noreferrer" className="social-big whatsapp">
-                📲 Join WhatsApp Channel
-              </a>
-              <a href="https://t.me" target="_blank" rel="noreferrer" className="social-big telegram">
-                ✈️ Join Telegram Channel
-              </a>
-            </div>
-
-            {/* Two Column Layout for Tables */}
-            <div className="detail-tables-grid">
-              {/* Important Dates */}
-              <table className="detail-table dates-table">
-                <thead>
-                  <tr><th colSpan={2}>📅 Important Dates</th></tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td><strong>Notification Date</strong></td>
-                    <td className="date-value">{formatDate(selectedItem.postedAt)}</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Application Start</strong></td>
-                    <td className="date-value start">{formatDate(selectedItem.postedAt)}</td>
-                  </tr>
-                  {selectedItem.deadline && (
-                    <tr>
-                      <td><strong>Last Date to Apply</strong></td>
-                      <td className="date-value deadline">{formatDate(selectedItem.deadline)}</td>
-                    </tr>
-                  )}
-                  <tr>
-                    <td><strong>Exam Date</strong></td>
-                    <td className="date-value">Notify Later</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Admit Card</strong></td>
-                    <td className="date-value">Before Exam</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              {/* Application Fee */}
-              <table className="detail-table fee-table">
-                <thead>
-                  <tr><th colSpan={2}>💰 Application Fee</th></tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td><strong>General / OBC / EWS</strong></td>
-                    <td className="fee-value">{selectedItem.applicationFee || '₹ 500-1000'}</td>
-                  </tr>
-                  <tr>
-                    <td><strong>SC / ST</strong></td>
-                    <td className="fee-value reduced">₹ Exempted/Reduced</td>
-                  </tr>
-                  <tr>
-                    <td><strong>PH / Female</strong></td>
-                    <td className="fee-value reduced">₹ Exempted/Reduced</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Payment Mode</strong></td>
-                    <td>Online (Debit/Credit/UPI)</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            {/* Age Limits */}
-            <table className="detail-table">
-              <thead>
-                <tr><th>👤 Age Limits (As on Cut-off Date)</th><th>Total Posts</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <strong>Minimum Age:</strong> 18-21 Years<br />
-                    <strong>Maximum Age:</strong> {selectedItem.ageLimit || '25-35 Years'}<br />
-                    <em>Age relaxation as per rules for SC/ST/OBC/PH</em>
-                  </td>
-                  <td className="total-posts-cell">
-                    {selectedItem.totalPosts?.toLocaleString() || 'Various'} Posts
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* Vacancy Details */}
-            <table className="detail-table vacancy-table">
-              <thead>
-                <tr>
-                  <th>Post Name</th>
-                  <th>No. Of Posts</th>
-                  <th>Eligibility</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{selectedItem.title.split(' ').slice(0, 3).join(' ')}</td>
-                  <td className="posts-count">{selectedItem.totalPosts?.toLocaleString() || 'Various'}</td>
-                  <td>{selectedItem.minQualification || 'As per Notification'}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* How to Apply */}
-            <div className="how-to-apply">
-              <h3>📝 How to Fill {selectedItem.organization} Online Form 2025</h3>
-              <ul className="how-to-list">
-                <li>Interested Candidates Can Apply For The <strong>{selectedItem.organization}</strong> Post Can Submit Their Application Online Before <strong>{selectedItem.deadline ? formatDate(selectedItem.deadline) : 'Last Date'}</strong>.</li>
-                <li>Use The Click Here Link Provided Below Under Important Link Section To Apply Directly.</li>
-                <li>Alternatively, Visit The <strong>Official Website Of {selectedItem.organization}</strong> To Complete The Application Process Online.</li>
-                <li>Make Sure To Complete The Application Before The Deadline <strong>{selectedItem.deadline ? formatDate(selectedItem.deadline) : 'Last Date'}</strong>.</li>
-                <li className="hindi-note">Note – छात्रों से ये अनुरोध किया जाता है की वो अपना फॉर्म भरने से पहले Official Notification को ध्यान से जरूर पढ़े उसके बाद ही अपना फॉर्म भरे। (Last Date, Age Limit, & Education Qualification)</li>
-              </ul>
-            </div>
-
-            {/* Mode of Selection */}
-            <div className="mode-selection">
-              <h3>{selectedItem.organization} {selectedItem.title} : {selectedItem.type === 'syllabus' ? 'Content Overview' : 'Selection Process'}</h3>
-              <ul className="selection-list">
-                {selectionModes.map((mode, idx) => (
-                  <li key={idx}>{mode}</li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Important Links */}
-            <table className="links-table enhanced">
-              <thead>
-                <tr><th colSpan={2}>🔗 Important Links</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>{labels.action}</strong></td>
-                  <td>
-                    <a href={selectedItem.externalLink || '#'} target="_blank" rel="noreferrer" className="link-btn apply">
-                      Click Here
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td><strong>Download Notification</strong></td>
-                  <td>
-                    <a href={selectedItem.externalLink || '#'} target="_blank" rel="noreferrer" className="link-btn notification">
-                      Click Here
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td><strong>Official Website</strong></td>
-                  <td>
-                    <a href={selectedItem.externalLink || '#'} target="_blank" rel="noreferrer" className="link-btn website">
-                      Click Here
-                    </a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* FAQ Section */}
-            <div className="faq-section">
-              <h3>❓ Frequently Asked Questions</h3>
-              {faqs.map((faq, idx) => (
-                <div key={idx} className={`faq-item ${openFaq === idx ? 'open' : ''}`}>
-                  <button className="faq-question" onClick={() => setOpenFaq(openFaq === idx ? null : idx)}>
-                    <span>Q: {faq.q}</span>
-                    <span className="faq-toggle">{openFaq === idx ? '−' : '+'}</span>
-                  </button>
-                  {openFaq === idx && (
-                    <div className="faq-answer">
-                      <strong>A:</strong> {faq.a}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Related Items */}
-            {relatedJobs.length > 0 && (
-              <div className="related-jobs">
-                <h3>📌 {labels.relatedTitle}</h3>
-                <ul>
-                  {relatedJobs.map(job => (
-                    <li key={job.id}>
-                      <a href="#" onClick={(e) => { e.preventDefault(); handleItemClick(job); }}>
-                        {job.title} [{job.totalPosts ? `${job.totalPosts} Posts` : job.type.toUpperCase()}]
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Social Share Buttons */}
-            <div className="social-share">
-              <h4>📤 Share this post:</h4>
-              <ShareButtons
-                title={selectedItem.title}
-                description={selectedItem.organization}
-              />
-            </div>
+            <aside className="sidebar">
+              <TagsCloud />
+              <SectionTable title="Latest Jobs" items={getByType('job').slice(0, 5)} onItemClick={handleItemClick} />
+              <SectionTable title="Latest Result" items={getByType('result').slice(0, 5)} onItemClick={handleItemClick} />
+            </aside>
           </div>
 
-          <aside className="sidebar">
-            <TagsCloud />
-            <SectionTable title="Latest Jobs" items={getByType('job').slice(0, 5)} onItemClick={handleItemClick} />
-            <SectionTable title="Latest Result" items={getByType('result').slice(0, 5)} onItemClick={handleItemClick} />
-          </aside>
+          <Footer setCurrentPage={setCurrentPage} />
         </div>
-
-        <Footer setCurrentPage={setCurrentPage} />
       </div>
     );
   }
@@ -1735,7 +1400,7 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
 
       if (response.ok) {
         const result = await response.json();
-        // API returns { data: { user, token } }
+        // API returns {data: {user, token} }
         const userData = result.data?.user || result.user;
         const authToken = result.data?.token || result.token;
 
@@ -2110,110 +1775,110 @@ function StaticPage({ type, goBack }: StaticPageProps) {
     about: {
       title: 'About Us',
       content: `
-        <h3>Welcome to SarkariExams.me</h3>
-        <p>SarkariExams.me is India's leading platform for government job notifications, exam results, admit cards, and application forms.</p>
-        
-        <h4>Our Mission</h4>
-        <p>To provide accurate, timely, and comprehensive information about government employment opportunities to millions of job seekers across India.</p>
-        
-        <h4>What We Offer</h4>
-        <ul>
-          <li>Latest Government Job Notifications</li>
-          <li>Exam Results & Answer Keys</li>
-          <li>Admit Card Downloads</li>
-          <li>Admission Updates</li>
-          <li>Syllabus & Exam Patterns</li>
-        </ul>
-        
-        <h4>Why Choose Us</h4>
-        <ul>
-          <li>✅ 100% Verified Information</li>
-          <li>✅ Real-time Updates</li>
-          <li>✅ User-friendly Interface</li>
-          <li>✅ No Registration Required</li>
-          <li>✅ Free to Use</li>
-        </ul>
-      `
+                  <h3>Welcome to SarkariExams.me</h3>
+                  <p>SarkariExams.me is India's leading platform for government job notifications, exam results, admit cards, and application forms.</p>
+
+                  <h4>Our Mission</h4>
+                  <p>To provide accurate, timely, and comprehensive information about government employment opportunities to millions of job seekers across India.</p>
+
+                  <h4>What We Offer</h4>
+                  <ul>
+                    <li>Latest Government Job Notifications</li>
+                    <li>Exam Results & Answer Keys</li>
+                    <li>Admit Card Downloads</li>
+                    <li>Admission Updates</li>
+                    <li>Syllabus & Exam Patterns</li>
+                  </ul>
+
+                  <h4>Why Choose Us</h4>
+                  <ul>
+                    <li>✅ 100% Verified Information</li>
+                    <li>✅ Real-time Updates</li>
+                    <li>✅ User-friendly Interface</li>
+                    <li>✅ No Registration Required</li>
+                    <li>✅ Free to Use</li>
+                  </ul>
+                  `
     },
     contact: {
       title: 'Contact Us',
       content: `
-        <h3>Get in Touch</h3>
-        <p>We'd love to hear from you! For any queries, suggestions, or feedback, please reach out to us.</p>
-        
-        <div class="contact-info">
-          <p><strong>📧 Email:</strong> contact@sarkariresult.com</p>
-          <p><strong>📱 WhatsApp:</strong> +91-XXXXXXXXXX</p>
-          <p><strong>📍 Address:</strong> New Delhi, India</p>
-        </div>
-        
-        <h4>Follow Us</h4>
-        <p>
-          <a href="#">Telegram</a> | 
-          <a href="#">WhatsApp</a> | 
-          <a href="#">Facebook</a> | 
-          <a href="#">Twitter</a>
-        </p>
-        
-        <h4>Feedback Form</h4>
-        <p>For detailed queries or job posting requests, please email us with your complete details.</p>
-      `
+                  <h3>Get in Touch</h3>
+                  <p>We'd love to hear from you! For any queries, suggestions, or feedback, please reach out to us.</p>
+
+                  <div class="contact-info">
+                    <p><strong>📧 Email:</strong> contact@sarkariresult.com</p>
+                    <p><strong>📱 WhatsApp:</strong> +91-XXXXXXXXXX</p>
+                    <p><strong>📍 Address:</strong> New Delhi, India</p>
+                  </div>
+
+                  <h4>Follow Us</h4>
+                  <p>
+                    <a href="#">Telegram</a> |
+                    <a href="#">WhatsApp</a> |
+                    <a href="#">Facebook</a> |
+                    <a href="#">Twitter</a>
+                  </p>
+
+                  <h4>Feedback Form</h4>
+                  <p>For detailed queries or job posting requests, please email us with your complete details.</p>
+                  `
     },
     privacy: {
       title: 'Privacy Policy',
       content: `
-        <h3>Privacy Policy</h3>
-        <p><strong>Last Updated:</strong> December 2024</p>
-        
-        <h4>Information We Collect</h4>
-        <p>We may collect the following types of information:</p>
-        <ul>
-          <li>Browser type and version</li>
-          <li>Pages visited and time spent</li>
-          <li>Referring website</li>
-          <li>IP address (anonymized)</li>
-        </ul>
-        
-        <h4>How We Use Information</h4>
-        <ul>
-          <li>Improve website functionality</li>
-          <li>Analyze traffic patterns</li>
-          <li>Provide relevant content</li>
-        </ul>
-        
-        <h4>Cookies</h4>
-        <p>We use cookies to enhance user experience. You can disable cookies in your browser settings.</p>
-        
-        <h4>Third-party Services</h4>
-        <p>We may use third-party services like Google Analytics and advertising networks.</p>
-        
-        <h4>Contact</h4>
-        <p>For privacy concerns, email us at privacy@sarkariresult.com</p>
-      `
+                  <h3>Privacy Policy</h3>
+                  <p><strong>Last Updated:</strong> December 2024</p>
+
+                  <h4>Information We Collect</h4>
+                  <p>We may collect the following types of information:</p>
+                  <ul>
+                    <li>Browser type and version</li>
+                    <li>Pages visited and time spent</li>
+                    <li>Referring website</li>
+                    <li>IP address (anonymized)</li>
+                  </ul>
+
+                  <h4>How We Use Information</h4>
+                  <ul>
+                    <li>Improve website functionality</li>
+                    <li>Analyze traffic patterns</li>
+                    <li>Provide relevant content</li>
+                  </ul>
+
+                  <h4>Cookies</h4>
+                  <p>We use cookies to enhance user experience. You can disable cookies in your browser settings.</p>
+
+                  <h4>Third-party Services</h4>
+                  <p>We may use third-party services like Google Analytics and advertising networks.</p>
+
+                  <h4>Contact</h4>
+                  <p>For privacy concerns, email us at privacy@sarkariresult.com</p>
+                  `
     },
     disclaimer: {
       title: 'Disclaimer',
       content: `
-        <h3>Disclaimer</h3>
-        
-        <h4>Information Accuracy</h4>
-        <p>While we strive to provide accurate and up-to-date information, we make no warranties about the completeness, reliability, or accuracy of the information on this website.</p>
-        
-        <h4>Official Sources</h4>
-        <p>All information is collected from official government websites and notifications. Users are advised to verify information from official sources before taking any action.</p>
-        
-        <h4>External Links</h4>
-        <p>This website contains links to external websites. We are not responsible for the content or privacy practices of these sites.</p>
-        
-        <h4>No Guarantee</h4>
-        <p>We do not guarantee any job offers, results, or admission. The final authority rests with the respective recruiting organizations.</p>
-        
-        <h4>Liability</h4>
-        <p>We shall not be held liable for any loss or damage arising from the use of information on this website.</p>
-        
-        <h4>Updates</h4>
-        <p>This disclaimer may be updated from time to time. Please check regularly for updates.</p>
-      `
+                  <h3>Disclaimer</h3>
+
+                  <h4>Information Accuracy</h4>
+                  <p>While we strive to provide accurate and up-to-date information, we make no warranties about the completeness, reliability, or accuracy of the information on this website.</p>
+
+                  <h4>Official Sources</h4>
+                  <p>All information is collected from official government websites and notifications. Users are advised to verify information from official sources before taking any action.</p>
+
+                  <h4>External Links</h4>
+                  <p>This website contains links to external websites. We are not responsible for the content or privacy practices of these sites.</p>
+
+                  <h4>No Guarantee</h4>
+                  <p>We do not guarantee any job offers, results, or admission. The final authority rests with the respective recruiting organizations.</p>
+
+                  <h4>Liability</h4>
+                  <p>We shall not be held liable for any loss or damage arising from the use of information on this website.</p>
+
+                  <h4>Updates</h4>
+                  <p>This disclaimer may be updated from time to time. Please check regularly for updates.</p>
+                  `
     }
   };
 

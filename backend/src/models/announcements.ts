@@ -300,31 +300,60 @@ export class AnnouncementModel {
   }
 
   static async getCategories(): Promise<string[]> {
-    const result = await pool.query<{ category: string }>(
-      'SELECT DISTINCT category FROM announcements WHERE is_active = true ORDER BY category'
-    );
-    return result.rows.map(row => row.category);
+    try {
+      const result = await pool.query<{ category: string }>(
+        'SELECT DISTINCT category FROM announcements WHERE is_active = true ORDER BY category'
+      );
+      return result.rows.map(row => row.category);
+    } catch (error) {
+      console.error('[DB Error] Falling back to mock categories:', (error as Error).message);
+      const categories = new Set(mockAnnouncements.filter(a => a.isActive).map(a => a.category).filter(Boolean));
+      return Array.from(categories).sort();
+    }
   }
 
   static async getOrganizations(): Promise<string[]> {
-    const result = await pool.query<{ organization: string }>(
-      'SELECT DISTINCT organization FROM announcements WHERE is_active = true ORDER BY organization'
-    );
-    return result.rows.map(row => row.organization);
+    try {
+      const result = await pool.query<{ organization: string }>(
+        'SELECT DISTINCT organization FROM announcements WHERE is_active = true ORDER BY organization'
+      );
+      return result.rows.map(row => row.organization);
+    } catch (error) {
+      console.error('[DB Error] Falling back to mock organizations:', (error as Error).message);
+      const organizations = new Set(mockAnnouncements.filter(a => a.isActive).map(a => a.organization).filter(Boolean));
+      return Array.from(organizations).sort();
+    }
   }
 
   static async getTags(): Promise<{ name: string, count: number }[]> {
-    const result = await pool.query(
-      `SELECT t.name, COUNT(at.announcement_id) as count 
-       FROM tags t
-       JOIN announcement_tags at ON t.id = at.tag_id
-       JOIN announcements a ON at.announcement_id = a.id
-       WHERE a.is_active = true
-       GROUP BY t.id, t.name
-       ORDER BY count DESC
-       LIMIT 30`
-    );
-    return result.rows;
+    try {
+      const result = await pool.query(
+        `SELECT t.name, COUNT(at.announcement_id) as count 
+         FROM tags t
+         JOIN announcement_tags at ON t.id = at.tag_id
+         JOIN announcements a ON at.announcement_id = a.id
+         WHERE a.is_active = true
+         GROUP BY t.id, t.name
+         ORDER BY count DESC
+         LIMIT 30`
+      );
+      return result.rows;
+    } catch (error) {
+      console.error('[DB Error] Falling back to mock tags:', (error as Error).message);
+      const tagCounts = new Map<string, number>();
+      mockAnnouncements
+        .filter(a => a.isActive)
+        .forEach(a => {
+          a.tags?.forEach(t => {
+            tagCounts.set(t.name, (tagCounts.get(t.name) || 0) + 1);
+          });
+        });
+
+      return Array.from(tagCounts.entries())
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 30);
+    }
   }
 
   private static generateSlug(text: string): string {

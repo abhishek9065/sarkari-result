@@ -58,22 +58,32 @@ router.get('/match', async (req, res) => {
         const ageRelaxation = AGE_RELAXATION[category.toLowerCase()] || 0;
 
         // Fetch active jobs with deadline in future
-        const result = await pool.query(`
-            SELECT 
-                id, title, slug, organization, category, 
-                total_posts, deadline, location,
-                min_qualification, age_limit, external_link
-            FROM announcements
-            WHERE type = 'job' 
-              AND is_active = true 
-              AND (deadline IS NULL OR deadline > NOW())
-            ORDER BY posted_at DESC
-            LIMIT 100
-        `);
+        let rows;
+        try {
+            const result = await pool.query(`
+                SELECT 
+                    id, title, slug, organization, category, 
+                    total_posts, deadline, location,
+                    min_qualification, age_limit, external_link,
+                    min_qualification as "minQualification",
+                    age_limit as "ageLimit"
+                FROM announcements
+                WHERE type = 'job' 
+                  AND is_active = true 
+                  AND (deadline IS NULL OR deadline > NOW())
+                ORDER BY posted_at DESC
+                LIMIT 100
+            `);
+            rows = result.rows;
+        } catch (error) {
+            console.error('[Job Match] DB Error, using mock data:', (error as Error).message);
+            const { mockAnnouncements } = await import('../models/mockData.js');
+            rows = mockAnnouncements.filter(a => a.type === 'job' && a.isActive);
+        }
 
         const matchedJobs: MatchedJob[] = [];
 
-        for (const job of result.rows) {
+        for (const job of rows) {
             const matchReasons: string[] = [];
             let matchScore = 0;
 
