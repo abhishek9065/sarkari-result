@@ -94,7 +94,9 @@ export function JobMatcher() {
         if (saved) {
             try {
                 setProfile(JSON.parse(saved));
-            } catch { }
+            } catch {
+                // Invalid JSON in localStorage, use defaults
+            }
         }
     }, []);
 
