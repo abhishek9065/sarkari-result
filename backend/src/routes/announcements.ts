@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { cacheMiddleware, cacheKeys } from '../middleware/cache.js';
 import { cacheControl } from '../middleware/cacheControl.js';
+import { invalidateCache } from '../utils/cache.js';
 import { AnnouncementModel } from '../models/announcements.js';
 import { SubscriptionModel } from '../models/subscriptions.js';
 import { ContentType, CreateAnnouncementDto } from '../types.js';
@@ -155,6 +156,11 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       console.error('Failed to send push notifications:', err);
     });
 
+    // Invalidate cached announcement lists
+    invalidateCache('announcements');
+    invalidateCache('trending');
+    invalidateCache('search');
+
     return res.status(201).json({ data: announcement });
   } catch (error) {
     console.error('Error creating announcement:', error);
@@ -181,6 +187,12 @@ router.patch('/:id', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Announcement not found' });
     }
 
+    // Invalidate cached data for this announcement and lists
+    invalidateCache(`announcement:${announcement.slug}`);
+    invalidateCache('announcements');
+    invalidateCache('trending');
+    invalidateCache('search');
+
     return res.json({ data: announcement });
   } catch (error) {
     console.error('Error updating announcement:', error);
@@ -202,6 +214,11 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
     if (!deleted) {
       return res.status(404).json({ error: 'Announcement not found' });
     }
+
+    // Invalidate cached data
+    invalidateCache('announcements');
+    invalidateCache('trending');
+    invalidateCache('search');
 
     return res.json({ message: 'Announcement deleted successfully' });
   } catch (error) {
