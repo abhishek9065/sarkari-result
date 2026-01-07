@@ -196,15 +196,37 @@ export function sanitizeInput(input: string): string {
 }
 
 /**
- * Sanitize object recursively
+ * Fields that should NOT be sanitized (passwords, tokens, etc.)
+ * These fields need their exact values preserved for authentication
  */
-export function sanitizeObject<T extends object>(obj: T): T {
+const SENSITIVE_FIELDS = new Set([
+    'password',
+    'currentPassword',
+    'newPassword',
+    'confirmPassword',
+    'token',
+    'accessToken',
+    'refreshToken',
+    'apiKey',
+    'secret',
+    'auth',
+    'p256dh',  // Push notification key
+    'authorization',
+]);
+
+/**
+ * Sanitize object recursively, skipping sensitive fields
+ */
+export function sanitizeObject<T extends object>(obj: T, parentKey?: string): T {
     const result: any = {};
     for (const [key, value] of Object.entries(obj)) {
-        if (typeof value === 'string') {
+        // Skip sanitization for sensitive fields
+        if (SENSITIVE_FIELDS.has(key.toLowerCase())) {
+            result[key] = value;
+        } else if (typeof value === 'string') {
             result[key] = sanitizeInput(value);
         } else if (value && typeof value === 'object' && !Array.isArray(value)) {
-            result[key] = sanitizeObject(value);
+            result[key] = sanitizeObject(value, key);
         } else {
             result[key] = value;
         }
