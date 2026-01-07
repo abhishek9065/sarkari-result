@@ -30,16 +30,14 @@ router.post('/', async (req, res) => {
             return res.status(500).json({ error: 'Failed to create subscription' });
         }
 
-        // Auto-verify the subscription immediately (skip email verification for now)
+        // Auto-verify the subscription immediately (no email verification required)
+        // This simplifies the user experience - they're subscribed right away
         if (subscription.verificationToken) {
             await SubscriptionModel.verify(subscription.verificationToken);
         }
 
-        // Try to send verification email in background (don't wait for it)
-        if (isEmailConfigured() && subscription.verificationToken) {
-            sendVerificationEmail(email, subscription.verificationToken, categories)
-                .catch(err => console.error('Failed to send verification email:', err));
-        }
+        // Note: We don't send verification email since subscription is auto-verified
+        // This avoids the confusing scenario of sending a verification link that's already used
 
         return res.status(201).json({
             message: 'Subscribed successfully! You will receive notifications for new announcements.',
