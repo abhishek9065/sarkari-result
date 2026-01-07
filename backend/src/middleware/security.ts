@@ -1,13 +1,35 @@
 import { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
+import { pool } from '../db.js';
 
 /**
  * Comprehensive security middleware
  * Applies multiple security layers to protect against common attacks
+ * 
+ * Note: Brute-force protection uses PostgreSQL for persistence across
+ * instances and restarts, with in-memory fallback if DB is unavailable.
  */
 
-// Failed login tracking for brute-force protection
-const failedLogins = new Map<string, { count: number; blockedUntil: number }>();
+// Fallback in-memory store (used when DB is unavailable)
+const failedLoginsMemory = new Map<string, { count: number; blockedUntil: number }>();
+
+// Ensure brute-force table exists
+async function ensureBruteForceTable(): Promise<void> {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS failed_logins (
+                ip VARCHAR(45) PRIMARY KEY,
+                count INTEGER DEFAULT 1,
+                blocked_until BIGINT DEFAULT 0,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+    } catch (error) {
+        console.error('[Security] Failed to create brute-force table:', error);
+    }
+}
+
+ensureBruteForceTable();
 
 /**
  * Helmet security headers configuration
@@ -49,20 +71,41 @@ export const securityHeaders = helmet({
 /**
  * Brute-force protection for login attempts
  * Blocks IP after 5 failed attempts for 15 minutes
+ * Uses PostgreSQL with in-memory fallback
  */
-export function bruteForceProtection(req: Request, res: Response, next: NextFunction) {
+export async function bruteForceProtection(req: Request, res: Response, next: NextFunction) {
     const ip = getClientIP(req);
     const now = Date.now();
 
-    const record = failedLogins.get(ip);
+    try {
+        // Try database first
+        const result = await pool.query(
+            'SELECT count, blocked_until FROM failed_logins WHERE ip = $1',
+            [ip]
+        );
 
-    if (record && now < record.blockedUntil) {
-        const waitTime = Math.ceil((record.blockedUntil - now) / 1000 / 60);
-        return res.status(429).json({
-            error: 'Too many failed login attempts',
-            message: `Please try again in ${waitTime} minutes`,
-            blockedUntil: record.blockedUntil
-        });
+        if (result.rows.length > 0) {
+            const { blocked_until } = result.rows[0];
+            if (now < Number(blocked_until)) {
+                const waitTime = Math.ceil((Number(blocked_until) - now) / 1000 / 60);
+                return res.status(429).json({
+                    error: 'Too many failed login attempts',
+                    message: `Please try again in ${waitTime} minutes`,
+                    blockedUntil: Number(blocked_until)
+                });
+            }
+        }
+    } catch (error) {
+        // Fall back to memory
+        const record = failedLoginsMemory.get(ip);
+        if (record && now < record.blockedUntil) {
+            const waitTime = Math.ceil((record.blockedUntil - now) / 1000 / 60);
+            return res.status(429).json({
+                error: 'Too many failed login attempts',
+                message: `Please try again in ${waitTime} minutes`,
+                blockedUntil: record.blockedUntil
+            });
+        }
     }
 
     next();
@@ -72,18 +115,40 @@ export function bruteForceProtection(req: Request, res: Response, next: NextFunc
  * Record failed login attempt
  * Call this after a failed login
  */
-export function recordFailedLogin(ip: string) {
+export async function recordFailedLogin(ip: string) {
     const now = Date.now();
-    const record = failedLogins.get(ip);
+    const blockTime = now + 15 * 60 * 1000; // 15 minutes
 
-    if (!record) {
-        failedLogins.set(ip, { count: 1, blockedUntil: 0 });
-    } else {
-        record.count++;
-        // Block after 5 failed attempts for 15 minutes
-        if (record.count >= 5) {
-            record.blockedUntil = now + 15 * 60 * 1000; // 15 minutes
+    try {
+        // Upsert to database
+        const result = await pool.query(
+            `INSERT INTO failed_logins (ip, count, blocked_until, updated_at)
+             VALUES ($1, 1, 0, NOW())
+             ON CONFLICT (ip) DO UPDATE SET
+                 count = failed_logins.count + 1,
+                 blocked_until = CASE 
+                     WHEN failed_logins.count + 1 >= 5 THEN $2
+                     ELSE failed_logins.blocked_until
+                 END,
+                 updated_at = NOW()
+             RETURNING count`,
+            [ip, blockTime]
+        );
+
+        if (result.rows[0].count >= 5) {
             console.log(`[SECURITY] IP ${ip} blocked for 15 minutes due to failed login attempts`);
+        }
+    } catch (error) {
+        // Fall back to memory
+        const record = failedLoginsMemory.get(ip);
+        if (!record) {
+            failedLoginsMemory.set(ip, { count: 1, blockedUntil: 0 });
+        } else {
+            record.count++;
+            if (record.count >= 5) {
+                record.blockedUntil = blockTime;
+                console.log(`[SECURITY] IP ${ip} blocked for 15 minutes due to failed login attempts (memory)`);
+            }
         }
     }
 }
@@ -91,8 +156,13 @@ export function recordFailedLogin(ip: string) {
 /**
  * Clear failed login record on successful login
  */
-export function clearFailedLogins(ip: string) {
-    failedLogins.delete(ip);
+export async function clearFailedLogins(ip: string) {
+    try {
+        await pool.query('DELETE FROM failed_logins WHERE ip = $1', [ip]);
+    } catch (error) {
+        // Fall back to memory cleanup
+    }
+    failedLoginsMemory.delete(ip);
 }
 
 /**
@@ -189,12 +259,24 @@ export function validateContentType(req: Request, res: Response, next: NextFunct
     next();
 }
 
-// Cleanup old blocked IPs periodically
-setInterval(() => {
+// Cleanup old blocked IPs periodically (both DB and memory)
+setInterval(async () => {
     const now = Date.now();
-    for (const [ip, record] of failedLogins.entries()) {
-        if (now > record.blockedUntil + 60 * 60 * 1000) { // Keep for 1 hour after block expires
-            failedLogins.delete(ip);
+
+    // Cleanup database
+    try {
+        await pool.query(
+            'DELETE FROM failed_logins WHERE blocked_until < $1 AND blocked_until > 0',
+            [now - 60 * 60 * 1000] // After block expired + 1 hour
+        );
+    } catch (error) {
+        // Silently fail - not critical
+    }
+
+    // Cleanup memory store
+    for (const [ip, record] of failedLoginsMemory.entries()) {
+        if (now > record.blockedUntil + 60 * 60 * 1000) {
+            failedLoginsMemory.delete(ip);
         }
     }
 }, 5 * 60 * 1000); // Every 5 minutes
