@@ -47,13 +47,23 @@ export function cacheMiddleware(options: CacheOptions = {}) {
 
 /**
  * Cache key generators for different endpoints
+ * IMPORTANT: Include ALL query parameters that affect the response
  */
 export const cacheKeys = {
     announcements: (req: Request) => {
-        const type = req.query.type || 'all';
-        const page = req.query.page || 1;
-        const limit = req.query.limit || 50;
-        return `announcements:${type}:${page}:${limit}`;
+        // Include all parameters that affect the response
+        const params = [
+            `type:${req.query.type || 'all'}`,
+            `page:${req.query.page || 1}`,
+            `limit:${req.query.limit || 50}`,
+            `search:${req.query.search || ''}`,
+            `category:${req.query.category || ''}`,
+            `organization:${req.query.organization || ''}`,
+            `qualification:${req.query.qualification || ''}`,
+            `sort:${req.query.sort || 'latest'}`,
+            `offset:${req.query.offset || 0}`,
+        ];
+        return `announcements:${params.join(':')}`;
     },
 
     announcementBySlug: (req: Request) => `announcement:${req.params.slug}`,
@@ -66,5 +76,14 @@ export const cacheKeys = {
         return `calendar:${year}:${month}`;
     },
 
-    search: (req: Request) => `search:${req.query.q}`,
+    search: (req: Request) => {
+        // Include all search parameters
+        const params = [
+            `q:${req.query.q || ''}`,
+            `type:${req.query.type || 'all'}`,
+            `limit:${req.query.limit || 20}`,
+            `offset:${req.query.offset || 0}`,
+        ];
+        return `search:${params.join(':')}`;
+    },
 };
