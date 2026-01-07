@@ -23,7 +23,8 @@ import { responseTimeLogger, getPerformanceStats } from './middleware/responseTi
 import {
   securityHeaders,
   blockSuspiciousAgents,
-  sanitizeRequestBody
+  sanitizeRequestBody,
+  validateContentType
 } from './middleware/security.js';
 import { authenticateToken, requireAdmin } from './middleware/auth.js';
 
@@ -81,6 +82,9 @@ app.use(cors({
 }));
 
 app.use(express.json({ limit: '5mb' })); // Reduced from 10mb for security
+
+// Validate Content-Type for POST/PUT/PATCH requests
+app.use(validateContentType);
 
 // Sanitize all request bodies
 app.use(sanitizeRequestBody);
