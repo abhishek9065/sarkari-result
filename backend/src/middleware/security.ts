@@ -12,22 +12,28 @@ const failedLogins = new Map<string, { count: number; blockedUntil: number }>();
 /**
  * Helmet security headers configuration
  * Protects against: XSS, clickjacking, MIME sniffing, etc.
+ * 
+ * Note: This backend serves only JSON API responses, not HTML.
+ * CSP is stricter since we don't need inline scripts/styles.
  */
 export const securityHeaders = helmet({
     contentSecurityPolicy: {
         directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Relax for React
-            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'", "https://sarkari-result-backend.onrender.com", "https://*.vercel.app"],
-            frameSrc: ["'none'"],
-            objectSrc: ["'none'"],
+            defaultSrc: ["'none'"], // Deny everything by default for API
+            scriptSrc: ["'none'"], // No scripts needed for JSON API
+            styleSrc: ["'none'"], // No styles needed for JSON API
+            fontSrc: ["'none'"], // No fonts needed for JSON API
+            imgSrc: ["'none'"], // No images served from API
+            connectSrc: ["'self'"], // Only allow connections to self
+            frameSrc: ["'none'"], // No frames needed
+            objectSrc: ["'none'"], // No plugins
+            baseUri: ["'none'"], // Prevent base tag injection
+            formAction: ["'none'"], // No forms in API responses
+            frameAncestors: ["'none'"], // Prevent embedding
             upgradeInsecureRequests: [],
         },
     },
-    crossOriginEmbedderPolicy: false, // Allow embedding
+    crossOriginEmbedderPolicy: false, // Allow CORS
     crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow CORS
     hsts: {
         maxAge: 31536000, // 1 year
@@ -37,7 +43,7 @@ export const securityHeaders = helmet({
     referrerPolicy: { policy: "strict-origin-when-cross-origin" },
     xContentTypeOptions: true, // nosniff
     xFrameOptions: { action: "deny" }, // Prevent clickjacking
-    xXssProtection: true, // Enable XSS filter
+    xXssProtection: false, // Deprecated, rely on CSP instead
 });
 
 /**
