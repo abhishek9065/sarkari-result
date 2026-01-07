@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import { config } from '../config.js';
 import { JwtPayload } from '../types.js';
-import { isTokenBlacklistedSync, hasSuspiciousContent, logSecurityEvent } from '../utils/security.js';
+import { isTokenBlacklisted } from '../utils/security.js';
 
 // Extend Express Request type to include user
 declare global {
@@ -14,7 +14,11 @@ declare global {
   }
 }
 
-export function authenticateToken(req: Request, res: Response, next: NextFunction): void {
+/**
+ * Async token authentication middleware
+ * Checks database for blacklisted tokens to ensure cross-instance consistency
+ */
+export async function authenticateToken(req: Request, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -24,10 +28,16 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
   }
 
   // Check if token is blacklisted (user logged out)
-  // Uses fast sync memory check, DB check happens on background refresh
-  if (isTokenBlacklistedSync(token)) {
-    res.status(401).json({ error: 'Token has been revoked' });
-    return;
+  // Uses async DB check for multi-instance consistency
+  try {
+    const isBlacklisted = await isTokenBlacklisted(token);
+    if (isBlacklisted) {
+      res.status(401).json({ error: 'Token has been revoked' });
+      return;
+    }
+  } catch (error) {
+    console.error('[Auth] Error checking token blacklist:', error);
+    // Continue if blacklist check fails - token validation will still work
   }
 
   try {
@@ -47,13 +57,25 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction): v
   next();
 }
 
-export function optionalAuth(req: Request, res: Response, next: NextFunction): void {
+export async function optionalAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
     next();
     return;
+  }
+
+  // Check blacklist for optional auth too (cross-instance consistency)
+  try {
+    const isBlacklisted = await isTokenBlacklisted(token);
+    if (isBlacklisted) {
+      // For optional auth, we just don't set the user
+      next();
+      return;
+    }
+  } catch (error) {
+    // Continue without user on blacklist check error
   }
 
   try {
