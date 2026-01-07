@@ -319,6 +319,45 @@ export class AnnouncementModel {
     }
   }
 
+  /**
+   * Get announcements by deadline date range (database-level filtering for calendar)
+   */
+  static async getByDeadlineRange(options: {
+    startDate: Date;
+    endDate: Date;
+    limit?: number;
+  }): Promise<Announcement[]> {
+    try {
+      let query = `
+        SELECT 
+          a.id, a.title, a.slug, a.type, a.category, a.organization,
+          a.external_link as "externalLink", 
+          a.location, a.deadline,
+          a.total_posts as "totalPosts",
+          a.posted_at as "postedAt"
+        FROM announcements a
+        WHERE a.is_active = true
+          AND a.deadline IS NOT NULL
+          AND a.deadline >= $1
+          AND a.deadline <= $2
+        ORDER BY a.deadline ASC
+      `;
+
+      const params: any[] = [options.startDate, options.endDate];
+
+      if (options.limit) {
+        query += ` LIMIT $3`;
+        params.push(options.limit);
+      }
+
+      const result = await pool.query<Announcement>(query, params);
+      return result.rows;
+    } catch (error) {
+      console.error('[DB Error] getByDeadlineRange failed:', (error as Error).message);
+      return [];
+    }
+  }
+
   static async delete(id: number): Promise<boolean> {
     const client = await pool.connect();
     try {
