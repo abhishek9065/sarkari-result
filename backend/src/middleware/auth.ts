@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import { config } from '../config.js';
 import { JwtPayload } from '../types.js';
-import { isTokenBlacklistedSync, hasSuspiciousContent, logSecurityEvent } from '../utils/security.js';
+import { isTokenBlacklisted, isTokenBlacklistedSync, hasSuspiciousContent, logSecurityEvent } from '../utils/security.js';
 
 // Extend Express Request type to include user
 declare global {
@@ -14,7 +14,7 @@ declare global {
   }
 }
 
-export function authenticateToken(req: Request, res: Response, next: NextFunction): void {
+export async function authenticateToken(req: Request, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -24,8 +24,12 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
   }
 
   // Check if token is blacklisted (user logged out)
-  // Uses fast sync memory check, DB check happens on background refresh
+  // Uses fast sync memory check, then DB check for multi-instance consistency
   if (isTokenBlacklistedSync(token)) {
+    res.status(401).json({ error: 'Token has been revoked' });
+    return;
+  }
+  if (await isTokenBlacklisted(token)) {
     res.status(401).json({ error: 'Token has been revoked' });
     return;
   }

@@ -11,18 +11,11 @@ router.get('/', cacheMiddleware({ ttl: 600, keyGenerator: cacheKeys.calendar }),
         const year = parseInt(req.query.year as string) || new Date().getFullYear();
         const month = parseInt(req.query.month as string) || new Date().getMonth() + 1;
 
-        // Get all announcements with deadlines in the specified month
+        // Get announcements with deadlines in the specified month
         const startDate = new Date(year, month - 1, 1);
-        const endDate = new Date(year, month, 0);
+        const endDate = new Date(year, month, 0, 23, 59, 59, 999);
 
-        const allAnnouncements = await AnnouncementModel.findAll({ limit: 200 });
-
-        // Filter to only those with deadlines in the month
-        const filteredAnnouncements = allAnnouncements.filter(a => {
-            if (!a.deadline) return false;
-            const deadline = new Date(a.deadline);
-            return deadline >= startDate && deadline <= endDate;
-        });
+        const filteredAnnouncements = await AnnouncementModel.findByDeadlineRange(startDate, endDate);
 
         // Group by date
         const byDate: Record<string, typeof filteredAnnouncements> = {};
@@ -47,20 +40,10 @@ router.get('/', cacheMiddleware({ ttl: 600, keyGenerator: cacheKeys.calendar }),
 // GET /api/calendar/upcoming - Get upcoming deadlines for next 30 days
 router.get('/upcoming', cacheMiddleware({ ttl: 300 }), async (req, res) => {
     try {
-        const limit = parseInt(req.query.limit as string) || 20;
+        const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
         const now = new Date();
         const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-        const allAnnouncements = await AnnouncementModel.findAll({ limit: 200 });
-
-        const upcoming = allAnnouncements
-            .filter(a => {
-                if (!a.deadline) return false;
-                const deadline = new Date(a.deadline);
-                return deadline >= now && deadline <= thirtyDaysLater;
-            })
-            .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())
-            .slice(0, limit);
+        const upcoming = await AnnouncementModel.findUpcomingDeadlines(now, thirtyDaysLater, limit);
 
         return res.json({
             data: upcoming,

@@ -396,6 +396,73 @@ export class AnnouncementModel {
     }
   }
 
+  static async findByDeadlineRange(startDate: Date, endDate: Date): Promise<Announcement[]> {
+    try {
+      const result = await pool.query<Announcement>(
+        `
+        SELECT 
+          a.id, a.title, a.slug, a.type, a.category, a.organization, a.content,
+          a.external_link as "externalLink", 
+          a.location, a.deadline, 
+          a.min_qualification as "minQualification",
+          a.age_limit as "ageLimit", 
+          a.application_fee as "applicationFee",
+          a.total_posts as "totalPosts", 
+          a.posted_by as "postedBy",
+          a.posted_at as "postedAt", 
+          a.updated_at as "updatedAt",
+          a.is_active as "isActive", 
+          a.view_count as "viewCount"
+        FROM announcements a
+        WHERE a.is_active = true
+          AND a.deadline IS NOT NULL
+          AND a.deadline >= $1
+          AND a.deadline <= $2
+        ORDER BY a.deadline ASC
+        `,
+        [startDate, endDate]
+      );
+      return result.rows;
+    } catch (error) {
+      console.error('[DB Error] findByDeadlineRange failed:', (error as Error).message);
+      return [];
+    }
+  }
+
+  static async findUpcomingDeadlines(startDate: Date, endDate: Date, limit: number): Promise<Announcement[]> {
+    try {
+      const result = await pool.query<Announcement>(
+        `
+        SELECT 
+          a.id, a.title, a.slug, a.type, a.category, a.organization, a.content,
+          a.external_link as "externalLink", 
+          a.location, a.deadline, 
+          a.min_qualification as "minQualification",
+          a.age_limit as "ageLimit", 
+          a.application_fee as "applicationFee",
+          a.total_posts as "totalPosts", 
+          a.posted_by as "postedBy",
+          a.posted_at as "postedAt", 
+          a.updated_at as "updatedAt",
+          a.is_active as "isActive", 
+          a.view_count as "viewCount"
+        FROM announcements a
+        WHERE a.is_active = true
+          AND a.deadline IS NOT NULL
+          AND a.deadline >= $1
+          AND a.deadline <= $2
+        ORDER BY a.deadline ASC
+        LIMIT $3
+        `,
+        [startDate, endDate, limit]
+      );
+      return result.rows;
+    } catch (error) {
+      console.error('[DB Error] findUpcomingDeadlines failed:', (error as Error).message);
+      return [];
+    }
+  }
+
   private static generateSlug(text: string): string {
     return text
       .toLowerCase()
