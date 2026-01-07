@@ -28,11 +28,8 @@ export const SubscriptionModel = {
         const unsubscribeToken = generateToken();
 
         try {
-            // Format categories as PostgreSQL array literal
-            const categoriesArray = categories.length > 0
-                ? `{${categories.join(',')}}`
-                : '{}';
-
+            // Use proper PostgreSQL array syntax - pass as JSON and let PG cast it
+            // This avoids issues with special characters in category names
             const result = await pool.query(
                 `INSERT INTO email_subscriptions (email, categories, verification_token, unsubscribe_token)
          VALUES ($1, $2::text[], $3, $4)
@@ -42,7 +39,7 @@ export const SubscriptionModel = {
            is_verified = false,
            updated_at = CURRENT_TIMESTAMP
          RETURNING *`,
-                [email, categoriesArray, verificationToken, unsubscribeToken]
+                [email, categories, verificationToken, unsubscribeToken]
             );
             return mapSubscription(result.rows[0]);
         } catch (error) {
