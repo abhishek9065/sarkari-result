@@ -1,22 +1,18 @@
 import { Router } from 'express';
 import { scrapeAllSources } from '../services/scraper.js';
 import { pool } from '../db.js';
+import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 
 const router = Router();
 
 /**
  * Manually trigger a scrape (admin only)
  * POST /api/scraper/run
+ * Requires valid JWT token with admin role
  */
-router.post('/run', async (req, res) => {
+router.post('/run', authenticateToken, requireAdmin, async (req, res) => {
     try {
-        // Verify admin token
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-
-        console.log('[Scraper API] Manual scrape triggered');
+        console.log(`[Scraper API] Manual scrape triggered by admin: ${req.user?.email}`);
         const result = await scrapeAllSources();
 
         res.json({
