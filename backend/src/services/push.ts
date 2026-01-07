@@ -3,12 +3,26 @@ import { pool } from '../db.js';
 import { config } from '../config.js';
 import { Announcement } from '../types.js';
 
-// Configure web-push with VAPID keys
-webpush.setVapidDetails(
-    'mailto:admin@sarkariresult.com',
-    config.vapidPublicKey,
-    config.vapidPrivateKey
-);
+// Track if push notifications are properly configured
+let pushConfigured = false;
+
+// Configure web-push with VAPID keys (only if keys are provided)
+if (config.vapidPublicKey && config.vapidPrivateKey) {
+    try {
+        webpush.setVapidDetails(
+            'mailto:admin@sarkariresult.com',
+            config.vapidPublicKey,
+            config.vapidPrivateKey
+        );
+        pushConfigured = true;
+        console.log('[Push] Web push notifications configured');
+    } catch (error) {
+        console.error('[Push] Failed to configure VAPID:', error);
+        pushConfigured = false;
+    }
+} else {
+    console.log('[Push] VAPID keys not configured - push notifications disabled');
+}
 
 export interface PushSubscription {
     id: number;
@@ -22,7 +36,7 @@ export interface PushSubscription {
  * Check if push notifications are configured
  */
 export const isPushConfigured = (): boolean => {
-    return !!(config.vapidPublicKey && config.vapidPrivateKey);
+    return pushConfigured;
 };
 
 /**
