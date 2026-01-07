@@ -25,6 +25,7 @@ import {
   blockSuspiciousAgents,
   sanitizeRequestBody
 } from './middleware/security.js';
+import { authenticateToken, requireAdmin } from './middleware/auth.js';
 
 const app = express();
 
@@ -112,8 +113,8 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Performance stats endpoint (admin only in production)
-app.get('/api/performance', (_req, res) => {
+// Performance stats endpoint (admin only)
+app.get('/api/performance', authenticateToken, requireAdmin, (_req, res) => {
   res.json({ data: getPerformanceStats() });
 });
 
