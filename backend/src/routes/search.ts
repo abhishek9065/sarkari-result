@@ -5,45 +5,34 @@ import { cacheMiddleware, cacheKeys } from '../middleware/cache.js';
 
 const router = express.Router();
 
-// GET /api/search - Full text search across announcements
+// GET /api/search - Full text search across announcements (uses database full-text search)
 router.get('/', cacheMiddleware({ ttl: 120, keyGenerator: cacheKeys.search }), async (req, res) => {
     try {
-        const q = (req.query.q as string || '').trim().toLowerCase();
+        const q = (req.query.q as string || '').trim();
 
         if (!q || q.length < 2) {
             return res.status(400).json({ error: 'Search query must be at least 2 characters' });
         }
 
         const type = req.query.type as string;
-        const limit = parseInt(req.query.limit as string) || 20;
+        const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
+        const offset = parseInt(req.query.offset as string) || 0;
 
-        // Get all announcements and filter
-        const allAnnouncements = await AnnouncementModel.findAll({ limit: 200 });
-
-        let results = allAnnouncements.filter(a =>
-            a.title.toLowerCase().includes(q) ||
-            a.organization.toLowerCase().includes(q) ||
-            a.category.toLowerCase().includes(q) ||
-            (a.content && a.content.toLowerCase().includes(q))
-        );
-
-        if (type) {
-            results = results.filter(a => a.type === type);
-        }
-
-        // Sort by relevance (title matches first, then by date)
-        results.sort((a, b) => {
-            const aInTitle = a.title.toLowerCase().includes(q) ? 1 : 0;
-            const bInTitle = b.title.toLowerCase().includes(q) ? 1 : 0;
-            if (aInTitle !== bInTitle) return bInTitle - aInTitle;
-            return new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime();
+        // Use database-level full-text search (more efficient, no limit issues)
+        const results = await AnnouncementModel.findAll({
+            search: q,
+            type: type as any,
+            limit,
+            offset,
+            sort: 'newest',
         });
 
         return res.json({
             query: q,
-            data: results.slice(0, limit),
+            data: results,
             count: results.length,
-            totalResults: results.length
+            offset,
+            limit,
         });
     } catch (error) {
         console.error('Error searching:', error);
@@ -54,22 +43,27 @@ router.get('/', cacheMiddleware({ ttl: 120, keyGenerator: cacheKeys.search }), a
 // GET /api/search/suggestions - Get search suggestions based on input
 router.get('/suggestions', cacheMiddleware({ ttl: 300 }), async (req, res) => {
     try {
-        const q = (req.query.q as string || '').trim().toLowerCase();
+        const q = (req.query.q as string || '').trim();
 
         if (!q || q.length < 2) {
             return res.json({ suggestions: [] });
         }
 
-        const allAnnouncements = await AnnouncementModel.findAll({ limit: 100 });
+        // Use database-level search to get matching results
+        const results = await AnnouncementModel.findAll({
+            search: q,
+            limit: 20,
+        });
 
-        // Get unique matching titles and organizations
+        // Extract unique titles and organizations
         const suggestions = new Set<string>();
+        const qLower = q.toLowerCase();
 
-        allAnnouncements.forEach(a => {
-            if (a.title.toLowerCase().includes(q)) {
+        results.forEach(a => {
+            if (a.title.toLowerCase().includes(qLower)) {
                 suggestions.add(a.title);
             }
-            if (a.organization.toLowerCase().includes(q)) {
+            if (a.organization.toLowerCase().includes(qLower)) {
                 suggestions.add(a.organization);
             }
         });

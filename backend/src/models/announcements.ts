@@ -279,6 +279,46 @@ export class AnnouncementModel {
     await pool.query('UPDATE announcements SET view_count = view_count + 1 WHERE id = $1', [id]);
   }
 
+  /**
+   * Get trending announcements sorted by view count (database-level sorting)
+   */
+  static async getTrending(options?: { type?: ContentType; limit?: number }): Promise<Announcement[]> {
+    try {
+      let query = `
+        SELECT 
+          a.id, a.title, a.slug, a.type, a.category, a.organization,
+          a.external_link as "externalLink", 
+          a.location, a.deadline,
+          a.total_posts as "totalPosts",
+          a.posted_at as "postedAt",
+          a.view_count as "viewCount"
+        FROM announcements a
+        WHERE a.is_active = true
+      `;
+
+      const params: any[] = [];
+      let paramCount = 0;
+
+      if (options?.type) {
+        query += ` AND a.type = $${++paramCount}`;
+        params.push(options.type);
+      }
+
+      query += ` ORDER BY a.view_count DESC NULLS LAST, a.posted_at DESC`;
+
+      if (options?.limit) {
+        query += ` LIMIT $${++paramCount}`;
+        params.push(options.limit);
+      }
+
+      const result = await pool.query<Announcement>(query, params);
+      return result.rows;
+    } catch (error) {
+      console.error('[DB Error] getTrending failed:', (error as Error).message);
+      return [];
+    }
+  }
+
   static async delete(id: number): Promise<boolean> {
     const client = await pool.connect();
     try {

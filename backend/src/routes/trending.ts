@@ -1,28 +1,18 @@
 import express from 'express';
-import { z } from 'zod';
 import { AnnouncementModel } from '../models/announcements.js';
 import { cacheMiddleware, cacheKeys } from '../middleware/cache.js';
+import { ContentType } from '../types.js';
 
 const router = express.Router();
 
-// GET /api/trending - Get most viewed announcements
+// GET /api/trending - Get most viewed announcements (database-level sorting)
 router.get('/', cacheMiddleware({ ttl: 600, keyGenerator: cacheKeys.trending }), async (req, res) => {
     try {
-        const limit = parseInt(req.query.limit as string) || 10;
-        const type = req.query.type as string;
+        const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
+        const type = req.query.type as ContentType | undefined;
 
-        // Get all announcements sorted by view count
-        const allAnnouncements = await AnnouncementModel.findAll({ limit: 100 });
-
-        let filtered = allAnnouncements;
-        if (type) {
-            filtered = allAnnouncements.filter(a => a.type === type);
-        }
-
-        // Sort by view count (descending)
-        const trending = filtered
-            .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
-            .slice(0, limit);
+        // Use database-level sorting by view count
+        const trending = await AnnouncementModel.getTrending({ type, limit });
 
         return res.json({
             data: trending,
@@ -34,19 +24,19 @@ router.get('/', cacheMiddleware({ ttl: 600, keyGenerator: cacheKeys.trending }),
     }
 });
 
-// GET /api/trending/by-type - Get trending for each type
+// GET /api/trending/by-type - Get trending for each type (efficient parallel queries)
 router.get('/by-type', cacheMiddleware({ ttl: 600 }), async (req, res) => {
     try {
-        const allAnnouncements = await AnnouncementModel.findAll({ limit: 200 });
+        const types: ContentType[] = ['job', 'result', 'admit-card', 'answer-key', 'admission', 'syllabus'];
 
-        const types = ['job', 'result', 'admit-card', 'answer-key', 'admission', 'syllabus'];
-        const byType: Record<string, typeof allAnnouncements> = {};
+        // Run all queries in parallel for efficiency
+        const results = await Promise.all(
+            types.map(type => AnnouncementModel.getTrending({ type, limit: 5 }))
+        );
 
-        types.forEach(type => {
-            byType[type] = allAnnouncements
-                .filter(a => a.type === type)
-                .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
-                .slice(0, 5);
+        const byType: Record<string, any[]> = {};
+        types.forEach((type, index) => {
+            byType[type] = results[index];
         });
 
         return res.json({
