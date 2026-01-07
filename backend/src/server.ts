@@ -93,6 +93,21 @@ app.use('/api/auth', rateLimit({ windowMs: 60000, maxRequests: 20 })); // Increa
 // Response time logging for performance monitoring
 app.use(responseTimeLogger);
 
+// Root route - basic health check
+app.get('/', (_req, res) => {
+  res.json({
+    service: 'SarkariExams API',
+    status: 'running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      announcements: '/api/announcements',
+      search: '/api/search',
+      trending: '/api/trending'
+    }
+  });
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
