@@ -47,7 +47,13 @@ export function NotificationPrompt() {
 
                 // Get VAPID public key from backend
                 const response = await fetch(`${apiBase}/api/push/vapid-public-key`);
+                if (!response.ok) {
+                    throw new Error('Failed to load VAPID key');
+                }
                 const { publicKey } = await response.json();
+                if (!publicKey) {
+                    throw new Error('Missing VAPID public key');
+                }
 
                 const subscription = await registration.pushManager.subscribe({
                     userVisibleOnly: true,
@@ -55,11 +61,14 @@ export function NotificationPrompt() {
                 });
 
                 // Send subscription to backend
-                await fetch(`${apiBase}/api/push/subscribe`, {
+                const subscribeResponse = await fetch(`${apiBase}/api/push/subscribe`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(subscription.toJSON()),
                 });
+                if (!subscribeResponse.ok) {
+                    throw new Error('Failed to save push subscription');
+                }
 
                 console.log('Push subscription saved');
             }

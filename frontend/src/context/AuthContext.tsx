@@ -7,7 +7,7 @@ interface AuthContextType {
     isLoading: boolean;
     login: (email: string, password: string) => Promise<void>;
     register: (name: string, email: string, password: string) => Promise<void>;
-    logout: () => void;
+    logout: () => Promise<void>;
     isAuthenticated: boolean;
 }
 
@@ -77,12 +77,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('authUser', JSON.stringify(data.user));
     }, []);
 
-    const logout = useCallback(() => {
+    const logout = useCallback(async () => {
+        if (token) {
+            try {
+                await fetch(`${API_BASE}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+            } catch (error) {
+                console.error('Logout request failed:', error);
+            }
+        }
         setUser(null);
         setToken(null);
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
-    }, []);
+    }, [token]);
 
     const value: AuthContextType = {
         user,

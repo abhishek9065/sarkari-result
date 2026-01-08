@@ -23,15 +23,16 @@ export function DetailPage({ type }: DetailPageProps) {
 
         setLoading(true);
         // Fetch by slug
-        fetch(`${API_BASE}/api/announcements/slug/${slug}`)
+        fetch(`${API_BASE}/api/announcements/${slug}`)
             .then(res => res.ok ? res.json() : null)
             .then(data => {
-                setItem(data);
+                const announcement = data?.data ?? null;
+                setItem(announcement);
                 // Fetch related items
-                if (data) {
-                    fetch(`${API_BASE}/api/announcements?type=${data.type}&limit=5`)
+                if (announcement) {
+                    fetch(`${API_BASE}/api/announcements?type=${announcement.type}&limit=5`)
                         .then(res => res.json())
-                        .then(related => setRelatedItems(related.filter((r: Announcement) => r.id !== data.id).slice(0, 5)));
+                        .then(related => setRelatedItems((related.data || []).filter((r: Announcement) => r.id !== announcement.id).slice(0, 5)));
                 }
             })
             .catch(console.error)

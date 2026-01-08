@@ -19,7 +19,7 @@ export function HomePage() {
     useEffect(() => {
         fetch(`${API_BASE}/api/announcements`)
             .then(res => res.json())
-            .then(setData)
+            .then(payload => setData(payload.data || []))
             .catch(console.error)
             .finally(() => setLoading(false));
     }, []);
