@@ -117,7 +117,59 @@ const createAnnouncementSchema = z.object({
     eventDate: z.string(),
     description: z.string().optional(),
   })).optional(),
+  // Extended job details for comprehensive postings (UP Police style)
+  jobDetails: z.object({
+    importantDates: z.array(z.object({ name: z.string(), date: z.string() })).optional(),
+    applicationFees: z.array(z.object({ category: z.string(), amount: z.number() })).optional(),
+    ageLimits: z.object({
+      minAge: z.number().optional(),
+      maxAge: z.number().optional(),
+      asOnDate: z.string().optional(),
+      relaxations: z.array(z.object({ category: z.string(), years: z.number(), maxAge: z.number() })).optional(),
+    }).optional(),
+    vacancies: z.object({
+      total: z.number().optional(),
+      details: z.array(z.object({ category: z.string(), male: z.number(), female: z.number(), total: z.number() })).optional(),
+    }).optional(),
+    eligibility: z.object({
+      nationality: z.string().optional(),
+      domicile: z.string().optional(),
+      education: z.string().optional(),
+      additional: z.array(z.string()).optional(),
+    }).optional(),
+    salary: z.object({
+      payLevel: z.string().optional(),
+      payScale: z.string().optional(),
+      inHandSalary: z.string().optional(),
+    }).optional(),
+    physicalRequirements: z.object({
+      male: z.object({
+        heightGeneral: z.string().optional(),
+        heightSCST: z.string().optional(),
+        chestNormal: z.string().optional(),
+        chestExpanded: z.string().optional(),
+        running: z.string().optional(),
+      }).optional(),
+      female: z.object({
+        heightGeneral: z.string().optional(),
+        heightSCST: z.string().optional(),
+        running: z.string().optional(),
+      }).optional(),
+    }).optional(),
+    examPattern: z.object({
+      totalQuestions: z.number().optional(),
+      totalMarks: z.number().optional(),
+      duration: z.string().optional(),
+      negativeMarking: z.string().optional(),
+      subjects: z.array(z.object({ name: z.string(), questions: z.number(), marks: z.number() })).optional(),
+    }).optional(),
+    selectionProcess: z.array(z.object({ step: z.number(), name: z.string(), description: z.string() })).optional(),
+    howToApply: z.array(z.string()).optional(),
+    importantLinks: z.array(z.object({ label: z.string(), url: z.string(), type: z.string() })).optional(),
+    faqs: z.array(z.object({ question: z.string(), answer: z.string() })).optional(),
+  }).optional(),
 });
+
 
 // Create announcement (admin only)
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {

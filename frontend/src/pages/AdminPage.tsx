@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnalyticsDashboard } from '../components/admin/AnalyticsDashboard';
+import { JobPostingForm, type JobDetails } from '../components/admin/JobPostingForm';
 import type { Announcement, ContentType } from '../types';
 
 const apiBase = import.meta.env.VITE_API_BASE ?? '';
@@ -9,10 +10,11 @@ export function AdminPage() {
     const navigate = useNavigate();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-    const [activeAdminTab, setActiveAdminTab] = useState<'analytics' | 'list' | 'add' | 'bulk'>('analytics');
+    const [activeAdminTab, setActiveAdminTab] = useState<'analytics' | 'list' | 'add' | 'detailed' | 'bulk'>('analytics');
     const [adminToken, setAdminToken] = useState<string | null>(() => localStorage.getItem('adminToken'));
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(false);
+    const [jobDetails, setJobDetails] = useState<JobDetails | null>(null);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -221,7 +223,10 @@ export function AdminPage() {
                         📋 All Announcements
                     </button>
                     <button className={activeAdminTab === 'add' ? 'active' : ''} onClick={() => setActiveAdminTab('add')}>
-                        ➕ Add New
+                        ➕ Quick Add
+                    </button>
+                    <button className={activeAdminTab === 'detailed' ? 'active' : ''} onClick={() => setActiveAdminTab('detailed')}>
+                        📝 Detailed Post
                     </button>
                     <button className={activeAdminTab === 'bulk' ? 'active' : ''} onClick={() => setActiveAdminTab('bulk')}>
                         📥 Bulk Import
@@ -267,6 +272,135 @@ export function AdminPage() {
                             ))}
                         </tbody>
                     </table>
+                </div>
+            ) : activeAdminTab === 'detailed' ? (
+                <div className="admin-form-container">
+                    <h3>📝 Detailed Job Posting</h3>
+                    <p style={{ color: '#666', marginBottom: '15px' }}>
+                        Create a comprehensive job posting with all details like UP Police example.
+                    </p>
+
+                    {/* Basic Info Section */}
+                    <div className="basic-info-section" style={{ marginBottom: '20px', padding: '20px', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
+                        <h4 style={{ marginBottom: '15px' }}>Basic Information</h4>
+                        <div className="form-row two-col">
+                            <div className="form-group">
+                                <label>Title *</label>
+                                <input
+                                    type="text"
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    placeholder="e.g. UP Police Constable Recruitment 2026"
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Organization *</label>
+                                <input
+                                    type="text"
+                                    value={formData.organization}
+                                    onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
+                                    placeholder="e.g. UPPRPB"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div className="form-row two-col">
+                            <div className="form-group">
+                                <label>Type *</label>
+                                <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value as ContentType })}>
+                                    <option value="job">Job</option>
+                                    <option value="result">Result</option>
+                                    <option value="admit-card">Admit Card</option>
+                                    <option value="answer-key">Answer Key</option>
+                                    <option value="admission">Admission</option>
+                                    <option value="syllabus">Syllabus</option>
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Category *</label>
+                                <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
+                                    <option value="Central Government">Central Government</option>
+                                    <option value="State Government">State Government</option>
+                                    <option value="Banking">Banking</option>
+                                    <option value="Railways">Railways</option>
+                                    <option value="Defence">Defence</option>
+                                    <option value="PSU">PSU</option>
+                                    <option value="University">University</option>
+                                    <option value="Police">Police</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="form-row two-col">
+                            <div className="form-group">
+                                <label>Total Posts</label>
+                                <input
+                                    type="number"
+                                    value={formData.totalPosts}
+                                    onChange={(e) => setFormData({ ...formData, totalPosts: e.target.value })}
+                                    placeholder="e.g. 32679"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Last Date to Apply</label>
+                                <input
+                                    type="date"
+                                    value={formData.deadline}
+                                    onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Job Details Form */}
+                    <JobPostingForm
+                        initialData={jobDetails || undefined}
+                        onSubmit={async (details) => {
+                            if (!adminToken) {
+                                setMessage('Not authenticated');
+                                return;
+                            }
+
+                            if (!formData.title || !formData.organization) {
+                                setMessage('Please fill in Title and Organization in Basic Information');
+                                return;
+                            }
+
+                            setMessage('Saving...');
+                            try {
+                                const response = await fetch(`${apiBase}/api/announcements`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${adminToken}`,
+                                    },
+                                    body: JSON.stringify({
+                                        ...formData,
+                                        totalPosts: formData.totalPosts ? parseInt(formData.totalPosts) : undefined,
+                                        jobDetails: details,
+                                    }),
+                                });
+
+                                if (response.ok) {
+                                    setMessage('Job posting created successfully!');
+                                    setFormData({
+                                        title: '', type: 'job', category: 'Central Government', organization: '',
+                                        externalLink: '', location: 'All India', deadline: '', totalPosts: '',
+                                        minQualification: '', ageLimit: '', applicationFee: '',
+                                    });
+                                    setJobDetails(null);
+                                    refreshData();
+                                    setActiveAdminTab('list');
+                                } else {
+                                    const error = await response.json();
+                                    setMessage(error.message || 'Failed to save');
+                                }
+                            } catch (err) {
+                                setMessage('Error saving job posting');
+                            }
+                        }}
+                        onCancel={() => setActiveAdminTab('list')}
+                    />
                 </div>
             ) : activeAdminTab === 'bulk' ? (
                 <div className="admin-form-container">
