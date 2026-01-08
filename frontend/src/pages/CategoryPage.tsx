@@ -51,10 +51,13 @@ export function CategoryPage({ type }: CategoryPageProps) {
                 activeTab={type as TabType}
                 setActiveTab={(tab) => {
                     if (!tab) navigate('/');
-                    else if (tab === 'bookmarks') { }
-                    else navigate(`/${tab === 'job' ? 'jobs' : tab === 'result' ? 'results' : tab}`);
+                    else if (tab === 'bookmarks') {
+                        // Bookmarks handled elsewhere
+                    } else {
+                        navigate(`/${tab === 'job' ? 'jobs' : tab === 'result' ? 'results' : tab}`);
+                    }
                 }}
-                setShowSearch={() => { }}
+                setShowSearch={() => { /* No-op - search not implemented on category pages */ }}
                 goBack={() => navigate('/')}
                 setCurrentPage={(page) => navigate('/' + page)}
                 isAuthenticated={isAuthenticated}
