@@ -6,11 +6,9 @@ import { JwtPayload } from '../types.js';
 import { isTokenBlacklisted, isTokenBlacklistedSync, hasSuspiciousContent, logSecurityEvent } from '../utils/security.js';
 
 // Extend Express Request type to include user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: JwtPayload;
-    }
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: JwtPayload;
   }
 }
 
