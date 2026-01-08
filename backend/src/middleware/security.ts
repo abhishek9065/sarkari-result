@@ -225,7 +225,17 @@ export function sanitizeObject<T extends object>(obj: T, parentKey?: string): T 
             result[key] = value;
         } else if (typeof value === 'string') {
             result[key] = sanitizeInput(value);
-        } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+        } else if (Array.isArray(value)) {
+            result[key] = value.map(item => {
+                if (typeof item === 'string') {
+                    return sanitizeInput(item);
+                }
+                if (item && typeof item === 'object') {
+                    return sanitizeObject(item);
+                }
+                return item;
+            });
+        } else if (value && typeof value === 'object') {
             result[key] = sanitizeObject(value, key);
         } else {
             result[key] = value;

@@ -54,13 +54,12 @@ export const cacheKeys = {
         // Include all parameters that affect the response
         const params = [
             `type:${req.query.type || 'all'}`,
-            `page:${req.query.page || 1}`,
             `limit:${req.query.limit || 50}`,
             `search:${req.query.search || ''}`,
             `category:${req.query.category || ''}`,
             `organization:${req.query.organization || ''}`,
             `qualification:${req.query.qualification || ''}`,
-            `sort:${req.query.sort || 'latest'}`,
+            `sort:${req.query.sort || 'newest'}`,
             `offset:${req.query.offset || 0}`,
         ];
         return `announcements:${params.join(':')}`;
