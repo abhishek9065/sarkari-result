@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+import { rateLimit } from '../middleware/rateLimit.js';
 import { pool } from '../db.js';
 import { config } from '../config.js';
 
@@ -11,6 +12,7 @@ const router = express.Router();
 /**
  * POST /api/upload/image
  * Upload an image (base64 encoded)
+ * Admin-only endpoint for uploading images to announcements
  */
 router.post('/image', authenticateToken, requireAdmin, async (req, res) => {
     try {
@@ -52,9 +54,21 @@ router.post('/image', authenticateToken, requireAdmin, async (req, res) => {
 
 /**
  * GET /api/upload/image/:id
- * Get an uploaded image
+ * Retrieve an uploaded image by ID
+ * 
+ * SECURITY NOTE: This endpoint is intentionally PUBLIC (no authentication required)
+ * Rationale:
+ * - Images are used in public announcements visible to all users
+ * - Requires specific image ID (not easily guessable)
+ * - Rate limited to prevent abuse/scraping
+ * - Images contain no sensitive data (logos, announcement graphics)
+ * 
+ * If sensitive images need to be uploaded in the future, consider:
+ * - Separate authenticated endpoint for private images
+ * - Signed URLs with expiration
+ * - Access control based on user permissions
  */
-router.get('/image/:id', async (req, res) => {
+router.get('/image/:id', rateLimit({ windowMs: 60000, maxRequests: 100 }), async (req, res) => {
     try {
         const result = await pool.query(
             'SELECT data, filename FROM images WHERE id = $1',
