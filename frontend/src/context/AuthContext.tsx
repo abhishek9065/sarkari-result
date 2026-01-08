@@ -77,12 +77,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('authUser', JSON.stringify(data.user));
     }, []);
 
-    const logout = useCallback(() => {
+    const logout = useCallback(async () => {
+        // Call backend to blacklist token server-side
+        if (token) {
+            try {
+                await fetch(`${API_BASE}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+            } catch (error) {
+                console.error('Logout API call failed:', error);
+                // Continue with local logout even if API fails
+            }
+        }
+
+        // Clear local state and storage
         setUser(null);
         setToken(null);
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
-    }, []);
+    }, [token]);
 
     const value: AuthContextType = {
         user,

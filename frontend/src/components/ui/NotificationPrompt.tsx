@@ -47,7 +47,19 @@ export function NotificationPrompt() {
 
                 // Get VAPID public key from backend
                 const response = await fetch(`${apiBase}/api/push/vapid-public-key`);
+
+                // Check if VAPID keys are configured
+                if (!response.ok) {
+                    console.log('Push notifications not configured on server');
+                    return;
+                }
+
                 const { publicKey } = await response.json();
+
+                if (!publicKey) {
+                    console.log('No VAPID public key available');
+                    return;
+                }
 
                 const subscription = await registration.pushManager.subscribe({
                     userVisibleOnly: true,

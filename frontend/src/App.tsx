@@ -244,28 +244,6 @@ function App() {
     return () => controller.abort();
   }, [searchQuery, searchType, searchCategory, searchOrganization, searchQualification, sortOrder]);
 
-  // FORCE INJECTION PERSISTENCE
-  // This ensures UP Police job is added even if data is refreshed or filtered
-  useEffect(() => {
-    if (!data.find(a => a.slug === 'up-police-constable-2026')) {
-      const uppJob = {
-        id: 99999,
-        title: 'UP Police Constable Recruitment 2026',
-        slug: 'up-police-constable-2026',
-        type: 'job',
-        category: 'State Police',
-        organization: 'UPPRPB',
-        totalPosts: 32679,
-        deadline: '2026-02-28',
-        isActive: true,
-        postedAt: new Date().toISOString(),
-        viewCount: 12543
-      } as unknown as Announcement;
-
-      setData(prev => [uppJob, ...prev]);
-    }
-  }, [data]);
-
   // Fetch bookmarks when user is authenticated
   const fetchBookmarks = useCallback(async () => {
     if (!token) return;
