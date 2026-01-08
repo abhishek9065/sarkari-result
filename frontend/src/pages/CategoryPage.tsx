@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Header, Navigation, Footer, SectionTable, SkeletonLoader } from '../components';
+import { Header, Navigation, Footer, SkeletonLoader } from '../components';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE, type TabType } from '../utils';
 import type { Announcement, ContentType } from '../types';

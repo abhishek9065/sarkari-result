@@ -1,9 +1,9 @@
-import { useEffect, useState, useCallback, createContext, useContext } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import './styles.css';
-import type { Announcement, ContentType, User } from './types';
+import type { Announcement, ContentType } from './types';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { ThemeProvider, useTheme } from './context/ThemeContext';
-import { Header, PWAInstallPrompt, ShareButtons } from './components';
+import { ThemeProvider } from './context/ThemeContext';
+import { Header, PWAInstallPrompt } from './components';
 import UPPoliceJobDetail from './pages/UPPoliceJobDetail';
 import UniversalJobDetail from './pages/UniversalJobDetail';
 
