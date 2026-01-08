@@ -17,6 +17,7 @@ import trendingRouter from './routes/trending.js';
 import searchRouter from './routes/search.js';
 import scraperRouter from './routes/scraper.js';
 import jobsRouter from './routes/jobs.js';
+import profileRouter from './routes/profile.js';
 import { startScheduledScraper } from './services/scheduler.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { responseTimeLogger, getPerformanceStats } from './middleware/responseTime.js';
@@ -137,6 +138,7 @@ app.use('/api/trending', trendingRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/scraper', scraperRouter);
 app.use('/api/jobs', jobsRouter);
+app.use('/api/profile', profileRouter);
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   // Basic error handler to avoid leaking stack traces in production.
