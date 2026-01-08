@@ -214,12 +214,16 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Invalid announcement ID' });
     }
 
+    const announcement = await AnnouncementModel.findById(id);
     const deleted = await AnnouncementModel.delete(id);
     if (!deleted) {
       return res.status(404).json({ error: 'Announcement not found' });
     }
 
     // Invalidate cached data
+    if (announcement?.slug) {
+      invalidateCache(`announcement:${announcement.slug}`);
+    }
     invalidateCache('announcements');
     invalidateCache('trending');
     invalidateCache('search');

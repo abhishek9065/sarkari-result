@@ -195,6 +195,10 @@ export function sanitizeInput(input: string): string {
         .trim();
 }
 
+function shouldSkipStringSanitize(value: string): boolean {
+    return value.startsWith('data:') || /^https?:\/\//i.test(value);
+}
+
 /**
  * Fields that should NOT be sanitized (passwords, tokens, etc.)
  * These fields need their exact values preserved for authentication
@@ -226,11 +230,11 @@ export function sanitizeObject<T extends object>(obj: T, parentKey?: string): T 
         if (SENSITIVE_FIELDS.has(key.toLowerCase())) {
             result[key] = value;
         } else if (typeof value === 'string') {
-            result[key] = sanitizeInput(value);
+            result[key] = shouldSkipStringSanitize(value) ? value : sanitizeInput(value);
         } else if (Array.isArray(value)) {
             result[key] = value.map(item => {
                 if (typeof item === 'string') {
-                    return sanitizeInput(item);
+                    return shouldSkipStringSanitize(item) ? item : sanitizeInput(item);
                 }
                 if (item && typeof item === 'object') {
                     return sanitizeObject(item);

@@ -156,6 +156,31 @@ export class AnnouncementModel {
     }
   }
 
+  static async findById(id: number): Promise<Announcement | null> {
+    try {
+      const query = `
+        SELECT 
+          a.id, a.title, a.slug, a.type, a.category, a.organization, a.content,
+          a.external_link as "externalLink", a.location, a.deadline, a.posted_at as "postedAt",
+          a.min_qualification as "minQualification", a.age_limit as "ageLimit", a.application_fee as "applicationFee",
+          a.total_posts as "totalPosts", a.created_by as "createdBy", a.view_count as "viewCount",
+          ARRAY_AGG(DISTINCT t.name) as tags
+        FROM announcements a
+        LEFT JOIN announcement_tags at ON a.id = at.announcement_id
+        LEFT JOIN tags t ON at.tag_id = t.id
+        WHERE a.id = $1
+        GROUP BY a.id
+      `;
+
+      const result = await pool.query<Announcement>(query, [id]);
+      if (result.rows.length === 0) return null;
+      return result.rows[0];
+    } catch (error) {
+      console.error('[DB Error] findById failed:', (error as Error).message);
+      return null;
+    }
+  }
+
   static async create(data: CreateAnnouncementDto, userId: number): Promise<Announcement> {
     const client = await pool.connect();
     try {

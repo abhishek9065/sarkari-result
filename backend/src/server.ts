@@ -53,28 +53,24 @@ const allowedOrigins = [
 // Regex pattern to match Vercel preview URLs
 const vercelPreviewPattern = /^https:\/\/sarkari-result(-[a-z0-9]+)?(-[a-z0-9-]+)?\.vercel\.app$/;
 
+const isAllowedOrigin = (origin?: string) => {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+  return vercelPreviewPattern.test(origin);
+};
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin as string | undefined;
+  if (origin && !isAllowedOrigin(origin)) {
+    console.log(`[SECURITY] Blocked CORS request from: ${origin}`);
+    return res.status(403).json({ error: 'Not allowed by CORS' });
+  }
+  next();
+});
+
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin) {
-      callback(null, true);
-      return;
-    }
-
-    // Check exact matches
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-      return;
-    }
-
-    // Check Vercel preview URL pattern (handles dynamic deployment URLs)
-    if (vercelPreviewPattern.test(origin)) {
-      callback(null, true);
-      return;
-    }
-
-    console.log(`[SECURITY] Blocked CORS request from: ${origin}`);
-    callback(new Error('Not allowed by CORS'));
+    callback(null, isAllowedOrigin(origin));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
