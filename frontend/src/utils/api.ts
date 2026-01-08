@@ -19,7 +19,7 @@ export async function fetchAnnouncementsByType(type: string): Promise<Announceme
 
 // Fetch single announcement by slug
 export async function fetchAnnouncementBySlug(slug: string): Promise<Announcement | null> {
-    const response = await fetch(`${API_BASE}/api/announcements/slug/${slug}`);
+    const response = await fetch(`${API_BASE}/api/announcements/${slug}`);
     if (!response.ok) return null;
     const body = await response.json() as { data: Announcement };
     return body.data;

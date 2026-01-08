@@ -41,7 +41,7 @@ export function useAnnouncementBySlug(slug: string | undefined) {
         queryKey: queryKeys.announcementBySlug(slug || ''),
         queryFn: async (): Promise<Announcement | null> => {
             if (!slug) return null;
-            const res = await fetch(`${API_BASE}/api/announcements/slug/${slug}`);
+            const res = await fetch(`${API_BASE}/api/announcements/${slug}`);
             if (!res.ok) return null;
             return res.json();
         },
@@ -130,7 +130,7 @@ export function usePrefetchAnnouncement() {
         queryClient.prefetchQuery({
             queryKey: queryKeys.announcementBySlug(slug),
             queryFn: async () => {
-                const res = await fetch(`${API_BASE}/api/announcements/slug/${slug}`);
+                const res = await fetch(`${API_BASE}/api/announcements/${slug}`);
                 return res.json();
             },
         });
