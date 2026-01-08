@@ -463,6 +463,7 @@ function App() {
           setCurrentPage={handlePageChange}
           isAuthenticated={isAuthenticated}
           onShowAuth={() => setShowAuthModal(true)}
+          isAdmin={user?.role === 'admin'}
         />
         <AdminPanel
           isLoggedIn={isAdminLoggedIn}
@@ -489,6 +490,7 @@ function App() {
           setCurrentPage={handlePageChange}
           isAuthenticated={isAuthenticated}
           onShowAuth={() => setShowAuthModal(true)}
+          isAdmin={user?.role === 'admin'}
         />
         {currentPage === 'up-police-2026' ? (
           <UPPoliceJobDetail />
@@ -514,6 +516,7 @@ function App() {
           setCurrentPage={handlePageChange}
           isAuthenticated={isAuthenticated}
           onShowAuth={() => setShowAuthModal(true)}
+          isAdmin={user?.role === 'admin'}
         />
 
         <div className="page-with-sidebar">
@@ -551,6 +554,7 @@ function App() {
         setCurrentPage={handlePageChange}
         isAuthenticated={isAuthenticated}
         onShowAuth={() => setShowAuthModal(true)}
+        isAdmin={user?.role === 'admin'}
       />
 
       <Marquee />
@@ -934,9 +938,10 @@ interface NavProps {
   setCurrentPage: (page: PageType) => void;
   isAuthenticated: boolean;
   onShowAuth: () => void;
+  isAdmin?: boolean;
 }
 
-function Navigation({ activeTab, setActiveTab, setShowSearch, goBack, setCurrentPage, isAuthenticated, onShowAuth }: NavProps) {
+function Navigation({ activeTab, setActiveTab, setShowSearch, goBack, setCurrentPage, isAuthenticated, onShowAuth, isAdmin }: NavProps) {
   return (
     <nav className="main-nav">
       <div className="nav-container">
@@ -965,7 +970,9 @@ function Navigation({ activeTab, setActiveTab, setShowSearch, goBack, setCurrent
           );
         })}
         <span className="nav-search" onClick={() => setShowSearch(true)}>🔍</span>
-        <button className="nav-link admin-link" onClick={() => setCurrentPage('admin')}>⚙️ Admin</button>
+        {isAdmin && (
+          <button className="nav-link admin-link" onClick={() => setCurrentPage('admin')}>⚙️ Admin</button>
+        )}
       </div>
     </nav>
   );

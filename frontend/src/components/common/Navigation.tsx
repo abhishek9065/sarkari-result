@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NAV_ITEMS, type PageType, type TabType } from '../../utils/constants';
+import { useAuth } from '../../context/AuthContext';
 
 interface NavProps {
     activeTab: TabType;
@@ -13,6 +14,8 @@ interface NavProps {
 
 export function Navigation({ activeTab, setActiveTab, setShowSearch, goBack, setCurrentPage, isAuthenticated, onShowAuth }: NavProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'admin';
 
     const handleNavClick = (item: typeof NAV_ITEMS[0]) => {
         if (item.type === 'bookmarks' && !isAuthenticated) {
@@ -54,7 +57,9 @@ export function Navigation({ activeTab, setActiveTab, setShowSearch, goBack, set
                     );
                 })}
                 <span className="nav-search" onClick={() => { setShowSearch(true); setMobileMenuOpen(false); }}>🔍</span>
-                <button className="nav-link admin-link" onClick={() => { setCurrentPage('admin'); setMobileMenuOpen(false); }}>⚙️ Admin</button>
+                {isAdmin && (
+                    <button className="nav-link admin-link" onClick={() => { setCurrentPage('admin'); setMobileMenuOpen(false); }}>⚙️ Admin</button>
+                )}
             </div>
 
             {/* Mobile Menu Overlay */}
