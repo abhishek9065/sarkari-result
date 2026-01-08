@@ -125,12 +125,14 @@ router.post('/login', bruteForceProtection, async (req, res) => {
 });
 
 // Logout endpoint - blacklist the token
-router.post('/logout', (req, res) => {
+router.post('/logout', async (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (token) {
-    blacklistToken(token);
+    // Wait for token to be blacklisted in DB before responding
+    // This prevents race condition where token could still be valid briefly
+    await blacklistToken(token);
     const clientIP = getClientIP(req);
     logSecurityEvent('LOGOUT', clientIP, req.headers['user-agent'] || '');
   }
