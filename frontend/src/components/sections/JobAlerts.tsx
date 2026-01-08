@@ -59,7 +59,7 @@ export function JobAlerts({ onSuccess }: JobAlertsProps) {
             setSuccess(true);
             setEmail('');
             onSuccess?.();
-        } catch (err) {
+        } catch {
             setError('Failed to subscribe. Please try again.');
         } finally {
             setLoading(false);

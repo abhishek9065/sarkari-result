@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User, AuthResponse } from '../types';
 import { API_BASE } from '../utils/constants';
@@ -28,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             try {
                 setToken(storedToken);
                 setUser(JSON.parse(storedUser));
-            } catch (e) {
+            } catch {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('authUser');
             }

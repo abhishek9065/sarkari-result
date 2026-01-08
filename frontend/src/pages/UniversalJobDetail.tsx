@@ -23,7 +23,7 @@ export function UniversalJobDetail({ item }: UniversalJobDetailProps) {
                 month: 'short',
                 year: 'numeric',
             });
-        } catch (e) {
+        } catch {
             return dateString;
         }
     };

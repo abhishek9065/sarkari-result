@@ -1,9 +1,9 @@
-import { useEffect, useState, useCallback, createContext, useContext } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import './styles.css';
-import type { Announcement, ContentType, User } from './types';
+import type { Announcement, ContentType } from './types';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { ThemeProvider, useTheme } from './context/ThemeContext';
-import { Header, PWAInstallPrompt, ShareButtons } from './components';
+import { ThemeProvider } from './context/ThemeContext';
+import { Header, PWAInstallPrompt } from './components';
 import UPPoliceJobDetail from './pages/UPPoliceJobDetail';
 import UniversalJobDetail from './pages/UniversalJobDetail';
 
@@ -189,9 +189,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('home');
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [bookmarkedIds, setBookmarkedIds] = useState<Set<number>>(new Set());
   const [bookmarks, setBookmarks] = useState<Announcement[]>([]);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { user, token, logout, isAuthenticated } = useAuth();
 
   // Advanced search states
@@ -270,19 +268,12 @@ function App() {
   const fetchBookmarks = useCallback(async () => {
     if (!token) return;
     try {
-      const [idsRes, bookmarksRes] = await Promise.all([
-        fetch(`${apiBase}/api/bookmarks/ids`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        fetch(`${apiBase}/api/bookmarks`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-      ]);
+      const bookmarksRes = await fetch(`${apiBase}/api/bookmarks`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-      if (idsRes.ok && bookmarksRes.ok) {
-        const idsData = await idsRes.json();
+      if (bookmarksRes.ok) {
         const bookmarksData = await bookmarksRes.json();
-        setBookmarkedIds(new Set(idsData.data));
         setBookmarks(bookmarksData.data);
       }
     } catch (err) {
@@ -294,50 +285,12 @@ function App() {
     if (isAuthenticated) {
       fetchBookmarks();
     } else {
-      setBookmarkedIds(new Set());
       setBookmarks([]);
     }
   }, [isAuthenticated, fetchBookmarks]);
 
-  // Toggle bookmark
-  const toggleBookmark = async (announcementId: number) => {
-    if (!isAuthenticated) {
-      setShowAuthModal(true);
-      return;
-    }
-
-    const isBookmarked = bookmarkedIds.has(announcementId);
-
-    try {
-      if (isBookmarked) {
-        await fetch(`${apiBase}/api/bookmarks/${announcementId}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` }
-        });
-      } else {
-        await fetch(`${apiBase}/api/bookmarks`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ announcementId })
-        });
-      }
-      fetchBookmarks();
-    } catch (err) {
-      console.error('Failed to toggle bookmark:', err);
-    }
-  };
-
   // Filter by type
   const getByType = (type: ContentType) => data.filter((item) => item.type === type);
-
-  // Format date
-  const formatDate = (date: string | undefined) => {
-    if (!date) return '';
-    return new Date(date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-  };
 
   // ============ BROWSER HISTORY INTEGRATION ============
   // Navigation state interface for history
@@ -1363,7 +1316,7 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
       } else {
         setMessage('Failed to delete');
       }
-    } catch (err) {
+    } catch {
       setMessage('Error deleting announcement');
     }
   };
@@ -1419,7 +1372,7 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
           : 'Invalid credentials.';
         setMessage(errorMsg);
       }
-    } catch (err) {
+    } catch {
       setMessage('Login failed. Check your connection.');
     }
   };
@@ -1467,7 +1420,7 @@ function AdminPanel({ isLoggedIn, setIsLoggedIn, announcements, refreshData, goB
       } else {
         setMessage('Failed to save. Note: Admin API requires authentication.');
       }
-    } catch (err) {
+    } catch {
       setMessage('Error saving announcement.');
     }
   };

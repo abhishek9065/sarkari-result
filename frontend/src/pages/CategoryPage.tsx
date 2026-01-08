@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Header, Navigation, Footer, SectionTable, SkeletonLoader } from '../components';
+import { Header, Navigation, Footer, SkeletonLoader } from '../components';
 import { useAuth } from '../context/AuthContext';
-import { API_BASE, type TabType } from '../utils';
+import { type TabType } from '../utils';
+import { fetchAnnouncementsByType } from '../utils/api';
 import type { Announcement, ContentType } from '../types';
 
 interface CategoryPageProps {
@@ -23,12 +24,11 @@ export function CategoryPage({ type }: CategoryPageProps) {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const { user, logout, isAuthenticated } = useAuth();
-    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [, setShowAuthModal] = useState(false);
 
     useEffect(() => {
         setLoading(true);
-        fetch(`${API_BASE}/api/announcements?type=${type}`)
-            .then(res => res.json())
+        fetchAnnouncementsByType(type)
             .then(setData)
             .catch(console.error)
             .finally(() => setLoading(false));
@@ -50,9 +50,14 @@ export function CategoryPage({ type }: CategoryPageProps) {
             <Navigation
                 activeTab={type as TabType}
                 setActiveTab={(tab) => {
-                    if (!tab) navigate('/');
-                    else if (tab === 'bookmarks') { }
-                    else navigate(`/${tab === 'job' ? 'jobs' : tab === 'result' ? 'results' : tab}`);
+                    if (!tab) {
+                        navigate('/');
+                        return;
+                    }
+                    if (tab === 'bookmarks') {
+                        return;
+                    }
+                    navigate(`/${tab === 'job' ? 'jobs' : tab === 'result' ? 'results' : tab}`);
                 }}
                 setShowSearch={() => { }}
                 goBack={() => navigate('/')}

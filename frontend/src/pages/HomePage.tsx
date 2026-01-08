@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Header, Navigation, Footer, Marquee, FeaturedGrid, SectionTable, SkeletonLoader, SocialButtons } from '../components';
 import { useAuth } from '../context/AuthContext';
-import { SECTIONS, type TabType, type PageType } from '../utils';
+import { SECTIONS, type TabType } from '../utils';
 import { fetchAnnouncements } from '../utils/api';
 import type { Announcement, ContentType } from '../types';
 
@@ -10,11 +10,10 @@ export function HomePage() {
     const [data, setData] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<TabType>(undefined);
-    const [showSearch, setShowSearch] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [, setShowSearch] = useState(false);
     const navigate = useNavigate();
     const { user, logout, isAuthenticated } = useAuth();
-    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [, setShowAuthModal] = useState(false);
 
     // Fetch announcements
     useEffect(() => {
@@ -44,19 +43,6 @@ export function HomePage() {
         };
         navigate(paths[type]);
     };
-
-    // Filter data by active tab
-    const filteredData = activeTab && activeTab !== 'bookmarks' && activeTab !== 'profile'
-        ? data.filter(item => item.type === activeTab)
-        : data;
-
-    // Search filter
-    const searchedData = searchQuery
-        ? filteredData.filter(item =>
-            item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.organization.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        : filteredData;
 
     return (
         <div className="app">

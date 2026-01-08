@@ -39,10 +39,10 @@ export {
     PageTransition,
     AnimatedCounter,
     Skeleton,
-    Tooltip,
-    useToast,
-    useInView
+    Tooltip
 } from './ui/InteractiveComponents';
+export { useToast } from '../hooks/useToast';
+export { useInView } from '../hooks/useInView';
 export {
     Breadcrumbs,
     StatCard,

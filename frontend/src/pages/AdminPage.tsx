@@ -12,8 +12,6 @@ export function AdminPage() {
     const [activeAdminTab, setActiveAdminTab] = useState<'analytics' | 'list' | 'add' | 'bulk'>('analytics');
     const [adminToken, setAdminToken] = useState<string | null>(() => localStorage.getItem('adminToken'));
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-    const [loading, setLoading] = useState(false);
-
     const [formData, setFormData] = useState({
         title: '',
         type: 'job' as ContentType,
@@ -59,7 +57,7 @@ export function AdminPage() {
             } else {
                 setMessage('Failed to delete');
             }
-        } catch (err) {
+        } catch {
             setMessage('Error deleting announcement');
         }
     };
@@ -115,7 +113,7 @@ export function AdminPage() {
                     : 'Invalid credentials.';
                 setMessage(errorMsg);
             }
-        } catch (err) {
+        } catch {
             setMessage('Login failed. Check your connection.');
         }
     };
@@ -163,7 +161,7 @@ export function AdminPage() {
             } else {
                 setMessage('Failed to save. Note: Admin API requires authentication.');
             }
-        } catch (err) {
+        } catch {
             setMessage('Error saving announcement.');
         }
     };
