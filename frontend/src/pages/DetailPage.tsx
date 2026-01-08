@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header, Navigation, Footer, SectionTable, SkeletonLoader } from '../components';
 import { useAuth } from '../context/AuthContext';
-import { API_BASE, formatDate, getDaysRemaining, isExpired, isUrgent, TYPE_LABELS, SELECTION_MODES, type TabType } from '../utils';
+import { formatDate, getDaysRemaining, isExpired, isUrgent, TYPE_LABELS, SELECTION_MODES, type TabType } from '../utils';
+import { fetchAnnouncementBySlug, fetchAnnouncementsByType } from '../utils/api';
 import type { Announcement, ContentType } from '../types';
 
 interface DetailPageProps {
@@ -22,16 +23,14 @@ export function DetailPage({ type }: DetailPageProps) {
         if (!slug) return;
 
         setLoading(true);
-        // Fetch by slug
-        fetch(`${API_BASE}/api/announcements/${slug}`)
-            .then(res => res.ok ? res.json() : null)
+        // Fetch by slug using shared helper
+        fetchAnnouncementBySlug(slug)
             .then(data => {
                 setItem(data);
                 // Fetch related items
                 if (data) {
-                    fetch(`${API_BASE}/api/announcements?type=${data.type}&limit=5`)
-                        .then(res => res.json())
-                        .then(related => setRelatedItems(related.filter((r: Announcement) => r.id !== data.id).slice(0, 5)));
+                    fetchAnnouncementsByType(data.type)
+                        .then(related => setRelatedItems(related.filter(r => r.id !== data.id).slice(0, 5)));
                 }
             })
             .catch(console.error)

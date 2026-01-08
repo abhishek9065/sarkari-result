@@ -1,6 +1,7 @@
 import type { ContentType } from '../types';
 
-export const API_BASE = import.meta.env.VITE_API_BASE ?? '';
+// API Base URL - defaults to '/api' for Vercel proxy, or use VITE_API_BASE for custom backend
+export const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 export type PageType = 'home' | 'admin' | 'about' | 'contact' | 'privacy' | 'disclaimer';
 export type TabType = ContentType | 'bookmarks' | 'profile' | undefined;

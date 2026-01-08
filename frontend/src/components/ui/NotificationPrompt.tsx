@@ -12,7 +12,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
     return outputArray;
 }
 
-const apiBase = import.meta.env.VITE_API_BASE ?? '';
+const apiBase = import.meta.env.VITE_API_BASE || '/api';
 
 export function NotificationPrompt() {
     const [showPrompt, setShowPrompt] = useState(false);
@@ -26,9 +26,18 @@ export function NotificationPrompt() {
 
         setPermission(Notification.permission);
 
-        // Show prompt if permission not decided and not dismissed recently
+        // Check if dismissed recently (7-day cooldown)
         const dismissed = localStorage.getItem('notification_prompt_dismissed');
-        if (Notification.permission === 'default' && !dismissed) {
+        if (dismissed) {
+            const dismissedTime = parseInt(dismissed, 10);
+            const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
+            if (daysSinceDismissed < 7) {
+                return; // Don't show if dismissed within last 7 days
+            }
+        }
+
+        // Show prompt if permission not decided
+        if (Notification.permission === 'default') {
             // Delay the prompt a bit for better UX
             const timer = setTimeout(() => setShowPrompt(true), 3000);
             return () => clearTimeout(timer);

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Header, Navigation, Footer, Marquee, FeaturedGrid, SectionTable, SkeletonLoader, SocialButtons } from '../components';
 import { useAuth } from '../context/AuthContext';
-import { API_BASE, SECTIONS, type TabType, type PageType } from '../utils';
+import { SECTIONS, type TabType, type PageType } from '../utils';
+import { fetchAnnouncements } from '../utils/api';
 import type { Announcement, ContentType } from '../types';
 
 export function HomePage() {
@@ -15,10 +16,9 @@ export function HomePage() {
     const { user, logout, isAuthenticated } = useAuth();
     const [showAuthModal, setShowAuthModal] = useState(false);
 
-    // Fetch announcements
+    // Fetch announcements using shared helper
     useEffect(() => {
-        fetch(`${API_BASE}/api/announcements`)
-            .then(res => res.json())
+        fetchAnnouncements()
             .then(setData)
             .catch(console.error)
             .finally(() => setLoading(false));
