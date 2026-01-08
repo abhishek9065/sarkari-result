@@ -54,7 +54,7 @@ export const cacheKeys = {
         // Include all parameters that affect the response
         const params = [
             `type:${req.query.type || 'all'}`,
-            `limit:${req.query.limit || 50}`,
+            `limit:${req.query.limit || 100}`,
             `search:${req.query.search || ''}`,
             `category:${req.query.category || ''}`,
             `organization:${req.query.organization || ''}`,

@@ -212,6 +212,8 @@ const SENSITIVE_FIELDS = new Set([
     'auth',
     'p256dh',  // Push notification key
     'authorization',
+    'externalLink',
+    'imageData',
 ]);
 
 /**
