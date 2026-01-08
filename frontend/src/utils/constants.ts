@@ -2,6 +2,10 @@ import type { ContentType } from '../types';
 
 export const API_BASE = import.meta.env.VITE_API_BASE ?? '';
 
+if (!API_BASE && import.meta.env.MODE === 'production') {
+    console.warn('[Config] VITE_API_BASE is not set; API requests will use the current origin.');
+}
+
 export type PageType = 'home' | 'admin' | 'about' | 'contact' | 'privacy' | 'disclaimer';
 export type TabType = ContentType | 'bookmarks' | 'profile' | undefined;
 

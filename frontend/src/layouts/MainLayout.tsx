@@ -12,7 +12,7 @@ interface MainLayoutProps {
     user?: any;
     onShowAuth?: () => void;
     onLogin?: () => void;
-    onLogout?: () => void;
+    onLogout?: () => void | Promise<void>;
     onProfileClick?: () => void;
 }
 

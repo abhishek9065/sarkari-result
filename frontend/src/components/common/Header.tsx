@@ -6,7 +6,7 @@ interface HeaderProps {
     user: any;
     isAuthenticated: boolean;
     onLogin: () => void;
-    onLogout: () => void;
+    onLogout: () => void | Promise<void>;
     onProfileClick?: () => void;
 }
 
@@ -46,7 +46,7 @@ export function Header({ setCurrentPage, user, isAuthenticated, onLogin, onLogou
                             >
                                 👤 {user?.name}
                             </span>
-                            <button className="auth-btn logout-btn" onClick={onLogout}>Logout</button>
+                            <button className="auth-btn logout-btn" onClick={() => void onLogout()}>Logout</button>
                         </div>
                     ) : (
                         <button className="auth-btn login-btn" onClick={onLogin}>🔐 Login</button>

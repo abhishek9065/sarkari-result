@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE } from '../../utils/constants';
 
 // Helper function to convert VAPID key
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
@@ -12,7 +13,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
     return outputArray;
 }
 
-const apiBase = import.meta.env.VITE_API_BASE ?? '';
+const DISMISS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
 
 export function NotificationPrompt() {
     const [showPrompt, setShowPrompt] = useState(false);
@@ -28,7 +29,10 @@ export function NotificationPrompt() {
 
         // Show prompt if permission not decided and not dismissed recently
         const dismissed = localStorage.getItem('notification_prompt_dismissed');
-        if (Notification.permission === 'default' && !dismissed) {
+        const dismissedAt = dismissed ? Number(dismissed) : 0;
+        const withinCooldown = dismissedAt && Date.now() - dismissedAt < DISMISS_COOLDOWN_MS;
+
+        if (Notification.permission === 'default' && !withinCooldown) {
             // Delay the prompt a bit for better UX
             const timer = setTimeout(() => setShowPrompt(true), 3000);
             return () => clearTimeout(timer);
@@ -46,7 +50,7 @@ export function NotificationPrompt() {
                 const registration = await navigator.serviceWorker.ready;
 
                 // Get VAPID public key from backend
-                const response = await fetch(`${apiBase}/api/push/vapid-public-key`);
+                const response = await fetch(`${API_BASE}/api/push/vapid-public-key`);
                 if (!response.ok) {
                     throw new Error('Failed to load VAPID key');
                 }
@@ -61,7 +65,7 @@ export function NotificationPrompt() {
                 });
 
                 // Send subscription to backend
-                const subscribeResponse = await fetch(`${apiBase}/api/push/subscribe`, {
+                const subscribeResponse = await fetch(`${API_BASE}/api/push/subscribe`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(subscription.toJSON()),
