@@ -54,7 +54,7 @@ router.post('/image', authenticateToken, requireAdmin, async (req, res) => {
  * GET /api/upload/image/:id
  * Get an uploaded image
  */
-router.get('/image/:id', async (req, res) => {
+router.get('/image/:id', authenticateToken, requireAdmin, async (req, res) => {
     try {
         const result = await pool.query(
             'SELECT data, filename FROM images WHERE id = $1',

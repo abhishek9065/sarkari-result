@@ -125,14 +125,19 @@ router.post('/login', bruteForceProtection, async (req, res) => {
 });
 
 // Logout endpoint - blacklist the token
-router.post('/logout', (req, res) => {
+router.post('/logout', async (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (token) {
-    blacklistToken(token);
-    const clientIP = getClientIP(req);
-    logSecurityEvent('LOGOUT', clientIP, req.headers['user-agent'] || '');
+    try {
+      await blacklistToken(token);
+      const clientIP = getClientIP(req);
+      logSecurityEvent('LOGOUT', clientIP, req.headers['user-agent'] || '');
+    } catch (error) {
+      console.error('Logout error:', error);
+      return res.status(500).json({ error: 'Failed to logout' });
+    }
   }
 
   return res.json({ message: 'Logged out successfully' });

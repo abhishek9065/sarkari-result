@@ -71,7 +71,7 @@ export const cacheKeys = {
     trending: () => 'trending',
 
     calendar: (req: Request) => {
-        const month = req.query.month || new Date().getMonth();
+        const month = req.query.month || new Date().getMonth() + 1;
         const year = req.query.year || new Date().getFullYear();
         return `calendar:${year}:${month}`;
     },

@@ -160,6 +160,8 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
     invalidateCache('announcements');
     invalidateCache('trending');
     invalidateCache('search');
+    invalidateCache('calendar');
+    invalidateCache('meta');
 
     return res.status(201).json({ data: announcement });
   } catch (error) {
@@ -192,6 +194,8 @@ router.patch('/:id', authenticateToken, requireAdmin, async (req, res) => {
     invalidateCache('announcements');
     invalidateCache('trending');
     invalidateCache('search');
+    invalidateCache('calendar');
+    invalidateCache('meta');
 
     return res.json({ data: announcement });
   } catch (error) {
@@ -219,6 +223,8 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
     invalidateCache('announcements');
     invalidateCache('trending');
     invalidateCache('search');
+    invalidateCache('calendar');
+    invalidateCache('meta');
 
     return res.json({ message: 'Announcement deleted successfully' });
   } catch (error) {
