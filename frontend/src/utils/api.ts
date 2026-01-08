@@ -5,21 +5,24 @@ import type { Announcement } from '../types';
 export async function fetchAnnouncements(): Promise<Announcement[]> {
     const response = await fetch(`${API_BASE}/api/announcements`);
     if (!response.ok) throw new Error('Failed to fetch announcements');
-    return response.json();
+    const body = await response.json() as { data: Announcement[]; count: number };
+    return body.data;
 }
 
 // Fetch announcements by type
 export async function fetchAnnouncementsByType(type: string): Promise<Announcement[]> {
     const response = await fetch(`${API_BASE}/api/announcements?type=${type}`);
     if (!response.ok) throw new Error('Failed to fetch announcements');
-    return response.json();
+    const body = await response.json() as { data: Announcement[]; count: number };
+    return body.data;
 }
 
 // Fetch single announcement by slug
 export async function fetchAnnouncementBySlug(slug: string): Promise<Announcement | null> {
     const response = await fetch(`${API_BASE}/api/announcements/slug/${slug}`);
     if (!response.ok) return null;
-    return response.json();
+    const body = await response.json() as { data: Announcement };
+    return body.data;
 }
 
 // Fetch user bookmarks
@@ -28,7 +31,8 @@ export async function fetchBookmarks(token: string): Promise<Announcement[]> {
         headers: { Authorization: `Bearer ${token}` }
     });
     if (!response.ok) return [];
-    return response.json();
+    const body = await response.json() as { data: Announcement[]; count: number };
+    return body.data;
 }
 
 // Add bookmark
