@@ -156,10 +156,15 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       console.error('Failed to send push notifications:', err);
     });
 
-    // Invalidate cached announcement lists
+    // Invalidate cached announcement lists and related data
     invalidateCache('announcements');
     invalidateCache('trending');
     invalidateCache('search');
+    invalidateCache('calendar');  // Deadlines may have changed
+    // Meta caches (categories/orgs/tags may have new values)
+    invalidateCache('categories');
+    invalidateCache('organizations');
+    invalidateCache('tags');
 
     return res.status(201).json({ data: announcement });
   } catch (error) {
@@ -192,6 +197,11 @@ router.patch('/:id', authenticateToken, requireAdmin, async (req, res) => {
     invalidateCache('announcements');
     invalidateCache('trending');
     invalidateCache('search');
+    invalidateCache('calendar');  // Deadline may have changed
+    // Meta caches (category/org/tags may have changed)
+    invalidateCache('categories');
+    invalidateCache('organizations');
+    invalidateCache('tags');
 
     return res.json({ data: announcement });
   } catch (error) {
@@ -215,10 +225,15 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Announcement not found' });
     }
 
-    // Invalidate cached data
+    // Invalidate all cached data (deleted announcement affects everything)
     invalidateCache('announcements');
     invalidateCache('trending');
     invalidateCache('search');
+    invalidateCache('calendar');  // Deadline removed
+    // Meta caches (counts may have changed)
+    invalidateCache('categories');
+    invalidateCache('organizations');
+    invalidateCache('tags');
 
     return res.json({ message: 'Announcement deleted successfully' });
   } catch (error) {
