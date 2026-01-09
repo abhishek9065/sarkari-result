@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { AnalyticsService } from '../services/analyticsService.js';
+import { SecurityLogger } from '../services/securityLogger.js';
 import { pool } from '../db.js';
 
 const router = Router();
@@ -275,6 +276,17 @@ router.get('/subscriptions', async (req, res) => {
     } catch (error) {
         console.error('Subscriptions error:', error);
         return res.status(500).json({ error: 'Failed to load subscriptions' });
+    }
+});
+
+router.get('/security/logs', async (req, res) => {
+    try {
+        const limit = Math.min(100, parseInt(req.query.limit as string) || 50);
+        const logs = await SecurityLogger.getRecentLogs(limit);
+        return res.json({ data: logs });
+    } catch (error) {
+        console.error('Security logs error:', error);
+        return res.status(500).json({ error: 'Failed to load security logs' });
     }
 });
 

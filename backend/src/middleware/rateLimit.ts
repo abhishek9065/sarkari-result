@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { SecurityLogger } from '../services/securityLogger.js';
 import { pool } from '../db.js';
 import { config } from '../config.js';
 
@@ -145,6 +146,18 @@ export function rateLimit(options: RateLimitOptions = {}) {
         res.setHeader('X-RateLimit-Reset', Math.ceil(result.resetTime / 1000));
 
         if (!result.allowed) {
+            // Log security event
+            SecurityLogger.log({
+                ip_address: clientIp,
+                event_type: 'rate_limit',
+                endpoint: req.originalUrl || req.url,
+                metadata: {
+                    limit: maxRequests,
+                    windowMs,
+                    userAgent: req.headers['user-agent']
+                }
+            });
+
             res.status(429).json({
                 error: 'Too many requests',
                 retryAfter: Math.ceil((result.resetTime - Date.now()) / 1000),
