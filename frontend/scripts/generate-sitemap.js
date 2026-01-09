@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const BASE_URL = 'https://sarkari-result-gold.vercel.app';
+const BASE_URL = 'https://www.sarkariexams.me';
 const API_URL = process.env.VITE_API_BASE || 'https://sarkari-backend.onrender.com';
 
 async function generateSitemap() {
