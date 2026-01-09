@@ -6,6 +6,9 @@ export interface Tag {
   slug: string;
 }
 
+// Re-export JobDetails type for convenience
+export type { JobDetails } from './components/admin/JobPostingForm';
+
 export interface Announcement {
   id: number;
   title: string;
@@ -26,7 +29,10 @@ export interface Announcement {
   isActive: boolean;
   viewCount: number;
   tags?: Tag[];
+  // Extended job details for comprehensive postings
+  jobDetails?: import('./components/admin/JobPostingForm').JobDetails;
 }
+
 
 export interface User {
   id: number;

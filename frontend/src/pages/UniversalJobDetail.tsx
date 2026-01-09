@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { DeadlineCountdown } from '../components/ui/DeadlineCountdown';
 import { QuickActionsBar } from '../components/ui/QuickActionsBar';
+import { JobDetailsRenderer } from '../components/details/JobDetailsRenderer';
 import type { Announcement } from '../types';
 
 interface UniversalJobDetailProps {
@@ -85,51 +86,60 @@ export function UniversalJobDetail({ item }: UniversalJobDetailProps) {
                 notificationLink={job.link}
             />
 
-            {/* Important Dates */}
-            <section className="detail-section">
-                <h2 className="section-header maroon">📅 Important Dates</h2>
-                <table className="info-table">
-                    <tbody>
-                        {importantDates.map((d, i) => (
-                            <tr key={i}>
-                                <td>{d.label}</td>
-                                <td>{d.date}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </section>
+            {/* Extended Job Details (if available) */}
+            {item.jobDetails && Object.keys(item.jobDetails).length > 0 ? (
+                <JobDetailsRenderer jobDetails={item.jobDetails} />
+            ) : (
+                <>
+                    {/* Fallback to basic layout */}
 
-            {/* Application Fee */}
-            {fees.length > 0 && (
-                <section className="detail-section">
-                    <h2 className="section-header blue">💰 Application Fee</h2>
-                    <table className="info-table">
-                        <tbody>
-                            {fees.map((f, i) => (
-                                <tr key={i}>
-                                    <td>{f.category}</td>
-                                    <td className="fee-cell">{f.fee}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </section>
-            )}
+                    {/* Important Dates */}
+                    <section className="detail-section">
+                        <h2 className="section-header maroon">📅 Important Dates</h2>
+                        <table className="info-table">
+                            <tbody>
+                                {importantDates.map((d, i) => (
+                                    <tr key={i}>
+                                        <td>{d.label}</td>
+                                        <td>{d.date}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </section>
 
-            {/* Age Limit */}
-            {ageLimit.length > 0 && (
-                <section className="detail-section">
-                    <h2 className="section-header green">👤 Age Limit</h2>
-                    <div className="age-box">
-                        {ageLimit.map((a, i) => (
-                            <div key={i} className="age-main" style={{ width: '100%' }}>
-                                <span className="age-label">{a.label}</span>
-                                <span className="age-value">{a.value}</span>
+                    {/* Application Fee */}
+                    {fees.length > 0 && (
+                        <section className="detail-section">
+                            <h2 className="section-header blue">💰 Application Fee</h2>
+                            <table className="info-table">
+                                <tbody>
+                                    {fees.map((f, i) => (
+                                        <tr key={i}>
+                                            <td>{f.category}</td>
+                                            <td className="fee-cell">{f.fee}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </section>
+                    )}
+
+                    {/* Age Limit */}
+                    {ageLimit.length > 0 && (
+                        <section className="detail-section">
+                            <h2 className="section-header green">👤 Age Limit</h2>
+                            <div className="age-box">
+                                {ageLimit.map((a, i) => (
+                                    <div key={i} className="age-main" style={{ width: '100%' }}>
+                                        <span className="age-label">{a.label}</span>
+                                        <span className="age-value">{a.value}</span>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
-                </section>
+                        </section>
+                    )}
+                </>
             )}
 
             {/* Vacancy Details */}
