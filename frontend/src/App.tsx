@@ -3,7 +3,8 @@ import './styles.css';
 import type { Announcement, ContentType } from './types';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { Header, PWAInstallPrompt } from './components';
+import { Header, PWAInstallPrompt, SearchFilters } from './components';
+import type { FilterState } from './components/ui/SearchFilters';
 import UPPoliceJobDetail from './pages/UPPoliceJobDetail';
 import UniversalJobDetail from './pages/UniversalJobDetail';
 
@@ -201,6 +202,18 @@ function App() {
   const [searchQualification, setSearchQualification] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'deadline'>('newest');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Inline search filters state
+  const [inlineFilters, setInlineFilters] = useState<FilterState>({
+    keyword: '',
+    type: '',
+    location: '',
+    qualification: '',
+    minAge: '',
+    maxAge: '',
+    sortBy: 'latest',
+  });
+
 
   // Get applied filters count
   const appliedFiltersCount = [searchType, searchCategory, searchOrganization, searchQualification].filter(Boolean).length;
@@ -525,7 +538,13 @@ function App() {
               <button className="back-btn" onClick={() => setSelectedItem(null)}>
                 ← Back to List
               </button>
-              <UniversalJobDetail item={selectedItem} />
+              <UniversalJobDetail
+                item={selectedItem}
+                isBookmarked={bookmarkedIds.has(selectedItem.id)}
+                onToggleBookmark={toggleBookmark}
+                isAuthenticated={isAuthenticated}
+                onLoginRequired={() => setShowAuthModal(true)}
+              />
             </div>
 
             <aside className="sidebar">
@@ -749,7 +768,16 @@ function App() {
         </div>
       </section>
 
+      {/* Inline Search Filters - Always Visible */}
+      <section className="inline-search-section" style={{ padding: '0 16px', margin: '20px auto', maxWidth: '1200px' }}>
+        <SearchFilters
+          onFilterChange={setInlineFilters}
+          showTypeFilter={true}
+        />
+      </section>
+
       {/* Main Content */}
+
       <main className="main-content">
         <TagsCloud />
         {error && <div className="error-message">{error}</div>}

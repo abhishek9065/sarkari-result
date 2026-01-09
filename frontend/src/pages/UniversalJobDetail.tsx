@@ -2,18 +2,29 @@ import { useState } from 'react';
 import { DeadlineCountdown } from '../components/ui/DeadlineCountdown';
 import { QuickActionsBar } from '../components/ui/QuickActionsBar';
 import { JobDetailsRenderer } from '../components/details/JobDetailsRenderer';
+import { BookmarkButton } from '../components/ui/BookmarkButton';
 import { SEOHead } from '../components/seo/SEOHead';
 import type { Announcement } from '../types';
 
 interface UniversalJobDetailProps {
     item: Announcement;
+    isBookmarked?: boolean;
+    onToggleBookmark?: (announcementId: number) => Promise<void>;
+    isAuthenticated?: boolean;
+    onLoginRequired?: () => void;
 }
 
 /**
  * Universal Job Detail Page
  * dynamically renders any job/result/admit-card in the premium UP Police style
  */
-export function UniversalJobDetail({ item }: UniversalJobDetailProps) {
+export function UniversalJobDetail({
+    item,
+    isBookmarked = false,
+    onToggleBookmark,
+    isAuthenticated = false,
+    onLoginRequired
+}: UniversalJobDetailProps) {
     const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
     // Format Date
@@ -93,6 +104,17 @@ export function UniversalJobDetail({ item }: UniversalJobDetailProps) {
                 <div className="job-highlight">
                     <span className="posts-count">👥 {typeof job.totalPosts === 'number' ? job.totalPosts.toLocaleString() : job.totalPosts} Posts</span>
                     <span className="post-name">📋 {job.postName}</span>
+                    {onToggleBookmark && (
+                        <BookmarkButton
+                            announcementId={item.id}
+                            isBookmarked={isBookmarked}
+                            onToggle={onToggleBookmark}
+                            isAuthenticated={isAuthenticated}
+                            onLoginRequired={onLoginRequired}
+                            size="large"
+                            showLabel={true}
+                        />
+                    )}
                 </div>
             </div>
 

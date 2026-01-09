@@ -24,6 +24,7 @@ export { ShareButtons } from './ui/ShareButtons';
 export { PWAInstallPrompt } from './ui/PWAInstallPrompt';
 export { SearchFilters } from './ui/SearchFilters';
 export type { FilterState } from './ui/SearchFilters';
+export { BookmarkButton } from './ui/BookmarkButton';
 export { NotificationPrompt } from './ui/NotificationPrompt';
 export { UserProfile } from './ui/UserProfile';
 export { ExportButtons } from './ui/ExportButtons';

@@ -101,6 +101,7 @@ export interface JobDetails {
 interface JobPostingFormProps {
     initialData?: Partial<JobDetails>;
     onSubmit: (data: JobDetails) => void;
+    onPreview?: (data: JobDetails) => void;
     onCancel: () => void;
 }
 
@@ -153,7 +154,7 @@ const defaultJobDetails: JobDetails = {
 
 type TabType = 'dates' | 'fees' | 'eligibility' | 'vacancies' | 'exam' | 'links';
 
-export function JobPostingForm({ initialData, onSubmit, onCancel }: JobPostingFormProps) {
+export function JobPostingForm({ initialData, onSubmit, onPreview, onCancel }: JobPostingFormProps) {
     const [activeTab, setActiveTab] = useState<TabType>('dates');
     const [jobDetails, setJobDetails] = useState<JobDetails>({
         ...defaultJobDetails,
@@ -226,6 +227,18 @@ export function JobPostingForm({ initialData, onSubmit, onCancel }: JobPostingFo
             },
         };
         onSubmit(finalData);
+    };
+
+    const handlePreview = () => {
+        const totalVacancies = jobDetails.vacancies.details.reduce((sum, v) => sum + v.total, 0);
+        const finalData = {
+            ...jobDetails,
+            vacancies: {
+                ...jobDetails.vacancies,
+                total: totalVacancies,
+            },
+        };
+        onPreview?.(finalData);
     };
 
     return (
@@ -832,6 +845,22 @@ export function JobPostingForm({ initialData, onSubmit, onCancel }: JobPostingFo
 
             <div className="form-actions">
                 <button className="btn-secondary" onClick={onCancel}>Cancel</button>
+                {onPreview && (
+                    <button className="btn-preview" onClick={handlePreview} style={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '12px 24px',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        👁️ Preview
+                    </button>
+                )}
                 <button className="btn-primary" onClick={handleSubmit}>Save Job Details</button>
             </div>
         </div>
