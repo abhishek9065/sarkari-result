@@ -12,6 +12,7 @@ import { config } from '../config.js';
 
 // Fallback in-memory store for when DB is unavailable
 const memoryStore = new Map<string, { count: number; resetTime: number }>();
+const MAX_STORE_SIZE = 10000; // Max distinct IPs to track in memory
 
 interface RateLimitOptions {
     windowMs?: number;  // Time window in milliseconds
@@ -101,6 +102,12 @@ function checkRateLimitMemory(
 
     if (!data || now > data.resetTime) {
         // New window
+        // Limit memory usage
+        if (memoryStore.size >= MAX_STORE_SIZE) {
+            // Remove oldest
+            const firstKey = memoryStore.keys().next().value;
+            if (firstKey) memoryStore.delete(firstKey);
+        }
         memoryStore.set(key, { count: 1, resetTime: now + windowMs });
         return { allowed: true, count: 1, resetTime: now + windowMs };
     }

@@ -18,7 +18,15 @@ export function getCache(key: string): any | null {
     return entry.data;
 }
 
+const MAX_CACHE_SIZE = 1000; // Prevent memory exhaustion
+
 export function setCache(key: string, data: any, ttlSeconds: number = 300): void {
+    // If cache is full, delete the oldest/first entry (simple approximation of LRU)
+    if (cache.size >= MAX_CACHE_SIZE) {
+        const firstKey = cache.keys().next().value;
+        if (firstKey) cache.delete(firstKey);
+    }
+
     cache.set(key, {
         data,
         expiry: Date.now() + (ttlSeconds * 1000),
