@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AnalyticsDashboard } from '../components/admin/AnalyticsDashboard';
 import { JobPostingForm, type JobDetails } from '../components/admin/JobPostingForm';
 import { JobDetailsRenderer } from '../components/details/JobDetailsRenderer';
+import { SecurityLogsTable } from '../components/admin/SecurityLogsTable';
 import type { Announcement, ContentType } from '../types';
 
 const apiBase = import.meta.env.VITE_API_BASE ?? '';
@@ -11,7 +12,7 @@ export function AdminPage() {
     const navigate = useNavigate();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-    const [activeAdminTab, setActiveAdminTab] = useState<'analytics' | 'list' | 'add' | 'detailed' | 'bulk'>('analytics');
+    const [activeAdminTab, setActiveAdminTab] = useState<'analytics' | 'list' | 'add' | 'detailed' | 'bulk' | 'security'>('analytics');
     const [adminToken, setAdminToken] = useState<string | null>(() => localStorage.getItem('adminToken'));
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(false);
@@ -244,6 +245,9 @@ export function AdminPage() {
                         </button>
                         <button className={activeAdminTab === 'bulk' ? 'active' : ''} onClick={() => setActiveAdminTab('bulk')}>
                             📥 Bulk Import
+                        </button>
+                        <button className={activeAdminTab === 'security' ? 'active' : ''} onClick={() => setActiveAdminTab('security')}>
+                            🛡️ Security
                         </button>
                     </div>
                     <button className="admin-btn logout" onClick={() => {
@@ -494,6 +498,8 @@ export function AdminPage() {
                             🚀 Import Announcements
                         </button>
                     </div>
+                ) : activeAdminTab === 'security' ? (
+                    <SecurityLogsTable adminToken={adminToken} />
                 ) : (
                     <div className="admin-form-container">
                         <form onSubmit={handleSubmit} className="admin-form">
