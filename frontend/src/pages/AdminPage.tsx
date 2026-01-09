@@ -81,8 +81,16 @@ export function AdminPage() {
             applicationFee: item.applicationFee || '',
         });
         setEditingId(item.id);
-        setActiveAdminTab('add');
-        setMessage(`Editing: ${item.title}`);
+
+        // Load jobDetails if available for detailed editing
+        if (item.jobDetails && Object.keys(item.jobDetails).length > 0) {
+            setJobDetails(item.jobDetails);
+            setActiveAdminTab('detailed');
+            setMessage(`Editing (Detailed): ${item.title}`);
+        } else {
+            setActiveAdminTab('add');
+            setMessage(`Editing: ${item.title}`);
+        }
     };
 
     // Handle login - call real auth API
@@ -366,10 +374,15 @@ export function AdminPage() {
                                 return;
                             }
 
-                            setMessage('Saving...');
+                            setMessage(editingId ? 'Updating...' : 'Saving...');
                             try {
-                                const response = await fetch(`${apiBase}/api/announcements`, {
-                                    method: 'POST',
+                                const url = editingId
+                                    ? `${apiBase}/api/announcements/${editingId}`
+                                    : `${apiBase}/api/announcements`;
+                                const method = editingId ? 'PATCH' : 'POST';
+
+                                const response = await fetch(url, {
+                                    method,
                                     headers: {
                                         'Content-Type': 'application/json',
                                         'Authorization': `Bearer ${adminToken}`,
@@ -382,13 +395,14 @@ export function AdminPage() {
                                 });
 
                                 if (response.ok) {
-                                    setMessage('Job posting created successfully!');
+                                    setMessage(editingId ? 'Job posting updated successfully!' : 'Job posting created successfully!');
                                     setFormData({
                                         title: '', type: 'job', category: 'Central Government', organization: '',
                                         externalLink: '', location: 'All India', deadline: '', totalPosts: '',
                                         minQualification: '', ageLimit: '', applicationFee: '',
                                     });
                                     setJobDetails(null);
+                                    setEditingId(null);
                                     refreshData();
                                     setActiveAdminTab('list');
                                 } else {
@@ -399,7 +413,11 @@ export function AdminPage() {
                                 setMessage('Error saving job posting');
                             }
                         }}
-                        onCancel={() => setActiveAdminTab('list')}
+                        onCancel={() => {
+                            setEditingId(null);
+                            setJobDetails(null);
+                            setActiveAdminTab('list');
+                        }}
                     />
                 </div>
             ) : activeAdminTab === 'bulk' ? (

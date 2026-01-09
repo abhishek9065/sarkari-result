@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { DeadlineCountdown } from '../components/ui/DeadlineCountdown';
 import { QuickActionsBar } from '../components/ui/QuickActionsBar';
 import { JobDetailsRenderer } from '../components/details/JobDetailsRenderer';
+import { SEOHead } from '../components/seo/SEOHead';
 import type { Announcement } from '../types';
 
 interface UniversalJobDetailProps {
@@ -66,6 +67,24 @@ export function UniversalJobDetail({ item }: UniversalJobDetailProps) {
 
     return (
         <div className="job-detail-page">
+            {/* SEO Meta Tags & Structured Data */}
+            <SEOHead
+                title={`${job.title} - ${job.organization}`}
+                description={`Apply for ${job.title} at ${job.organization}. Total ${typeof job.totalPosts === 'number' ? job.totalPosts.toLocaleString() : job.totalPosts} vacancies. Last date: ${formatDate(item.deadline)}.`}
+                canonicalUrl={`https://www.sarkariexams.me/${item.type}/${item.slug}`}
+                ogType="article"
+                keywords={[item.type, item.category, item.organization, 'sarkari result', 'government jobs']}
+                publishedTime={item.postedAt}
+                modifiedTime={item.updatedAt}
+                jobPosting={{
+                    title: job.title,
+                    organization: job.organization,
+                    location: item.location || 'India',
+                    deadline: item.deadline,
+                    totalPosts: typeof job.totalPosts === 'number' ? job.totalPosts : undefined,
+                }}
+            />
+
             {/* Header */}
             <div className="job-header">
                 <div className="job-badge">{item.type.toUpperCase()}</div>
