@@ -190,16 +190,76 @@ cp .env.example .env
 nano .env
 ```
 
-**Inside nano editor, update these values:**
+---
+
+### 6.3.1: Configure DATABASE_URL (PostgreSQL Database)
+
+**Format:**
 ```
-DATABASE_URL=postgresql://user:password@your-db-host:5432/sarkari_db
-JWT_SECRET=your-secret-key-here
+DATABASE_URL=postgresql://USERNAME:PASSWORD@HOST:PORT/DATABASE_NAME
 ```
 
-**To save and exit nano:**
-1. Press `Ctrl + X`
-2. Press `Y` to confirm
-3. Press `Enter` to save
+**Option A: Use Neon.tech (FREE - Recommended)**
+
+1. Go to [neon.tech](https://neon.tech) and create free account
+2. Click "Create Project" 
+3. Name it: `sarkari-db`
+4. Click "Connection string" → Copy it
+5. It looks like:
+```
+postgresql://abhishek:abcd1234@ep-cool-sun-123456.us-east-2.aws.neon.tech/sarkari_db
+```
+
+**Option B: Use Supabase (FREE)**
+1. Go to [supabase.com](https://supabase.com)
+2. Create project → Go to Settings → Database → Connection string
+
+---
+
+### 6.3.2: Generate JWT_SECRET (Security Key)
+
+Run this command on your server to generate a secure key:
+```bash
+openssl rand -base64 32
+```
+
+**Example output:**
+```
+K8xPqR2mN5vB7yC1dF4gH6jL9pS3wE0tU8iO2aZ5nM=
+```
+
+Copy this output - this is your JWT_SECRET.
+
+---
+
+### 6.3.3: Edit the .env File in Nano
+
+After running `nano .env`, you'll see a file like this:
+```
+DATABASE_URL=postgresql://user:password@your-db-host:5432/sarkari_db
+JWT_SECRET=your-super-secret-jwt-key
+```
+
+**How to edit:**
+1. Use **arrow keys** (↑↓←→) to move cursor
+2. Use **Backspace** to delete
+3. Type your actual values
+
+**Example with real values:**
+```
+DATABASE_URL=postgresql://abhishek:mypass123@ep-cool-sun-123456.us-east-2.aws.neon.tech/sarkari_db
+JWT_SECRET=K8xPqR2mN5vB7yC1dF4gH6jL9pS3wE0tU8iO2aZ5nM=
+```
+
+---
+
+### 6.3.4: Save and Exit Nano
+
+1. Press `Ctrl + X` (hold Ctrl, press X)
+2. You'll see "Save modified buffer?" → Press `Y`
+3. You'll see filename → Press `Enter`
+
+**Done!** Your environment is configured.
 
 ---
 
