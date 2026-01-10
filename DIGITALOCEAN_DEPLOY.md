@@ -7,80 +7,262 @@
 
 ---
 
-## Step 1: Create Droplet
+## Step 1: Create SSH Key (On Your Local Machine)
 
-1. Go to [DigitalOcean](https://cloud.digitalocean.com)
-2. Create → Droplets
-3. Choose:
-   - **Image**: Ubuntu 22.04 LTS
-   - **Size**: Basic $6/mo (1GB RAM) or $12/mo (2GB RAM recommended)
-   - **Datacenter**: Choose nearest to your users (Singapore for India)
-   - **Authentication**: SSH Key (recommended)
+Before creating a Droplet, you need an SSH key for secure access.
 
-4. Note your Droplet IP address
+### Generate SSH Key (if you don't have one):
+```bash
+# Run on your local machine (Linux/Mac)
+ssh-keygen -t ed25519 -C "your-email@example.com"
+
+# Press Enter to accept default location (~/.ssh/id_ed25519)
+# Enter a passphrase (optional but recommended)
+```
+
+### View your public key:
+```bash
+cat ~/.ssh/id_ed25519.pub
+# Copy the entire output
+```
 
 ---
 
-## Step 2: Initial Server Setup
+## Step 2: Add SSH Key to DigitalOcean
 
-SSH into your server:
+1. Go to [DigitalOcean Settings → Security](https://cloud.digitalocean.com/account/security)
+2. Click **"Add SSH Key"**
+3. Paste your public key (from step above)
+4. Give it a name (e.g., "My Laptop")
+5. Click **"Add SSH Key"**
+
+---
+
+## Step 3: Create Droplet
+
+1. Go to [DigitalOcean](https://cloud.digitalocean.com)
+2. Click **Create → Droplets**
+3. Choose:
+   - **Image**: Ubuntu 22.04 LTS
+   - **Size**: Basic $6/mo (1GB RAM) or $12/mo (2GB RAM recommended)
+   - **Datacenter**: Singapore (for India users)
+   - **Authentication**: Select your SSH Key from the list
+
+4. Click **"Create Droplet"**
+
+---
+
+## Step 4: Find Your Droplet IP Address
+
+After creation:
+1. Go to [Droplets Dashboard](https://cloud.digitalocean.com/droplets)
+2. Your IP is shown in the **ipv4** column
+3. Example: `143.198.123.45`
+
+You can also click on the Droplet name to see full details.
+
+---
+
+## Step 5: Initial Server Setup
+
+### 5.1: Connect to Your Server via SSH
+
+Open your **local terminal** (on your laptop/PC, NOT DigitalOcean):
+
 ```bash
-ssh root@YOUR_DROPLET_IP
+# Replace with your actual Droplet IP
+ssh root@143.198.123.45
 ```
 
-Update system:
+**What happens:**
+- First time: You'll see "Are you sure you want to continue connecting?" → Type **yes** and press Enter
+- If you set a passphrase for your SSH key, enter it now
+- You're now connected when you see: `root@your-droplet-name:~#`
+
+---
+
+### 5.2: Update System Packages
+
+Run these commands **inside the server** (after SSH):
+
 ```bash
-apt update && apt upgrade -y
+# Update package list
+apt update
+
+# Upgrade all packages (may take 2-3 minutes)
+apt upgrade -y
 ```
 
-Install Docker:
+---
+
+### 5.3: Install Docker
+
 ```bash
+# This downloads and installs Docker automatically
 curl -fsSL https://get.docker.com | sh
 ```
 
-Install Docker Compose:
+Verify Docker is installed:
+```bash
+docker --version
+# Should show: Docker version 24.x.x
+```
+
+---
+
+### 5.4: Install Docker Compose Plugin
+
 ```bash
 apt install docker-compose-plugin -y
 ```
 
-Create non-root user:
+Verify:
 ```bash
+docker compose version
+# Should show: Docker Compose version v2.x.x
+```
+
+---
+
+### 5.5: Create a Non-Root User (Recommended for Security)
+
+```bash
+# Create user named "deploy"
 adduser deploy
+# Enter a password when prompted
+# Press Enter to skip other questions
+
+# Give deploy user permission to use Docker
 usermod -aG docker deploy
 ```
 
 ---
 
-## Step 3: Deploy Application
+### 5.6: Verify Everything Works
 
-Switch to deploy user:
 ```bash
+# Test Docker
+docker run hello-world
+
+# You should see "Hello from Docker!" message
+```
+
+**You're now ready to deploy the application!**
+
+---
+
+## Step 6: Deploy Application
+
+### 6.1: Switch to Deploy User
+
+```bash
+# Switch from root to deploy user
 su - deploy
+
+# You should see: deploy@your-droplet:~$
 ```
 
-Clone repository:
+---
+
+### 6.2: Clone Your Repository
+
 ```bash
+# Clone the project
 git clone https://github.com/abhishek9065/sarkari-result.git
+
+# Enter the project folder
 cd sarkari-result
+
+# Verify files are there
+ls -la
+# You should see: docker-compose.yml, backend/, frontend/, nginx/, etc.
 ```
 
-Create environment file:
+---
+
+### 6.3: Create Environment File
+
 ```bash
+# Copy the example env file
 cp .env.example .env
+
+# Edit the environment file
 nano .env
-# Fill in your DATABASE_URL, JWT_SECRET, etc.
 ```
 
-Build and start containers:
+**Inside nano editor, update these values:**
+```
+DATABASE_URL=postgresql://user:password@your-db-host:5432/sarkari_db
+JWT_SECRET=your-secret-key-here
+```
+
+**To save and exit nano:**
+1. Press `Ctrl + X`
+2. Press `Y` to confirm
+3. Press `Enter` to save
+
+---
+
+### 6.4: Build and Start Containers
+
 ```bash
+# Build and start all services (takes 3-5 minutes first time)
 docker compose up -d --build
 ```
 
-Check status:
+**What this does:**
+- Builds the backend Docker image
+- Builds the frontend Docker image
+- Starts nginx, backend, and frontend containers
+- `-d` runs them in background (detached mode)
+
+---
+
+### 6.5: Verify Deployment
+
 ```bash
+# Check if all containers are running
 docker compose ps
-docker compose logs -f
 ```
+
+**Expected output:**
+```
+NAME                STATUS              PORTS
+sarkari-backend     Up 2 minutes       4000/tcp
+sarkari-frontend    Up 2 minutes       80/tcp
+sarkari-nginx       Up 2 minutes       0.0.0.0:80->80/tcp
+```
+
+All should show "Up" status.
+
+---
+
+### 6.6: View Logs (if something goes wrong)
+
+```bash
+# View all logs
+docker compose logs
+
+# Follow logs in real-time
+docker compose logs -f
+
+# View specific service logs
+docker compose logs backend
+docker compose logs frontend
+```
+
+Press `Ctrl + C` to stop following logs.
+
+---
+
+### 6.7: Test Your Site
+
+Open your browser and visit:
+```
+http://YOUR_DROPLET_IP
+```
+
+You should see your SarkariExams website! 🎉
 
 ---
 
