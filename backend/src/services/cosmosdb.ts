@@ -82,11 +82,8 @@ async function createIndexes(): Promise<void> {
         await announcements.createIndex({ createdAt: -1 });
         await announcements.createIndex({ viewCount: -1 });
         await announcements.createIndex({ deadline: 1 });
-        // Text index for search
-        await announcements.createIndex(
-            { title: 'text', content: 'text', organization: 'text', category: 'text' },
-            { name: 'text_search_index' }
-        );
+        // Note: Text indexes are not supported in Cosmos DB MongoDB API
+        // Use regex search instead (already implemented in model)
 
         // Users indexes
         await users.createIndex({ email: 1 }, { unique: true });
