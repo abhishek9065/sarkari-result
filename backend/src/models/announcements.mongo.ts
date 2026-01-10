@@ -374,6 +374,178 @@ export class AnnouncementModelMongo {
     }
 
     /**
+     * Batch insert multiple announcements
+     * More efficient than individual inserts for bulk operations
+     */
+    static async batchInsert(items: Array<{
+        title: string;
+        type: ContentType;
+        category: string;
+        organization: string;
+        content?: string;
+        externalLink?: string;
+        deadline?: Date;
+        tags?: string[];
+    }>, userId: number): Promise<{ inserted: number; errors: string[] }> {
+        const errors: string[] = [];
+        const docs: Omit<AnnouncementDoc, '_id'>[] = [];
+        const now = new Date();
+
+        for (const item of items) {
+            try {
+                docs.push({
+                    title: item.title,
+                    slug: this.generateSlug(item.title),
+                    type: item.type,
+                    category: item.category,
+                    organization: item.organization,
+                    content: item.content,
+                    externalLink: item.externalLink,
+                    deadline: item.deadline,
+                    tags: item.tags || [],
+                    postedBy: userId,
+                    postedAt: now,
+                    updatedAt: now,
+                    isActive: true,
+                    viewCount: 0,
+                } as Omit<AnnouncementDoc, '_id'>);
+            } catch (error) {
+                errors.push(`Failed to prepare "${item.title}": ${error}`);
+            }
+        }
+
+        if (docs.length === 0) {
+            return { inserted: 0, errors };
+        }
+
+        try {
+            const result = await this.collection.insertMany(docs as AnnouncementDoc[], { ordered: false });
+            console.log(`[BatchInsert] Inserted ${result.insertedCount} documents`);
+            return { inserted: result.insertedCount, errors };
+        } catch (error: any) {
+            // With ordered: false, some inserts may succeed even if others fail
+            const insertedCount = error.result?.nInserted || 0;
+            errors.push(`Batch insert error: ${error.message}`);
+            return { inserted: insertedCount, errors };
+        }
+    }
+
+    /**
+     * Batch update multiple announcements by ID
+     */
+    static async batchUpdate(updates: Array<{
+        id: string;
+        data: Partial<{ title: string; content: string; deadline: Date; isActive: boolean }>;
+    }>): Promise<{ updated: number; errors: string[] }> {
+        const errors: string[] = [];
+        let updated = 0;
+
+        // Use bulkWrite for efficiency
+        const operations = updates
+            .filter(u => ObjectId.isValid(u.id))
+            .map(update => ({
+                updateOne: {
+                    filter: { _id: new ObjectId(update.id) },
+                    update: { $set: { ...update.data, updatedAt: new Date() } }
+                }
+            }));
+
+        if (operations.length === 0) {
+            return { updated: 0, errors: ['No valid IDs provided'] };
+        }
+
+        try {
+            const result = await this.collection.bulkWrite(operations, { ordered: false });
+            updated = result.modifiedCount;
+            console.log(`[BatchUpdate] Updated ${updated} documents`);
+        } catch (error: any) {
+            errors.push(`Batch update error: ${error.message}`);
+        }
+
+        return { updated, errors };
+    }
+
+    /**
+     * Bulk upsert - insert or update based on slug
+     * Useful for importing data that may already exist
+     */
+    static async bulkUpsert(items: Array<{
+        slug: string;
+        title: string;
+        type: ContentType;
+        category: string;
+        organization: string;
+        content?: string;
+        externalLink?: string;
+        deadline?: Date;
+        tags?: string[];
+    }>, userId: number): Promise<{ upserted: number; modified: number; errors: string[] }> {
+        const errors: string[] = [];
+        const now = new Date();
+
+        const operations = items.map(item => ({
+            updateOne: {
+                filter: { slug: item.slug },
+                update: {
+                    $set: {
+                        title: item.title,
+                        type: item.type,
+                        category: item.category,
+                        organization: item.organization,
+                        content: item.content,
+                        externalLink: item.externalLink,
+                        deadline: item.deadline,
+                        tags: item.tags || [],
+                        updatedAt: now,
+                    },
+                    $setOnInsert: {
+                        slug: item.slug,
+                        postedBy: userId,
+                        postedAt: now,
+                        isActive: true,
+                        viewCount: 0,
+                    }
+                },
+                upsert: true
+            }
+        }));
+
+        try {
+            const result = await this.collection.bulkWrite(operations, { ordered: false });
+            console.log(`[BulkUpsert] Upserted: ${result.upsertedCount}, Modified: ${result.modifiedCount}`);
+            return {
+                upserted: result.upsertedCount,
+                modified: result.modifiedCount,
+                errors
+            };
+        } catch (error: any) {
+            errors.push(`Bulk upsert error: ${error.message}`);
+            return { upserted: 0, modified: 0, errors };
+        }
+    }
+
+    /**
+     * Batch increment view counts
+     * More efficient than individual updates
+     */
+    static async batchIncrementViews(ids: string[]): Promise<number> {
+        const validIds = ids.filter(id => ObjectId.isValid(id)).map(id => new ObjectId(id));
+
+        if (validIds.length === 0) return 0;
+
+        try {
+            const result = await this.collection.updateMany(
+                { _id: { $in: validIds } },
+                { $inc: { viewCount: 1 } }
+            );
+            return result.modifiedCount;
+        } catch (error) {
+            console.error('[BatchIncrementViews] Error:', error);
+            return 0;
+        }
+    }
+
+    /**
      * Generate URL-safe slug
      */
     private static generateSlug(text: string): string {
