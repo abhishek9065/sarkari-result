@@ -47,7 +47,27 @@ const validateSecret = (key: string, value: string, insecureDefaults: string[]):
 };
 
 // Core configuration
-const databaseUrl = getRequiredEnv('DATABASE_URL', 'postgres://postgres:postgres@localhost:5432/sarkari');
+// Support both Cosmos DB (MongoDB) and PostgreSQL
+const getDbConnectionString = (): string => {
+  // Prefer Cosmos DB if configured
+  const cosmosUrl = process.env.COSMOS_CONNECTION_STRING || process.env.MONGODB_URI;
+  if (cosmosUrl) return cosmosUrl;
+
+  // Fall back to PostgreSQL
+  const pgUrl = process.env.DATABASE_URL;
+  if (pgUrl) return pgUrl;
+
+  // In production, require at least one database connection
+  if (isProduction) {
+    throw new Error('SECURITY ERROR: No database configured. Set COSMOS_CONNECTION_STRING or DATABASE_URL.');
+  }
+
+  // Dev fallback
+  console.warn('[CONFIG] Warning: Using default database URL (development only)');
+  return 'postgres://postgres:postgres@localhost:5432/sarkari';
+};
+
+const databaseUrl = getDbConnectionString();
 const jwtSecret = getRequiredEnv('JWT_SECRET', 'dev-secret');
 
 // Validate secrets aren't using known insecure defaults in production
@@ -59,6 +79,9 @@ export const config = {
   jwtSecret,
   nodeEnv: process.env.NODE_ENV ?? 'development',
   isProduction,
+
+  // Cosmos DB specific
+  cosmosDbName: process.env.COSMOS_DATABASE_NAME || 'sarkari_db',
 
   // Telegram bot config (optional - notifications disabled if not set)
   telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? '',
