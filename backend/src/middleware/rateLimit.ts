@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { getRealIp } from './cloudflare.js';
 import { SecurityLogger } from '../services/securityLogger.js';
 import { pool } from '../db.js';
 import { config } from '../config.js';
@@ -130,7 +131,8 @@ export function rateLimit(options: RateLimitOptions = {}) {
     const keyPrefix = options.keyPrefix || 'rl';
 
     return async (req: Request, res: Response, next: NextFunction) => {
-        const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+        // Use Cloudflare real IP if available, otherwise fallback
+        const clientIp = getRealIp(req);
         const key = `${keyPrefix}:${clientIp}`;
 
         // Try database first, fall back to memory

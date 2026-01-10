@@ -31,6 +31,7 @@ import {
   validateContentType
 } from './middleware/security.js';
 import { authenticateToken, requireAdmin } from './middleware/auth.js';
+import { cloudflareMiddleware } from './middleware/cloudflare.js';
 
 const app = express();
 
@@ -38,6 +39,9 @@ const app = express();
 app.set('trust proxy', 1);
 
 // ============ SECURITY MIDDLEWARE ============
+// Cloudflare IP extraction (must be first to get real IP)
+app.use(cloudflareMiddleware());
+
 // Apply security headers (Helmet)
 app.use(securityHeaders);
 
