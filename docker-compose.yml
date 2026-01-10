@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: sarkari-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    networks:
+      - sarkari-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sarkari-backend
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+    expose:
+      - "4000"
+    restart: unless-stopped
+    networks:
+      - sarkari-network
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:4000/api/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE=https://sarkariexams.me
+    container_name: sarkari-frontend
+    expose:
+      - "80"
+    restart: unless-stopped
+    networks:
+      - sarkari-network
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:80" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  sarkari-network:
+    driver: bridge
+
+volumes:
+  nginx-logs:
