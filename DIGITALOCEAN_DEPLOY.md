@@ -266,25 +266,97 @@ You should see your SarkariExams website! 🎉
 
 ---
 
-## Step 4: Configure Firewall
+## Step 7: Configure Firewall
 
+The firewall protects your server by blocking unwanted traffic.
+
+### 7.1: Switch back to root (if you're still as deploy user)
 ```bash
+exit
+# Now you should see: root@your-droplet:~#
+```
+
+### 7.2: Allow required ports
+```bash
+# Allow SSH (so you don't lock yourself out!)
 sudo ufw allow 22/tcp
+
+# Allow HTTP (web traffic)
 sudo ufw allow 80/tcp
+
+# Allow HTTPS (secure web traffic)
 sudo ufw allow 443/tcp
+```
+
+### 7.3: Enable the firewall
+```bash
 sudo ufw enable
+```
+
+You'll see: "Command may disrupt existing ssh connections. Proceed with operation (y|n)?"
+Type **y** and press Enter.
+
+### 7.4: Verify firewall status
+```bash
+sudo ufw status
+```
+
+**Expected output:**
+```
+Status: active
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW       Anywhere
+80/tcp                     ALLOW       Anywhere
+443/tcp                    ALLOW       Anywhere
 ```
 
 ---
 
-## Step 5: Update Cloudflare DNS
+## Step 8: Update Cloudflare DNS
 
-In Cloudflare Dashboard:
-1. Go to DNS settings
-2. Update A record:
-   - Name: `@`
-   - IPv4: `YOUR_DROPLET_IP`
-   - Proxy: ✅ Proxied (orange cloud)
+Now point your domain to your new server.
+
+### 8.1: Get Your Droplet IP
+```bash
+# On your server, run:
+curl ifconfig.me
+# This shows your public IP
+```
+
+### 8.2: Update DNS in Cloudflare Dashboard
+
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com)
+2. Select your domain: `sarkariexams.me`
+3. Click **DNS** in the sidebar
+4. Find your **A record** (or create one):
+   - **Type**: A
+   - **Name**: `@` (or `sarkariexams.me`)
+   - **IPv4 address**: `YOUR_DROPLET_IP`
+   - **Proxy status**: ✅ Proxied (orange cloud)
+   - **TTL**: Auto
+
+5. Also update/create **www** record:
+   - **Type**: CNAME
+   - **Name**: `www`
+   - **Target**: `sarkariexams.me`
+   - **Proxy status**: ✅ Proxied
+
+6. Click **Save**
+
+### 8.3: Wait for DNS Propagation
+
+DNS changes can take 5-30 minutes to propagate.
+
+### 8.4: Test Your Domain
+
+Open your browser and visit:
+```
+https://sarkariexams.me
+```
+
+🎉 **Congratulations! Your site is now live on DigitalOcean!**
 
 ---
 
