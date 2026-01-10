@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { getCache, setCache } from '../utils/cache.js';
+import { RedisCache } from '../services/redis.js';
 
 interface CacheOptions {
     ttl?: number; // Time to live in seconds
@@ -8,12 +9,13 @@ interface CacheOptions {
 
 /**
  * Cache middleware - caches GET responses
+ * Uses Redis as primary cache, falls back to in-memory
  * Usage: app.get('/api/endpoint', cacheMiddleware({ ttl: 300 }), handler)
  */
 export function cacheMiddleware(options: CacheOptions = {}) {
     const { ttl = 300, keyGenerator } = options;
 
-    return (req: Request, res: Response, next: NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
         // Only cache GET requests
         if (req.method !== 'GET') {
             return next();
@@ -24,10 +26,14 @@ export function cacheMiddleware(options: CacheOptions = {}) {
             ? keyGenerator(req)
             : `${req.originalUrl || req.url}`;
 
-        // Check cache
-        const cachedData = getCache(cacheKey);
+        // Check Redis first (if available), then memory
+        let cachedData = await RedisCache.get(cacheKey);
+        if (!cachedData) {
+            cachedData = getCache(cacheKey);
+        }
+
         if (cachedData) {
-            res.set('X-Cache', 'HIT');
+            res.set('X-Cache', RedisCache.isAvailable() ? 'HIT-REDIS' : 'HIT-MEMORY');
             return res.json(cachedData);
         }
 
@@ -36,6 +42,9 @@ export function cacheMiddleware(options: CacheOptions = {}) {
 
         // Override json to cache the response
         res.json = (data: any) => {
+            // Store in Redis (async, non-blocking)
+            RedisCache.set(cacheKey, data, ttl).catch(console.error);
+            // Also store in memory as fallback
             setCache(cacheKey, data, ttl);
             res.set('X-Cache', 'MISS');
             return originalJson(data);
