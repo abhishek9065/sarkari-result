@@ -27,6 +27,20 @@ const querySchema = z.object({
   offset: z.coerce.number().int().min(0).default(0),
 });
 
+// Cursor-based pagination schema (v2)
+const cursorQuerySchema = z.object({
+  type: z
+    .enum(['job', 'result', 'admit-card', 'syllabus', 'answer-key', 'admission'] as [ContentType, ...ContentType[]])
+    .optional(),
+  search: z.string().trim().optional(),
+  category: z.string().trim().optional(),
+  organization: z.string().trim().optional(),
+  qualification: z.string().trim().optional(),
+  sort: z.enum(['newest', 'oldest', 'deadline']).default('newest'),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  cursor: z.coerce.number().int().optional(), // Last seen ID
+});
+
 // Get all announcements - with caching (5 min server, 2 min browser)
 router.get('/', cacheMiddleware({ ttl: 300, keyGenerator: cacheKeys.announcements }), cacheControl(120), async (req, res) => {
   try {
@@ -41,6 +55,29 @@ router.get('/', cacheMiddleware({ ttl: 300, keyGenerator: cacheKeys.announcement
     return res.json({ data: announcements, count: announcements.length });
   } catch (error) {
     console.error('Error fetching announcements:', error);
+    return res.status(500).json({ error: 'Failed to fetch announcements' });
+  }
+});
+
+// V2: Cursor-based pagination (faster for large datasets)
+router.get('/v2', cacheMiddleware({ ttl: 300 }), cacheControl(120), async (req, res) => {
+  try {
+    const parseResult = cursorQuerySchema.safeParse(req.query);
+    if (!parseResult.success) {
+      return res.status(400).json({ error: parseResult.error.flatten() });
+    }
+
+    const filters = parseResult.data;
+    const result = await AnnouncementModel.findAllWithCursor(filters);
+
+    return res.json({
+      data: result.data,
+      count: result.data.length,
+      nextCursor: result.nextCursor,
+      hasMore: result.hasMore,
+    });
+  } catch (error) {
+    console.error('Error fetching announcements (v2):', error);
     return res.status(500).json({ error: 'Failed to fetch announcements' });
   }
 });

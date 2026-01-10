@@ -111,6 +111,124 @@ export class AnnouncementModel {
     }
   }
 
+  /**
+   * Cursor-based pagination for better performance with large datasets
+   * Uses keyset pagination (WHERE id < cursor) instead of OFFSET
+   */
+  static async findAllWithCursor(filters?: {
+    type?: ContentType;
+    search?: string;
+    category?: string;
+    organization?: string;
+    qualification?: string;
+    sort?: 'newest' | 'oldest' | 'deadline';
+    limit?: number;
+    cursor?: number; // Last seen ID for pagination
+  }): Promise<{ data: Announcement[]; nextCursor: number | null; hasMore: boolean }> {
+    try {
+      const limit = filters?.limit || 20;
+
+      let query = `
+        SELECT 
+          a.id, a.title, a.slug, a.type, a.category, a.organization, a.content,
+          a.external_link as "externalLink", 
+          a.location, a.deadline, 
+          a.min_qualification as "minQualification",
+          a.age_limit as "ageLimit", 
+          a.application_fee as "applicationFee",
+          a.total_posts as "totalPosts", 
+          a.posted_by as "postedBy",
+          a.posted_at as "postedAt", 
+          a.updated_at as "updatedAt",
+          a.is_active as "isActive", 
+          a.view_count as "viewCount",
+          COALESCE(json_agg(DISTINCT jsonb_build_object(
+            'id', t.id,
+            'name', t.name,
+            'slug', t.slug
+          )) FILTER (WHERE t.id IS NOT NULL), '[]') as tags
+        FROM announcements a
+        LEFT JOIN announcement_tags at ON a.id = at.announcement_id
+        LEFT JOIN tags t ON at.tag_id = t.id
+        WHERE a.is_active = true
+      `;
+
+      const params: any[] = [];
+      let paramCount = 0;
+
+      // Cursor-based pagination (keyset)
+      if (filters?.cursor) {
+        const sortOrder = filters?.sort || 'newest';
+        if (sortOrder === 'oldest') {
+          query += ` AND a.id > $${++paramCount}`;
+        } else {
+          query += ` AND a.id < $${++paramCount}`;
+        }
+        params.push(filters.cursor);
+      }
+
+      if (filters?.type) {
+        query += ` AND a.type = $${++paramCount}`;
+        params.push(filters.type);
+      }
+
+      if (filters?.category) {
+        query += ` AND a.category ILIKE $${++paramCount}`;
+        params.push(`%${filters.category}%`);
+      }
+
+      if (filters?.organization) {
+        query += ` AND a.organization ILIKE $${++paramCount}`;
+        params.push(`%${filters.organization}%`);
+      }
+
+      if (filters?.qualification) {
+        query += ` AND a.min_qualification ILIKE $${++paramCount}`;
+        params.push(`%${filters.qualification}%`);
+      }
+
+      if (filters?.search) {
+        query += ` AND (to_tsvector('english', a.title || ' ' || COALESCE(a.content, '') || ' ' || a.organization || ' ' || a.category) @@ plainto_tsquery('english', $${++paramCount})
+          OR EXISTS (
+            SELECT 1 FROM tags t2 
+            JOIN announcement_tags at2 ON t2.id = at2.tag_id 
+            WHERE at2.announcement_id = a.id AND t2.name ILIKE $${++paramCount}
+          ))`;
+        params.push(filters.search);
+        params.push(`%${filters.search}%`);
+      }
+
+      query += ` GROUP BY a.id`;
+
+      // Add sorting
+      const sortOrder = filters?.sort || 'newest';
+      switch (sortOrder) {
+        case 'oldest':
+          query += ` ORDER BY a.id ASC`;
+          break;
+        case 'deadline':
+          query += ` ORDER BY CASE WHEN a.deadline IS NULL THEN 1 ELSE 0 END, a.deadline ASC, a.id DESC`;
+          break;
+        default:
+          query += ` ORDER BY a.id DESC`;
+      }
+
+      // Fetch one extra to check if there are more results
+      query += ` LIMIT $${++paramCount}`;
+      params.push(limit + 1);
+
+      const result = await pool.query<Announcement>(query, params);
+      const hasMore = result.rows.length > limit;
+      const data = hasMore ? result.rows.slice(0, limit) : result.rows;
+      const nextCursor = hasMore && data.length > 0 ? data[data.length - 1].id : null;
+
+      return { data, nextCursor, hasMore };
+    } catch (error) {
+      console.error('[DB Error] findAllWithCursor failed:', (error as Error).message);
+      return { data: [], nextCursor: null, hasMore: false };
+    }
+  }
+
   static async findBySlug(slug: string): Promise<Announcement | null> {
     // Always try database first
 
