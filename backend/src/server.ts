@@ -32,6 +32,7 @@ import {
 } from './middleware/security.js';
 import { authenticateToken, requireAdmin } from './middleware/auth.js';
 import { cloudflareMiddleware } from './middleware/cloudflare.js';
+import { connectToDatabase } from './services/cosmosdb.js';
 
 const app = express();
 
@@ -157,12 +158,30 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(config.port, () => {
-  console.log(`API running on http://localhost:${config.port}`);
-
-  // Start the job scraper scheduler
-  if (process.env.NODE_ENV === 'production') {
-    startScheduledScraper();
-    scheduleNotificationJobs();
+// Initialize database and start server
+async function startServer() {
+  try {
+    // Connect to Cosmos DB (MongoDB)
+    if (process.env.COSMOS_CONNECTION_STRING || process.env.MONGODB_URI) {
+      await connectToDatabase();
+      console.log('[Server] Database connected successfully');
+    } else {
+      console.log('[Server] No Cosmos DB configured, using fallback data');
+    }
+  } catch (error) {
+    console.error('[Server] Database connection failed:', error);
+    console.log('[Server] Starting without database - using fallback data');
   }
-});
+
+  app.listen(config.port, () => {
+    console.log(`API running on http://localhost:${config.port}`);
+
+    // Start the job scraper scheduler
+    if (process.env.NODE_ENV === 'production') {
+      startScheduledScraper();
+      scheduleNotificationJobs();
+    }
+  });
+}
+
+startServer();

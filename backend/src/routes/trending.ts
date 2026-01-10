@@ -1,5 +1,5 @@
 import express from 'express';
-import { AnnouncementModel } from '../models/announcements.js';
+import { AnnouncementModelMongo as AnnouncementModel } from '../models/announcements.mongo.js';
 import { cacheMiddleware, cacheKeys } from '../middleware/cache.js';
 import { ContentType } from '../types.js';
 

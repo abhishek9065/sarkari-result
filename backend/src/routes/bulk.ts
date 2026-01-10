@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
-import { AnnouncementModel } from '../models/announcements.js';
+import { AnnouncementModelMongo as AnnouncementModel } from '../models/announcements.mongo.js';
 import { CreateAnnouncementDto, ContentType } from '../types.js';
 
 const router = express.Router();

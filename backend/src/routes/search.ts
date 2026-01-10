@@ -1,6 +1,6 @@
 import express from 'express';
 import { z } from 'zod';
-import { AnnouncementModel } from '../models/announcements.js';
+import { AnnouncementModelMongo as AnnouncementModel } from '../models/announcements.mongo.js';
 import { cacheMiddleware, cacheKeys } from '../middleware/cache.js';
 
 const router = express.Router();

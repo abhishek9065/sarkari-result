@@ -5,7 +5,7 @@ import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { cacheMiddleware, cacheKeys } from '../middleware/cache.js';
 import { cacheControl } from '../middleware/cacheControl.js';
 import { invalidateCache } from '../utils/cache.js';
-import { AnnouncementModel } from '../models/announcements.js';
+import { AnnouncementModelMongo as AnnouncementModel } from '../models/announcements.mongo.js';
 import { SubscriptionModel } from '../models/subscriptions.js';
 import { ContentType, CreateAnnouncementDto } from '../types.js';
 import { sendAnnouncementNotification } from '../services/telegram.js';
@@ -68,7 +68,10 @@ router.get('/v2', cacheMiddleware({ ttl: 300 }), cacheControl(120), async (req, 
     }
 
     const filters = parseResult.data;
-    const result = await AnnouncementModel.findAllWithCursor(filters);
+    const result = await AnnouncementModel.findAllWithCursor({
+      ...filters,
+      cursor: filters.cursor?.toString(),
+    });
 
     return res.json({
       data: result.data,
@@ -125,7 +128,7 @@ router.get('/:slug', cacheMiddleware({ ttl: 600, keyGenerator: cacheKeys.announc
     }
 
     // Increment view count (fire and forget, don't block response)
-    AnnouncementModel.incrementViewCount(announcement.id).catch(console.error);
+    AnnouncementModel.incrementViewCount(String(announcement.id)).catch(console.error);
 
     return res.json({ data: announcement });
   } catch (error) {
@@ -265,8 +268,8 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
 // Update announcement (admin only)
 router.patch('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
+    const id = req.params.id; // String ID for MongoDB
+    if (!id || id.length < 1) {
       return res.status(400).json({ error: 'Invalid announcement ID' });
     }
 
@@ -304,8 +307,8 @@ router.patch('/:id', authenticateToken, requireAdmin, async (req, res) => {
 // Delete announcement (admin only)
 router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
+    const id = req.params.id; // String ID for MongoDB
+    if (!id || id.length < 1) {
       return res.status(400).json({ error: 'Invalid announcement ID' });
     }
 
