@@ -405,8 +405,8 @@ export class AnnouncementModelMongo {
             totalPosts: doc.totalPosts,
             tags: doc.tags?.map(t => ({ id: 0, name: t, slug: t.toLowerCase() })) || [],
             postedBy: doc.postedBy,
-            postedAt: doc.postedAt?.toISOString(),
-            updatedAt: doc.updatedAt?.toISOString(),
+            postedAt: doc.postedAt?.toISOString() as any,
+            updatedAt: doc.updatedAt?.toISOString() as any,
             isActive: doc.isActive,
             viewCount: doc.viewCount,
         };
