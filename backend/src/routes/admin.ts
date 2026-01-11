@@ -290,4 +290,39 @@ router.get('/security/logs', async (req, res) => {
     }
 });
 
+/**
+ * GET /api/admin/test-error
+ * Trigger a test error to verify Sentry is working
+ */
+router.get('/test-error', async (_req, res) => {
+    try {
+        // This will throw an error intentionally
+        throw new Error('Test error to verify Sentry integration');
+    } catch (error) {
+        const { captureException } = await import('../services/errorTracking.js');
+        captureException(error as Error, { source: 'admin-test-endpoint' });
+        return res.status(500).json({
+            message: 'Test error triggered and sent to Sentry!',
+            error: (error as Error).message
+        });
+    }
+});
+
+/**
+ * GET /api/admin/recent-errors
+ * View recent errors from local log
+ */
+router.get('/recent-errors', async (req, res) => {
+    try {
+        const { getRecentErrors } = await import('../services/errorTracking.js');
+        const limit = Math.min(50, parseInt(req.query.limit as string) || 20);
+        const errors = getRecentErrors(limit);
+        return res.json({ data: errors });
+    } catch (error) {
+        console.error('Recent errors error:', error);
+        return res.status(500).json({ error: 'Failed to load errors' });
+    }
+});
+
 export default router;
+
