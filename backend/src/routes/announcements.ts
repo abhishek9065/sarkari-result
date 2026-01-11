@@ -6,11 +6,9 @@ import { cacheMiddleware, cacheKeys } from '../middleware/cache.js';
 import { cacheControl } from '../middleware/cacheControl.js';
 import { invalidateCache } from '../utils/cache.js';
 import { AnnouncementModelMongo as AnnouncementModel } from '../models/announcements.mongo.js';
-import { SubscriptionModel } from '../models/subscriptions.js';
 import { ContentType, CreateAnnouncementDto } from '../types.js';
 import { sendAnnouncementNotification } from '../services/telegram.js';
 import { sendAnnouncementEmail, isEmailConfigured } from '../services/email.js';
-import { sendPushNotification } from '../services/push.js';
 
 const router = express.Router();
 
@@ -255,26 +253,8 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       console.error('Failed to send Telegram notification:', err);
     });
 
-    // Send email notifications to subscribers (async, don't block response)
-    if (isEmailConfigured()) {
-      (async () => {
-        try {
-          const subscribers = await SubscriptionModel.getSubscribersForCategory(announcement.type);
-          if (subscribers.length > 0) {
-            const tokenMap = new Map(subscribers.map(s => [s.email, s.unsubscribeToken]));
-            const emails = subscribers.map(s => s.email);
-            await sendAnnouncementEmail(emails, announcement, tokenMap);
-          }
-        } catch (err) {
-          console.error('Failed to send email notifications:', err);
-        }
-      })();
-    }
-
-    // Send push notifications to subscribers (async, don't block response)
-    sendPushNotification(announcement).catch(err => {
-      console.error('Failed to send push notifications:', err);
-    });
+    // Note: Push notifications and email subscriptions removed (PostgreSQL dependency)
+    // These can be re-implemented with MongoDB if needed
 
     // Invalidate cached announcement lists and related data
     invalidateCache('announcements');
