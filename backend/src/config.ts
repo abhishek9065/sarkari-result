@@ -6,7 +6,6 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 /**
  * Get environment variable with optional fallback.
- * In production, required variables without values will throw an error.
  */
 const getEnv = (key: string, fallback?: string): string => {
   const value = process.env[key] ?? fallback;
@@ -18,14 +17,13 @@ const getEnv = (key: string, fallback?: string): string => {
 
 /**
  * Get required environment variable (no fallback allowed in production).
- * In development, a fallback can be provided for convenience.
  */
 const getRequiredEnv = (key: string, devFallback?: string): string => {
   const value = process.env[key];
 
   if (!value) {
     if (isProduction) {
-      throw new Error(`SECURITY ERROR: Missing required env var "${key}" in production. Cannot use default values for sensitive configuration.`);
+      throw new Error(`SECURITY ERROR: Missing required env var "${key}" in production.`);
     }
     if (devFallback) {
       console.warn(`[CONFIG] Warning: Using default value for ${key} (development only)`);
@@ -42,29 +40,24 @@ const getRequiredEnv = (key: string, devFallback?: string): string => {
  */
 const validateSecret = (key: string, value: string, insecureDefaults: string[]): void => {
   if (isProduction && insecureDefaults.includes(value)) {
-    throw new Error(`SECURITY ERROR: "${key}" is using an insecure default value in production. Please set a secure value.`);
+    throw new Error(`SECURITY ERROR: "${key}" is using an insecure default value in production.`);
   }
 };
 
-// Core configuration
-// Support both Cosmos DB (MongoDB) and PostgreSQL
+// Get MongoDB connection string (Cosmos DB)
 const getDbConnectionString = (): string => {
   // Prefer Cosmos DB if configured
   const cosmosUrl = process.env.COSMOS_CONNECTION_STRING || process.env.MONGODB_URI;
   if (cosmosUrl) return cosmosUrl;
 
-  // Fall back to PostgreSQL
-  const pgUrl = process.env.DATABASE_URL;
-  if (pgUrl) return pgUrl;
-
-  // In production, require at least one database connection
+  // In production, require MongoDB connection
   if (isProduction) {
-    throw new Error('SECURITY ERROR: No database configured. Set COSMOS_CONNECTION_STRING or DATABASE_URL.');
+    throw new Error('SECURITY ERROR: No database configured. Set COSMOS_CONNECTION_STRING or MONGODB_URI.');
   }
 
-  // Dev fallback
-  console.warn('[CONFIG] Warning: Using default database URL (development only)');
-  return 'postgres://postgres:postgres@localhost:5432/sarkari';
+  // Dev fallback - use local MongoDB
+  console.warn('[CONFIG] Warning: No MongoDB configured (development mode)');
+  return 'mongodb://localhost:27017/sarkari_db';
 };
 
 const databaseUrl = getDbConnectionString();
@@ -83,11 +76,11 @@ export const config = {
   // Cosmos DB specific
   cosmosDbName: process.env.COSMOS_DATABASE_NAME || 'sarkari_db',
 
-  // Telegram bot config (optional - notifications disabled if not set)
+  // Telegram bot config (optional)
   telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? '',
   telegramChannelId: process.env.TELEGRAM_CHANNEL_ID ?? '',
 
-  // SendGrid email config (optional - email notifications disabled if not set)
+  // SendGrid email config (optional)
   emailUser: process.env.EMAIL_USER ?? '',
   emailPass: process.env.SENDGRID_API_KEY ?? process.env.EMAIL_PASS ?? '',
   emailFrom: process.env.EMAIL_FROM ?? 'Sarkari Result <noreply@sarkariresult.com>',
@@ -95,7 +88,7 @@ export const config = {
   // Frontend URL for links in emails
   frontendUrl: process.env.FRONTEND_URL ?? 'https://sarkariexams.me',
 
-  // VAPID keys for web push notifications (optional in dev, required in production if push is used)
+  // VAPID keys for web push notifications (optional)
   vapidPublicKey: process.env.VAPID_PUBLIC_KEY ?? '',
   vapidPrivateKey: process.env.VAPID_PRIVATE_KEY ?? '',
 };
@@ -103,7 +96,7 @@ export const config = {
 // Log configuration status on startup (without exposing secrets)
 if (!isProduction) {
   console.log('[CONFIG] Running in development mode');
-  console.log(`[CONFIG] Database: ${databaseUrl.includes('localhost') ? 'localhost' : 'remote'}`);
+  console.log(`[CONFIG] Database: ${databaseUrl.includes('localhost') ? 'local MongoDB' : 'Cosmos DB'}`);
   console.log(`[CONFIG] Push notifications: ${config.vapidPublicKey ? 'enabled' : 'disabled'}`);
   console.log(`[CONFIG] Email notifications: ${config.emailPass ? 'enabled' : 'disabled'}`);
   console.log(`[CONFIG] Telegram notifications: ${config.telegramBotToken ? 'enabled' : 'disabled'}`);
