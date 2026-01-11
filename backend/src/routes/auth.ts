@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 
 import { config } from '../config.js';
-import { UserModel } from '../models/users.js';
+import { UserModelMongo as UserModel } from '../models/users.mongo.js';
 import {
   bruteForceProtection,
   recordFailedLogin,
