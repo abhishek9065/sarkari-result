@@ -33,6 +33,7 @@ import {
 import { authenticateToken, requireAdmin } from './middleware/auth.js';
 import { cloudflareMiddleware } from './middleware/cloudflare.js';
 import { connectToDatabase } from './services/cosmosdb.js';
+import { ErrorTracking } from './services/errorTracking.js';
 
 const app = express();
 
@@ -172,6 +173,12 @@ async function startServer() {
     console.error('[Server] Database connection failed:', error);
     console.log('[Server] Starting without database - using fallback data');
   }
+
+  // Initialize error tracking
+  ErrorTracking.init();
+
+  // Error handler middleware (must be last)
+  app.use(ErrorTracking.errorHandler);
 
   app.listen(config.port, () => {
     console.log(`API running on http://localhost:${config.port}`);
