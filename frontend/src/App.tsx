@@ -242,7 +242,7 @@ function App() {
     setLoading(true);
     setError(null);
 
-    fetch(`${apiBase}/api/announcements?${params.toString()}`, { signal: controller.signal })
+    fetch(`${apiBase}/api/announcements/v2?${params.toString()}`, { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) throw new Error(`Request failed: ${res.status}`);
         const body = (await res.json()) as { data: Announcement[] };
