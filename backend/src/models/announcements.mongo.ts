@@ -250,16 +250,27 @@ export class AnnouncementModelMongo {
     }
 
     /**
-     * Find by slug
+     * Find by slug with CACHE-ASIDE pattern
+     * Caches for 1 hour (3600s) - most users view same popular jobs
      */
     static async findBySlug(slug: string): Promise<Announcement | null> {
-        try {
-            const doc = await this.collection.findOne({ slug, isActive: true });
-            return doc ? this.docToAnnouncement(doc) : null;
-        } catch (error) {
-            console.error('[MongoDB] findBySlug error:', error);
-            return null;
-        }
+        const { RedisCache } = await import('../services/redis.js');
+
+        const cacheKey = `job:${slug}`;
+
+        return RedisCache.getOrFetch<Announcement>(
+            cacheKey,
+            async () => {
+                try {
+                    const doc = await this.collection.findOne({ slug, isActive: true });
+                    return doc ? this.docToAnnouncement(doc) : null;
+                } catch (error) {
+                    console.error('[MongoDB] findBySlug error:', error);
+                    return null;
+                }
+            },
+            3600 // Cache for 1 hour
+        );
     }
 
     /**

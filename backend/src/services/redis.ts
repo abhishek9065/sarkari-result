@@ -107,12 +107,55 @@ export function isAvailable(): boolean {
     return isRedisConfigured;
 }
 
+/**
+ * CACHE-ASIDE PATTERN: Get from cache or fetch and cache
+ * This is the key pattern for handling 15k+ users efficiently
+ * 
+ * @param key - Cache key (e.g., 'job:up-police-recruitment-2026')
+ * @param fetcher - Async function to fetch data if not in cache
+ * @param ttlSeconds - Time to live in seconds (default: 1 hour)
+ */
+export async function getOrFetch<T>(
+    key: string,
+    fetcher: () => Promise<T | null>,
+    ttlSeconds: number = 3600
+): Promise<T | null> {
+    // 1. Check cache first (Redis or memory)
+    const cached = await get(key);
+    if (cached) {
+        console.log(`[Cache HIT] ${key}`);
+        return cached as T;
+    }
+
+    console.log(`[Cache MISS] ${key}`);
+
+    // 2. Fetch from database
+    const data = await fetcher();
+
+    // 3. Store in cache for future requests
+    if (data) {
+        await set(key, data, ttlSeconds);
+    }
+
+    return data;
+}
+
+/**
+ * Invalidate a specific cache key (use after updates)
+ */
+export async function invalidate(key: string): Promise<void> {
+    await del(key);
+    console.log(`[Cache INVALIDATED] ${key}`);
+}
+
 export const RedisCache = {
     get,
     set,
     del,
     invalidatePattern,
     isAvailable,
+    getOrFetch,
+    invalidate,
 };
 
 export default RedisCache;
