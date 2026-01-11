@@ -9,9 +9,12 @@
  * 4. Set SENTRY_DSN environment variable
  */
 
-const SENTRY_DSN = process.env.SENTRY_DSN;
+// Clean and normalize DSN (remove leading slashes if present)
+const rawDsn = process.env.SENTRY_DSN || '';
+const SENTRY_DSN = rawDsn.replace(/^\/+/, '').trim(); // Remove leading slashes
+
 const isProduction = process.env.NODE_ENV === 'production';
-const isEnabled = !!(SENTRY_DSN && isProduction);
+const isEnabled = !!(SENTRY_DSN && SENTRY_DSN.startsWith('https://'));
 
 // Track errors in-memory when Sentry is not configured
 const errorLog: Array<{

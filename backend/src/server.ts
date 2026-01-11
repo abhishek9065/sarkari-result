@@ -127,6 +127,22 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Public Sentry test endpoint (for verification)
+app.get('/api/test-sentry', async (_req, res) => {
+  try {
+    // Trigger an intentional error
+    throw new Error('Sentry Test Error - Ignore this');
+  } catch (error) {
+    await ErrorTracking.captureException(error as Error, { source: 'test-endpoint' });
+    res.json({
+      message: 'Test error sent to Sentry!',
+      sentryConfigured: !!process.env.SENTRY_DSN,
+      nodeEnv: process.env.NODE_ENV,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Performance stats endpoint (admin only)
 app.get('/api/performance', authenticateToken, requireAdmin, (_req, res) => {
   res.json({ data: getPerformanceStats() });
