@@ -33,6 +33,12 @@ RUN npm ci --only=production && npm cache clean --force
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
 
+# Copy scripts for seeding (optional)
+COPY --from=builder /app/scripts ./scripts
+
+# Install tsx for running TypeScript scripts
+RUN npm install -g tsx
+
 # Set ownership
 RUN chown -R nodejs:nodejs /app
 
