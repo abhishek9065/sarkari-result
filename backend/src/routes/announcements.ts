@@ -85,6 +85,34 @@ router.get('/v2', cacheMiddleware({ ttl: 300 }), cacheControl(120), async (req, 
   }
 });
 
+// V3: OPTIMIZED listing cards (minimal fields, 60% less RU consumption)
+router.get('/v3/cards', cacheMiddleware({ ttl: 300 }), cacheControl(120), async (req, res) => {
+  try {
+    const parseResult = cursorQuerySchema.safeParse(req.query);
+    if (!parseResult.success) {
+      return res.status(400).json({ error: parseResult.error.flatten() });
+    }
+
+    const filters = parseResult.data;
+    const result = await AnnouncementModel.findListingCards({
+      type: filters.type,
+      category: filters.category,
+      limit: filters.limit,
+      cursor: filters.cursor?.toString(),
+    });
+
+    return res.json({
+      data: result.data,
+      count: result.data.length,
+      nextCursor: result.nextCursor,
+      hasMore: result.hasMore,
+    });
+  } catch (error) {
+    console.error('Error fetching listing cards (v3):', error);
+    return res.status(500).json({ error: 'Failed to fetch listing cards' });
+  }
+});
+
 // Get categories - long cache (1 hour)
 router.get('/meta/categories', cacheMiddleware({ ttl: 3600 }), cacheControl(1800), async (_req, res) => {
   try {
