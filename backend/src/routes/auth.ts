@@ -1,10 +1,9 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 
 import { config } from '../config.js';
-import { UserModelMongo as UserModel } from '../models/users.mongo.js';
+import { UserModelMongo } from '../models/users.mongo.js';
 import {
   bruteForceProtection,
   recordFailedLogin,
@@ -29,9 +28,6 @@ const registerSchema = z.object({
   name: z.string().min(2).max(100).trim(),
 });
 
-// Security: Use higher bcrypt rounds (12 is more secure than 10)
-const BCRYPT_ROUNDS = 12;
-
 // Security: Shorter JWT expiry (1 day instead of 7)
 const JWT_EXPIRY = '1d';
 
@@ -39,18 +35,17 @@ router.post('/register', async (req, res) => {
   try {
     const validated = registerSchema.parse(req.body);
 
-    const existingUser = await UserModel.findByEmail(validated.email);
+    const existingUser = await UserModelMongo.findByEmail(validated.email);
     if (existingUser) {
       // Security: Don't reveal if email exists - use generic message
       return res.status(400).json({ error: 'Registration failed. Please try again.' });
     }
 
-    // Use stronger bcrypt rounds
-    const passwordHash = await bcrypt.hash(validated.password, BCRYPT_ROUNDS);
-    const user = await UserModel.create({
+    // Create user with MongoDB model
+    const user = await UserModelMongo.create({
       email: validated.email,
-      passwordHash,
-      name: validated.name
+      username: validated.name, // MongoDB uses 'username' instead of 'name'
+      password: validated.password, // MongoDB model hashes password internally
     });
 
     const token = jwt.sign(
@@ -62,7 +57,7 @@ router.post('/register', async (req, res) => {
     // Security: Don't return sensitive data
     return res.status(201).json({
       data: {
-        user: { id: user.id, email: user.email, name: user.name, role: user.role },
+        user: { id: user.id, email: user.email, name: user.username, role: user.role },
         token
       }
     });
@@ -87,15 +82,11 @@ router.post('/login', bruteForceProtection, async (req, res) => {
   try {
     const validated = loginSchema.parse(req.body);
 
-    const userWithHash = await UserModel.findByEmail(validated.email);
-    if (!userWithHash) {
-      // Security: Record failed attempt but don't reveal if email exists
-      recordFailedLogin(clientIP);
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
+    // Use verifyPassword method which handles password comparison internally
+    const user = await UserModelMongo.verifyPassword(validated.email, validated.password);
 
-    const isPasswordValid = await bcrypt.compare(validated.password, userWithHash.passwordHash);
-    if (!isPasswordValid) {
+    if (!user) {
+      // Security: Record failed attempt but don't reveal if email exists
       recordFailedLogin(clientIP);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -104,17 +95,20 @@ router.post('/login', bruteForceProtection, async (req, res) => {
     clearFailedLogins(clientIP);
 
     // Log successful login for audit
-    logSecurityEvent('LOGIN_SUCCESS', clientIP, req.headers['user-agent'] || '', userWithHash.id);
+    logSecurityEvent('LOGIN_SUCCESS', clientIP, req.headers['user-agent'] || '', user.id);
 
     const token = jwt.sign(
-      { userId: userWithHash.id, email: userWithHash.email, role: userWithHash.role },
+      { userId: user.id, email: user.email, role: user.role },
       config.jwtSecret,
       { expiresIn: JWT_EXPIRY }
     );
 
-    // Security: Never return password hash
-    const { passwordHash, ...user } = userWithHash;
-    return res.json({ data: { user, token } });
+    return res.json({
+      data: {
+        user: { id: user.id, email: user.email, name: user.username, role: user.role },
+        token
+      }
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.flatten() });
