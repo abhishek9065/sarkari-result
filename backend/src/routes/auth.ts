@@ -95,7 +95,7 @@ router.post('/login', bruteForceProtection, async (req, res) => {
     clearFailedLogins(clientIP);
 
     // Log successful login for audit
-    logSecurityEvent('LOGIN_SUCCESS', clientIP, req.headers['user-agent'] || '', user.id);
+    logSecurityEvent('LOGIN_SUCCESS', clientIP, req.headers['user-agent'] || '');
 
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
