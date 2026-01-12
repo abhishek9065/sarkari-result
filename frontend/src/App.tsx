@@ -1189,7 +1189,7 @@ function AnalyticsDashboard({ adminToken }: { adminToken: string | null }) {
         <div className="stat-card views">
           <div className="stat-icon">👁️</div>
           <div className="stat-info">
-            <div className="stat-value">{analytics.totalViews.toLocaleString()}</div>
+            <div className="stat-value">{(analytics.totalViews ?? 0).toLocaleString()}</div>
             <div className="stat-label">Total Views</div>
           </div>
         </div>
@@ -1248,12 +1248,12 @@ function AnalyticsDashboard({ adminToken }: { adminToken: string | null }) {
             </tr>
           </thead>
           <tbody>
-            {popular.map((item, index) => (
+            {(popular ?? []).map((item, index) => (
               <tr key={item.id}>
                 <td>{index + 1}</td>
                 <td>{item.title.substring(0, 50)}{item.title.length > 50 ? '...' : ''}</td>
                 <td><span className={`type-badge ${item.type}`}>{item.type}</span></td>
-                <td className="view-count">👁️ {item.viewCount.toLocaleString()}</td>
+                <td className="view-count">👁️ {(item.viewCount ?? 0).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
