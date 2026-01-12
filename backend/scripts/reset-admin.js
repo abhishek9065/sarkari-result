@@ -1,10 +1,10 @@
 /**
- * Reset Admin Password Script (JavaScript version)
+ * Reset Admin Password Script (ESM version)
  * Usage: node scripts/reset-admin.js <email> <new_password>
  */
 
-const { MongoClient } = require('mongodb');
-const bcrypt = require('bcrypt');
+import { MongoClient } from 'mongodb';
+import bcrypt from 'bcrypt';
 
 const COSMOS_CONNECTION_STRING = process.env.COSMOS_CONNECTION_STRING;
 const COSMOS_DATABASE_NAME = process.env.COSMOS_DATABASE_NAME || 'sarkari_db';
