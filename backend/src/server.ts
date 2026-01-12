@@ -6,6 +6,7 @@ import announcementsRouter from './routes/announcements.js';
 import authRouter from './routes/auth.js';
 import adminRouter from './routes/admin.js';
 import analyticsRouter from './routes/analytics.js';
+import bookmarksRouter from './routes/bookmarks.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { responseTimeLogger, getPerformanceStats } from './middleware/responseTime.js';
 import {
@@ -99,6 +100,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/announcements', announcementsRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/analytics', analyticsRouter);
+app.use('/api/bookmarks', bookmarksRouter);
 
 // Error handler
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
