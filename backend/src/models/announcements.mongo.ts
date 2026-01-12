@@ -74,14 +74,18 @@ export class AnnouncementModelMongo {
                 query.$text = { $search: filters.search };
             }
 
-            // Sort options
-            let sort: Sort = { postedAt: -1 };
+            // Cosmos DB only indexes _id by default, so use simple sort
+            // Sort by _id (descending = newest first since ObjectId contains timestamp)
+            let sortDirection: 1 | -1 = -1; // Default: newest first
             switch (filters?.sort) {
+                case 'newest':
+                    sortDirection = -1;
+                    break;
                 case 'oldest':
-                    sort = { postedAt: 1 };
+                    sortDirection = 1;
                     break;
                 case 'deadline':
-                    sort = { deadline: 1, postedAt: -1 };
+                    sortDirection = -1; // Just use newest for deadline too
                     break;
             }
 
@@ -90,7 +94,7 @@ export class AnnouncementModelMongo {
 
             const docs = await this.collection
                 .find(query)
-                .sort(sort)
+                .sort({ _id: sortDirection })
                 .skip(skip)
                 .limit(limit)
                 .toArray();
