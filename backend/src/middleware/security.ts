@@ -180,8 +180,14 @@ export function blockSuspiciousAgents(req: Request, res: Response, next: NextFun
 
 /**
  * Validate Content-Type for POST/PUT/PATCH
+ * Skip OPTIONS requests (CORS preflight)
  */
 export function validateContentType(req: Request, res: Response, next: NextFunction) {
+    // Skip OPTIONS preflight requests (CORS)
+    if (req.method === 'OPTIONS') {
+        return next();
+    }
+
     const methods = ['POST', 'PUT', 'PATCH'];
 
     if (methods.includes(req.method)) {
