@@ -1,41 +1,46 @@
-import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth.js';
+import { Router, Request, Response } from 'express';
+import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 
 const router = Router();
 
-// All bookmarks routes require authentication
-router.use(authenticateToken);
-
 /**
  * GET /api/bookmarks
- * Get user's bookmarks (stub - returns empty)
+ * Get user's bookmarks (returns empty if not logged in)
  */
-router.get('/', async (_req, res) => {
+router.get('/', optionalAuth, async (req: Request, res: Response) => {
+    // If not logged in, return empty
+    if (!req.user) {
+        return res.json({ data: [] });
+    }
+    // Stub - return empty (bookmarks not implemented with MongoDB)
     return res.json({ data: [] });
 });
 
 /**
  * GET /api/bookmarks/ids
- * Get user's bookmarked announcement IDs (stub - returns empty)
+ * Get user's bookmarked announcement IDs (returns empty if not logged in)
  */
-router.get('/ids', async (_req, res) => {
+router.get('/ids', optionalAuth, async (req: Request, res: Response) => {
+    if (!req.user) {
+        return res.json({ data: [] });
+    }
     return res.json({ data: [] });
 });
 
 /**
  * POST /api/bookmarks
- * Add bookmark (stub - not implemented)
+ * Add bookmark (requires auth, stub)
  */
-router.post('/', async (_req, res) => {
-    return res.status(501).json({ error: 'Bookmarks not available (PostgreSQL removed)' });
+router.post('/', authenticateToken, async (_req: Request, res: Response) => {
+    return res.status(501).json({ error: 'Bookmarks feature temporarily unavailable' });
 });
 
 /**
  * DELETE /api/bookmarks/:id
- * Remove bookmark (stub - not implemented)
+ * Remove bookmark (requires auth, stub)
  */
-router.delete('/:id', async (_req, res) => {
-    return res.status(501).json({ error: 'Bookmarks not available (PostgreSQL removed)' });
+router.delete('/:id', authenticateToken, async (_req: Request, res: Response) => {
+    return res.status(501).json({ error: 'Bookmarks feature temporarily unavailable' });
 });
 
 export default router;

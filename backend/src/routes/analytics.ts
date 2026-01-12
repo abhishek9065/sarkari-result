@@ -26,6 +26,8 @@ router.get('/overview', async (_req, res) => {
         return res.json({
             data: {
                 totalAnnouncements: total,
+                totalViews: 0, // Views not tracked without PostgreSQL
+                totalUsers: 0, // Users not tracked in analytics
                 byType,
                 lastUpdated: new Date().toISOString()
             }
@@ -49,7 +51,8 @@ router.get('/popular', async (req, res) => {
             data: announcements.map(a => ({
                 id: a.id,
                 title: a.title,
-                type: a.type
+                type: a.type,
+                viewCount: 0 // Views not tracked
             }))
         });
     } catch (error) {
