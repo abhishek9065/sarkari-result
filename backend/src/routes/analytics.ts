@@ -18,17 +18,27 @@ router.get('/overview', async (_req, res) => {
         // Calculate stats
         const total = announcements.length;
         const byType: Record<string, number> = {};
+        const byCategory: Record<string, number> = {};
 
         for (const a of announcements) {
             byType[a.type] = (byType[a.type] || 0) + 1;
+            if (a.category) {
+                byCategory[a.category] = (byCategory[a.category] || 0) + 1;
+            }
         }
+
+        // Convert to array format expected by frontend
+        const typeBreakdown = Object.entries(byType).map(([type, count]) => ({ type, count }));
+        const categoryBreakdown = Object.entries(byCategory).map(([category, count]) => ({ category, count }));
 
         return res.json({
             data: {
                 totalAnnouncements: total,
                 totalViews: 0, // Views not tracked without PostgreSQL
-                totalUsers: 0, // Users not tracked in analytics
-                byType,
+                totalEmailSubscribers: 0, // Not tracked yet
+                totalPushSubscribers: 0, // Not tracked yet
+                typeBreakdown,
+                categoryBreakdown,
                 lastUpdated: new Date().toISOString()
             }
         });

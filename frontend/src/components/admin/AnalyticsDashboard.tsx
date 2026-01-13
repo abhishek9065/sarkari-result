@@ -30,7 +30,7 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 function DonutChart({ data, total }: { data: { type: string; count: number }[]; total: number }) {
-    if (total === 0) return null;
+    if (total === 0 || !data || data.length === 0) return null;
 
     // Build conic-gradient segments
     let currentAngle = 0;
