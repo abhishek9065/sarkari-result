@@ -39,7 +39,7 @@ export async function sendTelegramMessage(text: string, parseMode: 'HTML' | 'Mar
     });
 
     const data = await response.json() as TelegramResponse;
-    
+
     if (!data.ok) {
       console.error('[Telegram] Failed to send message:', data.description);
       return false;
@@ -58,11 +58,11 @@ export async function sendTelegramMessage(text: string, parseMode: 'HTML' | 'Mar
  */
 export async function sendAnnouncementNotification(
   announcement: Announcement,
-  siteUrl: string = 'https://sarkari-result-gold.vercel.app'
+  siteUrl: string = 'https://sarkariexams.me'
 ): Promise<boolean> {
   const typeEmoji = getTypeEmoji(announcement.type);
   const typeName = getTypeName(announcement.type);
-  
+
   const message = `
 ${typeEmoji} <b>New ${typeName}</b>
 

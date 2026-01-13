@@ -2,6 +2,10 @@ import { ObjectId, Filter, Sort, WithId, Document } from 'mongodb';
 import { getCollection } from '../services/cosmosdb.js';
 import { Announcement, ContentType, CreateAnnouncementDto, Tag } from '../types.js';
 
+function escapeRegex(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /**
  * Announcement document interface for MongoDB
  */
@@ -21,7 +25,7 @@ interface AnnouncementDoc extends Document {
     applicationFee?: string;
     totalPosts?: number;
     tags: string[];
-    postedBy: number;
+    postedBy: string;
     postedAt: Date;
     updatedAt: Date;
     isActive: boolean;
@@ -70,8 +74,16 @@ export class AnnouncementModelMongo {
                 query.minQualification = { $regex: filters.qualification, $options: 'i' };
             }
 
-            if (filters?.search) {
-                query.$text = { $search: filters.search };
+            if (filters?.search && filters.search.trim()) {
+                const safeSearch = escapeRegex(filters.search.trim());
+                const searchRegex = new RegExp(safeSearch, 'i');
+                query.$or = [
+                    { title: searchRegex },
+                    { content: searchRegex },
+                    { organization: searchRegex },
+                    { category: searchRegex },
+                    { tags: searchRegex },
+                ];
             }
 
             // Cosmos DB only indexes _id by default, so use simple sort
@@ -124,6 +136,9 @@ export class AnnouncementModelMongo {
             const limit = filters?.limit || 20;
 
             if (filters?.cursor) {
+                if (!ObjectId.isValid(filters.cursor)) {
+                    return { data: [], nextCursor: null, hasMore: false };
+                }
                 const cursorId = new ObjectId(filters.cursor);
                 if (filters?.sort === 'oldest') {
                     query._id = { $gt: cursorId };
@@ -135,7 +150,17 @@ export class AnnouncementModelMongo {
             if (filters?.type) query.type = filters.type;
             if (filters?.category) query.category = { $regex: filters.category, $options: 'i' };
             if (filters?.organization) query.organization = { $regex: filters.organization, $options: 'i' };
-            if (filters?.search) query.$text = { $search: filters.search };
+            if (filters?.search && filters.search.trim()) {
+                const safeSearch = escapeRegex(filters.search.trim());
+                const searchRegex = new RegExp(safeSearch, 'i');
+                query.$or = [
+                    { title: searchRegex },
+                    { content: searchRegex },
+                    { organization: searchRegex },
+                    { category: searchRegex },
+                    { tags: searchRegex },
+                ];
+            }
 
             let sort: Sort = { _id: -1 };
             if (filters?.sort === 'oldest') sort = { _id: 1 };
@@ -294,7 +319,7 @@ export class AnnouncementModelMongo {
     /**
      * Create new announcement
      */
-    static async create(data: CreateAnnouncementDto, userId: number): Promise<Announcement> {
+    static async create(data: CreateAnnouncementDto, userId: string): Promise<Announcement> {
         const slug = this.generateSlug(data.title);
         const now = new Date();
 
@@ -491,7 +516,7 @@ export class AnnouncementModelMongo {
         externalLink?: string;
         deadline?: Date;
         tags?: string[];
-    }>, userId: number): Promise<{ inserted: number; errors: string[] }> {
+    }>, userId: string): Promise<{ inserted: number; errors: string[] }> {
         const errors: string[] = [];
         const docs: Omit<AnnouncementDoc, '_id'>[] = [];
         const now = new Date();
@@ -584,7 +609,7 @@ export class AnnouncementModelMongo {
         externalLink?: string;
         deadline?: Date;
         tags?: string[];
-    }>, userId: number): Promise<{ upserted: number; modified: number; errors: string[] }> {
+    }>, userId: string): Promise<{ upserted: number; modified: number; errors: string[] }> {
         const errors: string[] = [];
         const now = new Date();
 
@@ -681,7 +706,7 @@ export class AnnouncementModelMongo {
             applicationFee: doc.applicationFee,
             totalPosts: doc.totalPosts,
             tags: doc.tags?.map(t => ({ id: 0, name: t, slug: t.toLowerCase() })) || [],
-            postedBy: doc.postedBy,
+            postedBy: doc.postedBy?.toString(),
             postedAt: doc.postedAt?.toISOString() as any,
             updatedAt: doc.updatedAt?.toISOString() as any,
             isActive: doc.isActive,

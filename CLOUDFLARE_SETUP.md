@@ -35,7 +35,7 @@ Ensure your records have the **orange cloud** (Proxied) enabled:
 
 | Type | Name | Content | Proxy |
 |------|------|---------|-------|
-| A | @ | Your Vercel/Server IP | ✅ Proxied |
+| A | @ | Your Digital Ocean Droplet IP | ✅ Proxied |
 | CNAME | www | sarkariexams.me | ✅ Proxied |
 
 ---

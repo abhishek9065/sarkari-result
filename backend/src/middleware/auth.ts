@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config.js';
 import { JwtPayload } from '../types.js';
+import RedisCache from '../services/redis.js';
 
 // Extend Express Request type to include user
 declare global {
@@ -12,17 +13,17 @@ declare global {
   }
 }
 
-// Simple in-memory token blacklist (for logout)
-const tokenBlacklist = new Set<string>();
+// Token Blacklist TTL (24 hours in seconds)
+const BLACKLIST_TTL = 24 * 60 * 60;
 
-export function blacklistToken(token: string): void {
-  tokenBlacklist.add(token);
-  // Auto-remove after 24 hours to prevent memory leak
-  setTimeout(() => tokenBlacklist.delete(token), 24 * 60 * 60 * 1000);
+export async function blacklistToken(token: string): Promise<void> {
+  // Use the token as the key with a 'bl:' prefix
+  await RedisCache.set(`bl:${token}`, '1', BLACKLIST_TTL);
 }
 
-export function isTokenBlacklisted(token: string): boolean {
-  return tokenBlacklist.has(token);
+export async function isTokenBlacklisted(token: string): Promise<boolean> {
+  const result = await RedisCache.get(`bl:${token}`);
+  return !!result;
 }
 
 /**
@@ -38,7 +39,7 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
   }
 
   // Check if token is blacklisted (user logged out)
-  if (isTokenBlacklisted(token)) {
+  if (await isTokenBlacklisted(token)) {
     res.status(401).json({ error: 'Token has been revoked' });
     return;
   }
@@ -69,7 +70,7 @@ export async function optionalAuth(req: Request, res: Response, next: NextFuncti
     return;
   }
 
-  if (isTokenBlacklisted(token)) {
+  if (await isTokenBlacklisted(token)) {
     next();
     return;
   }

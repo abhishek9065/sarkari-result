@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { getCache, setCache } from '../utils/cache.js';
 import { RedisCache } from '../services/redis.js';
+import { getCacheVersion } from '../services/cacheVersion.js';
 
 interface CacheOptions {
     ttl?: number; // Time to live in seconds
@@ -22,9 +23,13 @@ export function cacheMiddleware(options: CacheOptions = {}) {
         }
 
         // Generate cache key
-        const cacheKey = keyGenerator
+        const baseKey = keyGenerator
             ? keyGenerator(req)
             : `${req.originalUrl || req.url}`;
+
+        const group = baseKey.split(':')[0] || baseKey;
+        const version = await getCacheVersion(group);
+        const cacheKey = `v${version}:${baseKey}`;
 
         // Check Redis first (if available), then memory
         let cachedData = await RedisCache.get(cacheKey);
@@ -75,7 +80,37 @@ export const cacheKeys = {
         return `announcements:${params.join(':')}`;
     },
 
+    announcementsV2: (req: Request) => {
+        const params = [
+            `type:${req.query.type || 'all'}`,
+            `search:${req.query.search || ''}`,
+            `category:${req.query.category || ''}`,
+            `organization:${req.query.organization || ''}`,
+            `qualification:${req.query.qualification || ''}`,
+            `sort:${req.query.sort || 'newest'}`,
+            `limit:${req.query.limit || 20}`,
+            `cursor:${req.query.cursor || ''}`,
+        ];
+        return `announcements:${params.join(':')}`;
+    },
+
+    announcementsV3Cards: (req: Request) => {
+        const params = [
+            `type:${req.query.type || 'all'}`,
+            `category:${req.query.category || ''}`,
+            `limit:${req.query.limit || 20}`,
+            `cursor:${req.query.cursor || ''}`,
+        ];
+        return `announcements:${params.join(':')}`;
+    },
+
     announcementBySlug: (req: Request) => `announcement:${req.params.slug}`,
+
+    categories: () => 'categories',
+
+    organizations: () => 'organizations',
+
+    tags: () => 'tags',
 
     trending: () => 'trending',
 

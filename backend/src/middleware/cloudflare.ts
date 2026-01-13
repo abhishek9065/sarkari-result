@@ -23,6 +23,14 @@ const CLOUDFLARE_IP_RANGES = [
     '131.0.72.0/22',
 ];
 
+function normalizeIp(ip: string): string {
+    if (!ip) return '';
+    if (ip.startsWith('::ffff:')) return ip.slice(7);
+    if (ip === '::1') return '127.0.0.1';
+    const zoneIndex = ip.indexOf('%');
+    return zoneIndex > -1 ? ip.slice(0, zoneIndex) : ip;
+}
+
 /**
  * Check if an IP is within a CIDR range
  */
@@ -60,17 +68,14 @@ export function isCloudflareRequest(ip: string): boolean {
 export function cloudflareMiddleware() {
     return (req: Request, _res: Response, next: NextFunction) => {
         // Get the connecting IP (immediate connection)
-        const connectingIp = req.socket.remoteAddress || '';
+        const connectingIp = normalizeIp(req.socket.remoteAddress || '');
 
         // Check if request comes from Cloudflare
         const cfConnectingIp = req.headers['cf-connecting-ip'] as string;
         const cfCountry = req.headers['cf-ipcountry'] as string;
         const cfRay = req.headers['cf-ray'] as string;
 
-        if (cfConnectingIp) {
-            // Optionally verify the request actually comes from Cloudflare
-            // For now, we trust the header if present (since we have rate limiting anyway)
-
+        if (cfConnectingIp && isCloudflareRequest(connectingIp)) {
             // Override req.ip with real client IP
             // Note: Express uses req.ip which considers trust proxy
             // We attach the real IP to a custom property for clarity
@@ -82,6 +87,9 @@ export function cloudflareMiddleware() {
             // Not through Cloudflare (direct access or local dev)
             (req as any).realIp = req.ip || connectingIp;
             (req as any).isCloudflare = false;
+            if (cfConnectingIp) {
+                console.warn('[Cloudflare] Ignored spoofed CF-Connecting-IP header');
+            }
         }
 
         next();

@@ -71,21 +71,28 @@ export class UserModelMongo {
         password: string;
         role?: 'admin' | 'user';
     }): Promise<User> {
-        const passwordHash = await bcrypt.hash(data.password, 10);
-        const now = new Date();
+        try {
+            const passwordHash = await bcrypt.hash(data.password, 10);
+            const now = new Date();
 
-        const doc: Omit<UserDoc, '_id'> = {
-            email: data.email.toLowerCase(),
-            username: data.username,
-            passwordHash,
-            role: data.role || 'user',
-            isActive: true,
-            createdAt: now,
-            updatedAt: now,
-        };
+            const doc: Omit<UserDoc, '_id'> = {
+                email: data.email.toLowerCase(),
+                username: data.username,
+                passwordHash,
+                role: data.role || 'user',
+                isActive: true,
+                createdAt: now,
+                updatedAt: now,
+            };
 
-        const result = await this.collection.insertOne(doc as UserDoc);
-        return this.findById(result.insertedId.toString()) as Promise<User>;
+            const result = await this.collection.insertOne(doc as UserDoc);
+            const newUser = await this.findById(result.insertedId.toString());
+            if (!newUser) throw new Error('Failed to retrieve created user');
+            return newUser;
+        } catch (error) {
+            console.error('[MongoDB] create user error:', error);
+            throw error;
+        }
     }
 
     /**
@@ -128,20 +135,25 @@ export class UserModelMongo {
     }>): Promise<User | null> {
         if (!ObjectId.isValid(id)) return null;
 
-        const updateData: any = { updatedAt: new Date() };
+        try {
+            const updateData: Partial<UserDoc> = { updatedAt: new Date() };
 
-        if (data.username) updateData.username = data.username;
-        if (data.email) updateData.email = data.email.toLowerCase();
-        if (data.password) updateData.passwordHash = await bcrypt.hash(data.password, 10);
-        if (data.role) updateData.role = data.role;
-        if (data.isActive !== undefined) updateData.isActive = data.isActive;
+            if (data.username) updateData.username = data.username;
+            if (data.email) updateData.email = data.email.toLowerCase();
+            if (data.password) updateData.passwordHash = await bcrypt.hash(data.password, 10);
+            if (data.role) updateData.role = data.role;
+            if (data.isActive !== undefined) updateData.isActive = data.isActive;
 
-        await this.collection.updateOne(
-            { _id: new ObjectId(id) },
-            { $set: updateData }
-        );
+            await this.collection.updateOne(
+                { _id: new ObjectId(id) },
+                { $set: updateData }
+            );
 
-        return this.findById(id);
+            return this.findById(id);
+        } catch (error) {
+            console.error('[MongoDB] update user error:', error);
+            return null;
+        }
     }
 
     /**
@@ -149,18 +161,25 @@ export class UserModelMongo {
      */
     static async delete(id: string): Promise<boolean> {
         if (!ObjectId.isValid(id)) return false;
-        const result = await this.collection.deleteOne({ _id: new ObjectId(id) });
-        return result.deletedCount > 0;
+        try {
+            const result = await this.collection.deleteOne({ _id: new ObjectId(id) });
+            return result.deletedCount > 0;
+        } catch (error) {
+            console.error('[MongoDB] delete user error:', error);
+            return false;
+        }
     }
 
     /**
      * Get all users (admin only)
      */
-    static async findAll(): Promise<User[]> {
+    static async findAll(skip: number = 0, limit: number = 20): Promise<User[]> {
         try {
             const docs = await this.collection
                 .find({})
                 .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
                 .toArray();
             return docs.map(this.docToUser);
         } catch (error) {
