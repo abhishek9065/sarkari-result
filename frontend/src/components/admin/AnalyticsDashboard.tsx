@@ -110,7 +110,7 @@ export function AnalyticsDashboard({ adminToken }: { adminToken: string | null }
                 <div className="stat-card views">
                     <div className="stat-icon">👁️</div>
                     <div className="stat-info">
-                        <div className="stat-value">{analytics.totalViews.toLocaleString()}</div>
+                        <div className="stat-value">{(analytics.totalViews ?? 0).toLocaleString()}</div>
                         <div className="stat-label">Total Views</div>
                     </div>
                 </div>
@@ -124,14 +124,14 @@ export function AnalyticsDashboard({ adminToken }: { adminToken: string | null }
                 <div className="stat-card subscribers">
                     <div className="stat-icon">📧</div>
                     <div className="stat-info">
-                        <div className="stat-value">{analytics.totalEmailSubscribers}</div>
+                        <div className="stat-value">{analytics.totalEmailSubscribers ?? 0}</div>
                         <div className="stat-label">Email Subscribers</div>
                     </div>
                 </div>
                 <div className="stat-card push">
                     <div className="stat-icon">🔔</div>
                     <div className="stat-info">
-                        <div className="stat-value">{analytics.totalPushSubscribers}</div>
+                        <div className="stat-value">{analytics.totalPushSubscribers ?? 0}</div>
                         <div className="stat-label">Push Subscribers</div>
                     </div>
                 </div>
@@ -143,7 +143,7 @@ export function AnalyticsDashboard({ adminToken }: { adminToken: string | null }
                 <div className="chart-container">
                     {/* CSS Donut Chart */}
                     <div className="donut-chart">
-                        <DonutChart data={analytics.typeBreakdown} total={analytics.totalAnnouncements} />
+                        <DonutChart data={analytics.typeBreakdown ?? []} total={analytics.totalAnnouncements} />
                         <div className="donut-center">
                             <span className="donut-value">{analytics.totalAnnouncements}</span>
                             <span className="donut-label">Total</span>
@@ -151,7 +151,7 @@ export function AnalyticsDashboard({ adminToken }: { adminToken: string | null }
                     </div>
                     {/* Breakdown Bars */}
                     <div className="type-breakdown">
-                        {analytics.typeBreakdown.map((item) => (
+                        {(analytics.typeBreakdown ?? []).map((item) => (
                             <div key={item.type} className="breakdown-item">
                                 <span className={`type-badge ${item.type}`}>{item.type}</span>
                                 <div className="breakdown-bar">
@@ -180,12 +180,12 @@ export function AnalyticsDashboard({ adminToken }: { adminToken: string | null }
                         </tr>
                     </thead>
                     <tbody>
-                        {popular.map((item, index) => (
+                        {(popular ?? []).map((item, index) => (
                             <tr key={item.id}>
                                 <td>{index + 1}</td>
                                 <td>{item.title.substring(0, 50)}{item.title.length > 50 ? '...' : ''}</td>
                                 <td><span className={`type-badge ${item.type}`}>{item.type}</span></td>
-                                <td className="view-count">👁️ {item.viewCount.toLocaleString()}</td>
+                                <td className="view-count">👁️ {(item.viewCount ?? 0).toLocaleString()}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -196,7 +196,7 @@ export function AnalyticsDashboard({ adminToken }: { adminToken: string | null }
             <div className="analytics-section">
                 <h3>📁 Top Categories</h3>
                 <div className="category-chips">
-                    {analytics.categoryBreakdown.map((item) => (
+                    {(analytics.categoryBreakdown ?? []).map((item) => (
                         <div key={item.category} className="category-chip">
                             <span className="category-name">{item.category}</span>
                             <span className="category-count">{item.count}</span>

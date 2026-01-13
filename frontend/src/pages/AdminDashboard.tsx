@@ -206,14 +206,14 @@ export function AdminDashboard() {
                     <div className="chart-card">
                         <h3>📊 Content by Category</h3>
                         <div className="bar-chart">
-                            {data.categories.map(cat => (
+                            {(data.categories ?? []).map(cat => (
                                 <div key={cat.type} className="bar-item">
                                     <div className="bar-label">{cat.type}</div>
                                     <div className="bar-container">
                                         <div
                                             className="bar-fill"
                                             style={{
-                                                width: `${(cat.count / Math.max(...data.categories.map(c => c.count))) * 100}%`,
+                                                width: `${(cat.count / Math.max(...(data.categories ?? []).map(c => c.count), 1)) * 100}%`,
                                                 background: getTypeColor(cat.type)
                                             }}
                                         />
@@ -228,7 +228,7 @@ export function AdminDashboard() {
                     <div className="chart-card">
                         <h3>📈 Posting Trends (Last 30 Days)</h3>
                         <div className="trend-chart">
-                            {data.trends.slice(-14).map((trend, i) => (
+                            {(data.trends ?? []).slice(-14).map((trend, i) => (
                                 <div key={i} className="trend-bar">
                                     <div
                                         className="trend-fill"
@@ -246,7 +246,7 @@ export function AdminDashboard() {
                     <div className="list-card">
                         <h3>🔥 Top Performing Content</h3>
                         <div className="top-list">
-                            {data.topContent.slice(0, 5).map((item, i) => (
+                            {(data.topContent ?? []).slice(0, 5).map((item, i) => (
                                 <div key={item.id} className="top-item">
                                     <span className="rank">#{i + 1}</span>
                                     <div className="item-info">
