@@ -74,7 +74,7 @@ ${announcement.totalPosts ? `👥 <b>Total Posts:</b> ${announcement.totalPosts.
 ${announcement.deadline ? `📅 <b>Last Date:</b> ${formatDate(announcement.deadline)}` : ''}
 ${announcement.location ? `📍 <b>Location:</b> ${escapeHtml(announcement.location)}` : ''}
 
-🔗 <a href="${siteUrl}?item=${announcement.slug}">View Details</a>
+🔗 <a href="${siteUrl}/jobs/${announcement.slug}">View Details</a>
 
 #SarkariResult #${announcement.type.replace('-', '')} #GovtJobs
 `.trim();
