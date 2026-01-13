@@ -78,8 +78,16 @@ export function AnalyticsDashboard({ adminToken }: { adminToken: string | null }
                 if (overviewRes.ok && popularRes.ok) {
                     const overviewData = await overviewRes.json();
                     const popularData = await popularRes.json();
-                    setAnalytics(overviewData.data);
-                    setPopular(popularData.data);
+                    // Defensive: Ensure we never set undefined values
+                    setAnalytics(overviewData.data ?? {
+                        totalAnnouncements: 0,
+                        totalViews: 0,
+                        totalEmailSubscribers: 0,
+                        totalPushSubscribers: 0,
+                        typeBreakdown: [],
+                        categoryBreakdown: []
+                    });
+                    setPopular(popularData.data ?? []);
                 } else {
                     setError('Failed to load analytics');
                 }
