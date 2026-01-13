@@ -1,20 +1,22 @@
 import { useState } from 'react';
-import { NAV_ITEMS, type PageType, type TabType } from '../../utils/constants';
+import { useNavigate } from 'react-router-dom';
+import { NAV_ITEMS, PATHS, type PageType, type TabType } from '../../utils/constants';
 import { useAuth } from '../../context/AuthContext';
 
 interface NavProps {
     activeTab: TabType;
-    setActiveTab: (type: TabType) => void;
+    setActiveTab?: (type: TabType) => void; // Optional now, kept for backward compat if needed
     setShowSearch: (show: boolean) => void;
-    goBack: () => void;
+    goBack?: () => void;
     setCurrentPage: (page: PageType) => void;
     isAuthenticated: boolean;
     onShowAuth: () => void;
 }
 
-export function Navigation({ activeTab, setActiveTab, setShowSearch, goBack, setCurrentPage, isAuthenticated, onShowAuth }: NavProps) {
+export function Navigation({ activeTab, setShowSearch, setCurrentPage, isAuthenticated, onShowAuth }: NavProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { user } = useAuth();
+    const navigate = useNavigate();
     const isAdmin = user?.role === 'admin';
 
     const handleNavClick = (item: typeof NAV_ITEMS[0]) => {
@@ -22,8 +24,11 @@ export function Navigation({ activeTab, setActiveTab, setShowSearch, goBack, set
             onShowAuth();
             return;
         }
-        setActiveTab(item.type);
-        if (!item.type) goBack();
+
+        // Navigate to SEO-friendly URL
+        const path = PATHS[String(item.type)] || '/';
+        navigate(path);
+        
         setMobileMenuOpen(false); // Close menu after selection
     };
 
@@ -46,10 +51,12 @@ export function Navigation({ activeTab, setActiveTab, setShowSearch, goBack, set
             <div className={`nav-container ${mobileMenuOpen ? 'mobile-open' : ''}`}>
                 {NAV_ITEMS.map((item) => {
                     if (item.type === 'bookmarks' && !isAuthenticated) return null;
+                    const isActive = activeTab === item.type;
+                    
                     return (
                         <button
                             key={item.label}
-                            className={`nav-link ${activeTab === item.type && (item.type || !activeTab) ? 'active' : (!activeTab && !item.type ? 'active' : '')}`}
+                            className={`nav-link ${isActive ? 'active' : ''}`}
                             onClick={() => handleNavClick(item)}
                         >
                             {item.label}

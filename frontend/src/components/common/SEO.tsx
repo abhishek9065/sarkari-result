@@ -153,7 +153,7 @@ function generateStructuredData(announcement: Announcement) {
             "employmentType": "FULL_TIME",
             "qualifications": announcement.minQualification || undefined,
             "directApply": true,
-            "url": `${baseUrl}/jobs/${announcement.slug}`
+            "url": `${baseUrl}/${announcement.type}/${announcement.slug}`
         };
     }
 
@@ -177,7 +177,7 @@ function generateStructuredData(announcement: Announcement) {
         "dateModified": announcement.updatedAt || announcement.postedAt,
         "mainEntityOfPage": {
             "@type": "WebPage",
-            "@id": `${baseUrl}/jobs/${announcement.slug}`
+            "@id": `${baseUrl}/${announcement.type}/${announcement.slug}`
         }
     };
 }

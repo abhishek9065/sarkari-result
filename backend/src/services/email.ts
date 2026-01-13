@@ -96,7 +96,7 @@ export const sendAnnouncementEmail = async (
     return 0;
   }
 
-  const announcementUrl = `${config.frontendUrl}/jobs/${announcement.slug}`;
+  const announcementUrl = `${config.frontendUrl}/${announcement.type}/${announcement.slug}`;
   let sentCount = 0;
 
   for (const email of emails) {
