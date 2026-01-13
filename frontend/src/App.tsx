@@ -1220,7 +1220,7 @@ function AnalyticsDashboard({ adminToken }: { adminToken: string | null }) {
       <div className="analytics-section">
         <h3>📊 Posts by Type</h3>
         <div className="type-breakdown">
-          {analytics.typeBreakdown.map((item) => (
+          {(analytics.typeBreakdown ?? []).map((item) => (
             <div key={item.type} className="breakdown-item">
               <span className={`type-badge ${item.type}`}>{item.type}</span>
               <div className="breakdown-bar">
@@ -1264,7 +1264,7 @@ function AnalyticsDashboard({ adminToken }: { adminToken: string | null }) {
       <div className="analytics-section">
         <h3>📁 Top Categories</h3>
         <div className="category-chips">
-          {analytics.categoryBreakdown.map((item) => (
+          {(analytics.categoryBreakdown ?? []).map((item) => (
             <div key={item.category} className="category-chip">
               <span className="category-name">{item.category}</span>
               <span className="category-count">{item.count}</span>
