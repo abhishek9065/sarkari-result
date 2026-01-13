@@ -1,0 +1,36 @@
+services:
+  mongo:
+    image: mongo:latest
+    container_name: sarkari-mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - sarkari-network
+
+  backend:
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - COSMOS_CONNECTION_STRING=mongodb://mongo:27017/sarkari_db
+      - COSMOS_DATABASE_NAME=sarkari_db
+      - JWT_SECRET=dev-secret-123
+      # Mock other services to prevent startup errors
+      - SENDGRID_API_KEY=SG.mock
+      - UPSTASH_REDIS_REST_URL=http://mock-redis
+      - UPSTASH_REDIS_REST_TOKEN=mock
+    depends_on:
+      - mongo
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE=
+
+  nginx:
+    volumes:
+      - ./nginx/nginx-dev.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8080:80" 
+      # Map to 8080 to avoid conflict with standard 80 if used, and easy access

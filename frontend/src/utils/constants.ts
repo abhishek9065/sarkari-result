@@ -56,3 +56,15 @@ export const SELECTION_MODES: Record<string, string[]> = {
     'admission': ['Merit Based Selection', 'Entrance Exam (If Required)', 'Counselling Process', 'Document Verification'],
     'syllabus': ['Subject Wise Topics', 'Exam Pattern', 'Important Topics', 'Previous Year Papers']
 };
+
+// SEO-friendly Route Paths
+export const PATHS: Record<string, string> = {
+    'job': '/jobs',
+    'result': '/results',
+    'admit-card': '/admit-card',
+    'answer-key': '/answer-key',
+    'admission': '/admission',
+    'syllabus': '/syllabus',
+    'bookmarks': '/bookmarks',
+    'undefined': '/' // Home
+};

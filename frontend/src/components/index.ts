@@ -6,6 +6,8 @@ export * from './common/Marquee';
 export * from './sections/SectionTable';
 export * from './common/SocialButtons';
 export { SEO } from './common/SEO';
+export { LegacyRedirect } from './common/LegacyRedirect';
+export { JobPostingForm } from './admin/JobPostingForm';
 
 // Cards
 export { FeaturedGrid } from './cards/FeaturedGrid';

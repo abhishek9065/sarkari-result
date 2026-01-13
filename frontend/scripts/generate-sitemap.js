@@ -16,15 +16,15 @@ const API_URL = process.env.VITE_API_BASE || 'https://api.sarkariexams.me';
 async function generateSitemap() {
   console.log('🗺️  Generating sitemap...');
 
-  // Static pages with SEO-friendly paths
+  // Static pages
   const staticPages = [
     { url: '/', priority: '1.0', changefreq: 'hourly' },
-    { url: '/jobs', priority: '0.9', changefreq: 'daily' },
-    { url: '/results', priority: '0.9', changefreq: 'daily' },
-    { url: '/admit-cards', priority: '0.9', changefreq: 'daily' },
-    { url: '/answer-keys', priority: '0.8', changefreq: 'daily' },
-    { url: '/admissions', priority: '0.8', changefreq: 'daily' },
-    { url: '/syllabus', priority: '0.7', changefreq: 'weekly' },
+    { url: '/?type=job', priority: '0.9', changefreq: 'daily' },
+    { url: '/?type=result', priority: '0.9', changefreq: 'daily' },
+    { url: '/?type=admit-card', priority: '0.9', changefreq: 'daily' },
+    { url: '/?type=answer-key', priority: '0.8', changefreq: 'daily' },
+    { url: '/?type=admission', priority: '0.8', changefreq: 'daily' },
+    { url: '/?type=syllabus', priority: '0.7', changefreq: 'weekly' },
   ];
 
   // Try to fetch announcements from API
@@ -65,7 +65,7 @@ async function generateSitemap() {
     const formattedDate = new Date(lastmod).toISOString().split('T')[0];
 
     xml += `  <url>
-    <loc>${BASE_URL}/jobs/${announcement.slug || announcement.id}</loc>
+    <loc>${BASE_URL}/?item=${announcement.slug || announcement.id}</loc>
     <lastmod>${formattedDate}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
