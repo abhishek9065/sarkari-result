@@ -340,28 +340,37 @@ function App() {
     currentPage: PageType;
   }
 
-  // Push state to browser history
+  // Push state to browser history with SEO-friendly paths
   const pushNavState = useCallback((state: NavState) => {
-    const url = new URL(window.location.href);
-    // Update URL based on state
+    // Build path-based URL
+    let path = '/';
+
     if (state.selectedItemSlug) {
-      url.searchParams.set('item', state.selectedItemSlug);
-      url.searchParams.delete('tab');
-      url.searchParams.delete('page');
+      // Detail page: /jobs/slug-name or /results/slug-name
+      const basePath = state.activeTab ?
+        (state.activeTab === 'job' ? '/jobs' :
+          state.activeTab === 'result' ? '/results' :
+            state.activeTab === 'admit-card' ? '/admit-cards' :
+              state.activeTab === 'answer-key' ? '/answer-keys' :
+                state.activeTab === 'admission' ? '/admissions' :
+                  state.activeTab === 'syllabus' ? '/syllabus' : '/jobs') : '/jobs';
+      path = `${basePath}/${state.selectedItemSlug}`;
     } else if (state.activeTab) {
-      url.searchParams.set('tab', state.activeTab);
-      url.searchParams.delete('item');
-      url.searchParams.delete('page');
+      // Category pages
+      path = state.activeTab === 'job' ? '/jobs' :
+        state.activeTab === 'result' ? '/results' :
+          state.activeTab === 'admit-card' ? '/admit-cards' :
+            state.activeTab === 'answer-key' ? '/answer-keys' :
+              state.activeTab === 'admission' ? '/admissions' :
+                state.activeTab === 'syllabus' ? '/syllabus' :
+                  state.activeTab === 'bookmarks' ? '/bookmarks' :
+                    state.activeTab === 'profile' ? '/profile' : '/';
     } else if (state.currentPage !== 'home') {
-      url.searchParams.set('page', state.currentPage);
-      url.searchParams.delete('tab');
-      url.searchParams.delete('item');
-    } else {
-      url.searchParams.delete('tab');
-      url.searchParams.delete('item');
-      url.searchParams.delete('page');
+      // Static pages
+      path = state.currentPage === 'up-police-2026' ? '/jobs/up-police-constable-2026' : `/${state.currentPage}`;
     }
-    window.history.pushState(state, '', url.toString());
+
+    window.history.pushState(state, '', path);
   }, []);
 
   // Handle browser back/forward
@@ -391,35 +400,82 @@ function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [data]);
 
-  // Initialize history state on first load
+  // Initialize history state on first load - parse path-based URLs
   useEffect(() => {
+    const pathname = window.location.pathname;
     const url = new URL(window.location.href);
+
+    // Legacy query param support (for backwards compatibility)
     const tabParam = url.searchParams.get('tab') as TabType;
     const itemParam = url.searchParams.get('item');
     const pageParam = url.searchParams.get('page') as PageType;
 
-    if (itemParam && data.length > 0) {
-      const item = data.find(d => d.slug === itemParam);
-      if (item) {
-        setSelectedItem(item);
+    // Path-based routing
+    const pathParts = pathname.split('/').filter(Boolean);
+
+    // Parse path-based URLs
+    const pathToTab: Record<string, TabType> = {
+      'jobs': 'job',
+      'results': 'result',
+      'admit-cards': 'admit-card',
+      'answer-keys': 'answer-key',
+      'admissions': 'admission',
+      'syllabus': 'syllabus',
+      'bookmarks': 'bookmarks',
+      'profile': 'profile',
+    };
+
+    const staticPages = ['about', 'contact', 'privacy', 'disclaimer', 'admin'];
+
+    if (pathname === '/' || pathname === '') {
+      // Home page - check for legacy query params
+      if (itemParam && data.length > 0) {
+        const item = data.find(d => d.slug === itemParam);
+        if (item) {
+          setSelectedItem(item);
+          setCurrentPage('home');
+        }
+      } else if (tabParam) {
+        setActiveTab(tabParam);
+        setCurrentPage('home');
+      } else if (pageParam) {
+        setCurrentPage(pageParam);
+      }
+    } else if (staticPages.includes(pathParts[0])) {
+      // Static pages: /about, /contact, etc.
+      setCurrentPage(pathParts[0] as PageType);
+    } else if (pathToTab[pathParts[0]]) {
+      // Category or detail page
+      const tab = pathToTab[pathParts[0]];
+      if (pathParts.length >= 2) {
+        // Detail page: /jobs/slug-name
+        const slug = pathParts.slice(1).join('/');
+        if (slug === 'up-police-constable-2026') {
+          setCurrentPage('up-police-2026');
+        } else if (data.length > 0) {
+          const item = data.find(d => d.slug === slug);
+          if (item) {
+            setSelectedItem(item);
+            setActiveTab(tab);
+            setCurrentPage('home');
+          }
+        }
+      } else {
+        // Category page: /jobs
+        setActiveTab(tab);
         setCurrentPage('home');
       }
-    } else if (tabParam) {
-      setActiveTab(tabParam);
-      setCurrentPage('home');
-    } else if (pageParam) {
-      setCurrentPage(pageParam);
     }
 
-    // Set initial state
+    // Set initial state (don't change URL on first load)
     window.history.replaceState(
-      { activeTab: tabParam, selectedItemSlug: itemParam, currentPage: pageParam || 'home' },
+      { activeTab: activeTab, selectedItemSlug: selectedItem?.slug, currentPage },
       '',
       window.location.href
     );
   }, [data]);
 
-  // Handle item click - now with history
+  // Handle item click - now with SEO-friendly paths
   const handleItemClick = (item: Announcement) => {
     // Special handling for UP Police 2026 page
     if (item.slug === 'up-police-constable-2026') {
@@ -429,8 +485,9 @@ function App() {
     }
 
     setSelectedItem(item);
+    setActiveTab(item.type as TabType);
     setCurrentPage('home');
-    pushNavState({ selectedItemSlug: item.slug, currentPage: 'home' });
+    pushNavState({ selectedItemSlug: item.slug, activeTab: item.type as TabType, currentPage: 'home' });
   };
 
   // Handle tab change - now with history
