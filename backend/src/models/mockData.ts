@@ -1,7 +1,7 @@
 import { Announcement, ContentType } from '../types.js';
 
 // Mock announcements data for development when PostgreSQL is unavailable
-export const mockAnnouncements: Announcement[] = [
+const rawMockAnnouncements = [
     // JOBS
     {
         id: 1,
@@ -552,6 +552,13 @@ export const mockAnnouncements: Announcement[] = [
         tags: []
     },
 ];
+
+export const mockAnnouncements: Announcement[] = rawMockAnnouncements.map(item => ({
+    ...item,
+    id: item.id.toString(),
+    type: item.type as ContentType,
+    tags: item.tags?.map(tag => ({ ...tag })) || [],
+}));
 
 // Filter mock announcements based on query params
 export function filterMockAnnouncements(filters?: {

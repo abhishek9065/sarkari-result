@@ -34,13 +34,9 @@ app.use(blockSuspiciousAgents);
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://sarkari-result-gold.vercel.app',
-  'https://sarkari-result.vercel.app',
   'https://sarkariexams.me',
   'https://www.sarkariexams.me'
 ];
-
-const vercelPreviewPattern = /^https:\/\/sarkari-result(-[a-z0-9]+)?(-[a-z0-9-]+)?\.vercel\.app$/;
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -49,10 +45,6 @@ app.use(cors({
       return;
     }
     if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-      return;
-    }
-    if (vercelPreviewPattern.test(origin)) {
       callback(null, true);
       return;
     }

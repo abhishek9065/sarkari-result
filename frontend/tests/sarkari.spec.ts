@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = 'https://sarkari-result-gold.vercel.app';
+const BASE_URL = 'https://sarkariexams.me';
 
 test.describe('Homepage', () => {
     test.beforeEach(async ({ page }) => {

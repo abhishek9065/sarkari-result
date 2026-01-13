@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { cacheMiddleware, cacheKeys } from '../middleware/cache.js';
 import { cacheControl } from '../middleware/cacheControl.js';
-import { invalidateCache } from '../utils/cache.js';
+import { bumpCacheVersion } from '../services/cacheVersion.js';
 import { AnnouncementModelMongo as AnnouncementModel } from '../models/announcements.mongo.js';
 import { ContentType, CreateAnnouncementDto } from '../types.js';
 import { sendAnnouncementNotification } from '../services/telegram.js';
@@ -36,8 +36,26 @@ const cursorQuerySchema = z.object({
   qualification: z.string().trim().optional(),
   sort: z.enum(['newest', 'oldest', 'deadline']).default('newest'),
   limit: z.coerce.number().int().min(1).max(50).default(20),
-  cursor: z.coerce.number().int().optional(), // Last seen ID
+  cursor: z
+    .string()
+    .regex(/^[a-fA-F0-9]{24}$/)
+    .optional(), // Last seen ObjectId
 });
+
+const cacheGroupsToInvalidate = [
+  'announcements',
+  'trending',
+  'search',
+  'calendar',
+  'categories',
+  'organizations',
+  'tags',
+  'announcement',
+];
+
+async function invalidateAnnouncementCaches(): Promise<void> {
+  await Promise.all(cacheGroupsToInvalidate.map(group => bumpCacheVersion(group)));
+}
 
 // Get all announcements - with caching (5 min server, 2 min browser)
 router.get('/', cacheMiddleware({ ttl: 300, keyGenerator: cacheKeys.announcements }), cacheControl(120), async (req, res) => {
@@ -58,7 +76,11 @@ router.get('/', cacheMiddleware({ ttl: 300, keyGenerator: cacheKeys.announcement
 });
 
 // V2: Cursor-based pagination (faster for large datasets)
-router.get('/v2', cacheMiddleware({ ttl: 300 }), cacheControl(120), async (req, res) => {
+router.get(
+  '/v2',
+  cacheMiddleware({ ttl: 300, keyGenerator: cacheKeys.announcementsV2 }),
+  cacheControl(120),
+  async (req, res) => {
   try {
     const parseResult = cursorQuerySchema.safeParse(req.query);
     if (!parseResult.success) {
@@ -84,7 +106,11 @@ router.get('/v2', cacheMiddleware({ ttl: 300 }), cacheControl(120), async (req, 
 });
 
 // V3: OPTIMIZED listing cards (minimal fields, 60% less RU consumption)
-router.get('/v3/cards', cacheMiddleware({ ttl: 300 }), cacheControl(120), async (req, res) => {
+router.get(
+  '/v3/cards',
+  cacheMiddleware({ ttl: 300, keyGenerator: cacheKeys.announcementsV3Cards }),
+  cacheControl(120),
+  async (req, res) => {
   try {
     const parseResult = cursorQuerySchema.safeParse(req.query);
     if (!parseResult.success) {
@@ -112,7 +138,11 @@ router.get('/v3/cards', cacheMiddleware({ ttl: 300 }), cacheControl(120), async 
 });
 
 // Get categories - long cache (1 hour)
-router.get('/meta/categories', cacheMiddleware({ ttl: 3600 }), cacheControl(1800), async (_req, res) => {
+router.get(
+  '/meta/categories',
+  cacheMiddleware({ ttl: 3600, keyGenerator: cacheKeys.categories }),
+  cacheControl(1800),
+  async (_req, res) => {
   try {
     const categories = await AnnouncementModel.getCategories();
     return res.json({ data: categories });
@@ -123,7 +153,11 @@ router.get('/meta/categories', cacheMiddleware({ ttl: 3600 }), cacheControl(1800
 });
 
 // Get organizations - long cache (1 hour)
-router.get('/meta/organizations', cacheMiddleware({ ttl: 3600 }), cacheControl(1800), async (_req, res) => {
+router.get(
+  '/meta/organizations',
+  cacheMiddleware({ ttl: 3600, keyGenerator: cacheKeys.organizations }),
+  cacheControl(1800),
+  async (_req, res) => {
   try {
     const organizations = await AnnouncementModel.getOrganizations();
     return res.json({ data: organizations });
@@ -134,7 +168,11 @@ router.get('/meta/organizations', cacheMiddleware({ ttl: 3600 }), cacheControl(1
 });
 
 // Get tags - medium cache (30 min)
-router.get('/meta/tags', cacheMiddleware({ ttl: 1800 }), cacheControl(600), async (_req, res) => {
+router.get(
+  '/meta/tags',
+  cacheMiddleware({ ttl: 1800, keyGenerator: cacheKeys.tags }),
+  cacheControl(600),
+  async (_req, res) => {
   try {
     const tags = await AnnouncementModel.getTags();
     return res.json({ data: tags });
@@ -256,15 +294,9 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
     // Note: Push notifications and email subscriptions removed (PostgreSQL dependency)
     // These can be re-implemented with MongoDB if needed
 
-    // Invalidate cached announcement lists and related data
-    invalidateCache('announcements');
-    invalidateCache('trending');
-    invalidateCache('search');
-    invalidateCache('calendar');  // Deadlines may have changed
-    // Meta caches (categories/orgs/tags may have new values)
-    invalidateCache('categories');
-    invalidateCache('organizations');
-    invalidateCache('tags');
+    await invalidateAnnouncementCaches().catch(err => {
+      console.error('Failed to invalidate caches after create:', err);
+    });
 
     return res.status(201).json({ data: announcement });
   } catch (error) {
@@ -292,16 +324,9 @@ router.patch('/:id', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Announcement not found' });
     }
 
-    // Invalidate cached data for this announcement and lists
-    invalidateCache(`announcement:${announcement.slug}`);
-    invalidateCache('announcements');
-    invalidateCache('trending');
-    invalidateCache('search');
-    invalidateCache('calendar');  // Deadline may have changed
-    // Meta caches (category/org/tags may have changed)
-    invalidateCache('categories');
-    invalidateCache('organizations');
-    invalidateCache('tags');
+    await invalidateAnnouncementCaches().catch(err => {
+      console.error('Failed to invalidate caches after update:', err);
+    });
 
     return res.json({ data: announcement });
   } catch (error) {
@@ -325,15 +350,9 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Announcement not found' });
     }
 
-    // Invalidate all cached data (deleted announcement affects everything)
-    invalidateCache('announcements');
-    invalidateCache('trending');
-    invalidateCache('search');
-    invalidateCache('calendar');  // Deadline removed
-    // Meta caches (counts may have changed)
-    invalidateCache('categories');
-    invalidateCache('organizations');
-    invalidateCache('tags');
+    await invalidateAnnouncementCaches().catch(err => {
+      console.error('Failed to invalidate caches after delete:', err);
+    });
 
     return res.json({ message: 'Announcement deleted successfully' });
   } catch (error) {

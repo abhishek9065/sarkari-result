@@ -45,7 +45,7 @@ export function SEO({ title, description, announcement, canonicalUrl }: SEOProps
         }
 
         // ========== Open Graph Meta Tags ==========
-        const baseUrl = 'https://sarkari-result-gold.vercel.app';
+        const baseUrl = 'https://sarkariexams.me';
         const ogImage = `${baseUrl}/og-image.png`;
 
         const ogTags: Record<string, string> = {
@@ -110,7 +110,7 @@ export function SEO({ title, description, announcement, canonicalUrl }: SEOProps
  * Generate JSON-LD structured data based on announcement type
  */
 function generateStructuredData(announcement: Announcement) {
-    const baseUrl = 'https://sarkari-result-gold.vercel.app';
+    const baseUrl = 'https://sarkariexams.me';
 
     // Common organization data
     const organization = {

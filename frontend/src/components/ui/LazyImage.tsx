@@ -77,7 +77,7 @@ export function LazyImage({
 export function getOptimizedImageUrl(src: string, width?: number): string {
     if (!src) return '';
 
-    // If using Vercel/Cloudflare Image Optimization
+    // If using Cloudflare Image Optimization
     // return `/_next/image?url=${encodeURIComponent(src)}&w=${width || 400}&q=80`;
 
     return src;

@@ -52,7 +52,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/sarkari-api\.onrender\.com\/api\/.*/,
+            urlPattern: /^https:\/\/api\.sarkariexams\.me\/api\/.*/,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',

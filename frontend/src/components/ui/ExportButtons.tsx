@@ -67,7 +67,7 @@ export function ExportButtons({ bookmarks }: ExportButtonsProps) {
                         </div>
                     </div>
                 `).join('')}
-                <div class="footer">Sarkari Result Gold - https://sarkari-result-gold.vercel.app</div>
+                <div class="footer">Sarkari Result Gold - https://sarkariexams.me</div>
             </body>
             </html>
         `;

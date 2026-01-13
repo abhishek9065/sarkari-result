@@ -21,7 +21,7 @@ A modern, fast, and feature-rich government jobs portal built with React + Vite 
 | Styling | CSS3 with CSS Variables |
 | Backend | Node.js, Express, TypeScript |
 | Database | PostgreSQL |
-| Hosting | Vercel (Frontend), Render (Backend) |
+| Hosting | Digital Ocean |
 
 ## 📦 Quick Start
 
@@ -108,17 +108,9 @@ npx playwright test --ui
 
 ## 🚀 Deployment
 
-### Frontend (Vercel)
-1. Connect GitHub repo to Vercel
-2. Set root directory to `frontend`
-3. Add environment variable: `VITE_API_BASE`
+### Deployment
 
-### Backend (Render)
-1. Create Web Service on Render
-2. Set root directory to `backend`
-3. Build command: `npm install && npm run build`
-4. Start command: `npm start`
-5. Add environment variables
+Please refer to `DIGITALOCEAN_DEPLOY.md` for detailed deployment instructions.
 
 ## 📊 Performance
 
@@ -141,6 +133,6 @@ MIT License - feel free to use for personal or commercial projects.
 
 ---
 
-**Live Demo**: https://sarkari-result-gold.vercel.app
+**Live Demo**: https://sarkariexams.me
 
-**API**: https://sarkari-api.onrender.com
+**API**: https://api.sarkariexams.me

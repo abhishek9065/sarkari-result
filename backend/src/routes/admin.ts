@@ -140,7 +140,7 @@ router.get('/announcements', async (req, res) => {
  */
 router.post('/announcements', async (req, res) => {
     try {
-        const userId = typeof req.user?.userId === 'number' ? req.user.userId : 0;
+        const userId = req.user?.userId ?? 'system';
         const announcement = await AnnouncementModelMongo.create(req.body, userId);
         return res.status(201).json({ data: announcement });
     } catch (error) {

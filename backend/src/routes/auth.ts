@@ -79,11 +79,11 @@ router.post('/login', bruteForceProtection, async (req, res) => {
     const user = await UserModelMongo.verifyPassword(validated.email, validated.password);
 
     if (!user) {
-      recordFailedLogin(clientIP);
+      await recordFailedLogin(clientIP);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    clearFailedLogins(clientIP);
+    await clearFailedLogins(clientIP);
 
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
@@ -113,7 +113,7 @@ router.post('/logout', async (req, res) => {
   const token = authHeader && authHeader.split(' ')[1];
 
   if (token) {
-    blacklistToken(token);
+    await blacklistToken(token);
     console.log(`[Auth] Logout from ${getClientIP(req)}`);
   }
 

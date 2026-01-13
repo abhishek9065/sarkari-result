@@ -2,7 +2,7 @@ export type ContentType = 'job' | 'result' | 'admit-card' | 'syllabus' | 'answer
 export type UserRole = 'user' | 'admin';
 
 export interface User {
-  id: number;
+  id: string;
   email: string;
   name: string;
   role: UserRole;
@@ -11,7 +11,7 @@ export interface User {
 }
 
 export interface Announcement {
-  id: number;
+  id: string;
   title: string;
   slug: string;
   type: ContentType;
@@ -25,7 +25,7 @@ export interface Announcement {
   ageLimit?: string;
   applicationFee?: string;
   totalPosts?: number;
-  postedBy?: number;
+  postedBy?: string;
   postedAt: Date;
   updatedAt: Date;
   isActive: boolean;
@@ -41,8 +41,8 @@ export interface Tag {
 }
 
 export interface ImportantDate {
-  id: number;
-  announcementId: number;
+  id: string;
+  announcementId: string;
   eventName: string;
   eventDate: Date;
   description?: string;
@@ -66,14 +66,14 @@ export interface CreateAnnouncementDto {
 }
 
 export interface JwtPayload {
-  userId: number;
+  userId: string;
   email: string;
   role: UserRole;
 }
 
 export interface Bookmark {
-  id: number;
-  userId: number;
-  announcementId: number;
+  id: string;
+  userId: string;
+  announcementId: string;
   createdAt: Date;
 }
