@@ -199,7 +199,7 @@ export function JobMatcher() {
                                     </div>
                                     <div className="job-info">
                                         <h4>
-                                            <a href={`/?item=${job.slug}`}>{job.title}</a>
+                                            <a href={`/jobs/${job.slug}`}>{job.title}</a>
                                         </h4>
                                         <div className="job-meta">
                                             <span>🏢 {job.organization}</span>
