@@ -1,14 +1,13 @@
 services:
-  # Nginx Reverse Proxy
+  # Nginx Reverse Proxy with SSL
   nginx:
-    image: nginx:alpine
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
     container_name: sarkari-nginx
     ports:
       - "80:80"
       - "443:443"
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./certs:/etc/nginx/certs:ro
     depends_on:
       - frontend
       - backend
