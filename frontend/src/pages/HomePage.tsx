@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Header, Navigation, Footer, Marquee, FeaturedGrid, SectionTable, SkeletonLoader, SocialButtons, SearchFilters, LegacyRedirect } from '../components';
 import type { FilterState } from '../components/ui/SearchFilters';
 import { useAuth } from '../context/AuthContext';
-import { SECTIONS, PATHS, type TabType, type PageType } from '../utils';
+import { SECTIONS, PATHS, type TabType, type PageType } from '../utils/constants';
+import { fetchAnnouncements } from '../utils/api';
+import type { Announcement, ContentType } from '../types';
 
 export function HomePage() {
     const [data, setData] = useState<Announcement[]>([]);
