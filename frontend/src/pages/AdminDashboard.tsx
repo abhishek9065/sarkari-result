@@ -169,7 +169,7 @@ export function AdminDashboard() {
                         <div className="stat-card info">
                             <div className="stat-icon">👁️</div>
                             <div className="stat-content">
-                                <div className="stat-value">{data.overview.totalViews.toLocaleString()}</div>
+                                <div className="stat-value">{(data.overview?.totalViews ?? 0).toLocaleString()}</div>
                                 <div className="stat-label">Total Views</div>
                             </div>
                         </div>
@@ -258,7 +258,7 @@ export function AdminDashboard() {
                                             >
                                                 {item.type}
                                             </span>
-                                            <span>{item.views.toLocaleString()} views</span>
+                                            <span>{(item.views ?? 0).toLocaleString()} views</span>
                                         </div>
                                     </div>
                                 </div>
