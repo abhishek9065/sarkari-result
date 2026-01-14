@@ -8,7 +8,6 @@ interface FeaturedGridProps {
 export function FeaturedGrid({ onItemClick }: FeaturedGridProps) {
     return (
         <section className="featured-section">
-            <h2 className="section-title"><span>🔥 Featured Exams</span></h2>
             <div className="featured-grid">
                 {FEATURED_ITEMS.map((item, idx) => (
                     <div
