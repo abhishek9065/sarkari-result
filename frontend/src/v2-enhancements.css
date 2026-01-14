@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 /* V2 Design Enhancements - Modern UI/UX Overhaul */
 
 /* ============================================
@@ -83,8 +85,6 @@
 /* ============================================
    ENHANCED TYPOGRAPHY
    ============================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 body {
     font-family: var(--font-sans);
