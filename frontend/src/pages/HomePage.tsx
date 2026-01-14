@@ -1,16 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Header, Navigation, Footer, Marquee, FeaturedGrid, SectionTable, SkeletonLoader, SocialButtons, SearchFilters, LegacyRedirect } from '../components';
+import { Header, Navigation, Footer, Marquee, FeaturedGrid, SectionTable, SkeletonLoader, SocialButtons, SearchFilters } from '../components';
 import type { FilterState } from '../components/ui/SearchFilters';
 import { useAuth } from '../context/AuthContext';
-import { SECTIONS, PATHS, type TabType, type PageType } from '../utils/constants';
+import { SECTIONS, type TabType, type PageType } from '../utils';
 import { fetchAnnouncements } from '../utils/api';
 import type { Announcement, ContentType } from '../types';
 
 export function HomePage() {
     const [data, setData] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
-    // activeTab removed as it is now handled by routing
+    const [activeTab, setActiveTab] = useState<TabType>(undefined);
     const [showSearch, setShowSearch] = useState(false);
     const navigate = useNavigate();
     const { user, logout, isAuthenticated } = useAuth();
@@ -104,8 +104,15 @@ export function HomePage() {
 
     // Navigate to category
     const handleCategoryClick = (type: ContentType) => {
-        const path = PATHS[type] || '/';
-        navigate(path);
+        const paths: Record<ContentType, string> = {
+            'job': '/jobs',
+            'result': '/results',
+            'admit-card': '/admit-card',
+            'answer-key': '/answer-key',
+            'admission': '/admission',
+            'syllabus': '/syllabus'
+        };
+        navigate(paths[type]);
     };
 
     // Handle filter change
@@ -118,7 +125,6 @@ export function HomePage() {
 
     return (
         <div className="app">
-            <LegacyRedirect />
             <Header
                 setCurrentPage={(page) => page === 'admin' ? navigate('/admin') : navigate('/' + page)}
                 user={user}
@@ -128,8 +134,10 @@ export function HomePage() {
                 onProfileClick={() => { }}
             />
             <Navigation
-                activeTab={undefined} // Home page has no active type tab usually, or could set based on URL if we wanted to support query params for back-compat
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
                 setShowSearch={setShowSearch}
+                goBack={() => { }}
                 setCurrentPage={(page) => navigate('/' + page)}
                 isAuthenticated={isAuthenticated}
                 onShowAuth={() => setShowAuthModal(true)}
