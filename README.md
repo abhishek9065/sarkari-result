@@ -164,6 +164,14 @@ admin-frontend/tests/      Admin Playwright smoke suite
 - `docs/DIGITALOCEAN_DEPLOY.md`
 - `docs/GITHUB_GOVERNANCE_CHECKLIST.md`
 
+## Production Deploy (Recommended)
+Use the guarded deploy script on server:
+```bash
+cd ~/sarkari-result
+bash scripts/deploy-prod.sh
+```
+It validates required production env vars before deploy and checks API health after startup.
+
 ## Notes
 - Mainline branch is `main`.
 - Contributor identities are normalized via `.mailmap`.
