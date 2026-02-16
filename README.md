@@ -49,6 +49,18 @@ Admin frontend runs on `http://localhost:4174/admin`.
 
 ## Environment Variables
 
+### Production Docker Compose (`./.env` at repo root)
+```env
+COSMOS_CONNECTION_STRING=...
+JWT_SECRET=...
+ADMIN_SETUP_KEY=...
+TOTP_ENCRYPTION_KEY=...
+ADMIN_EMAIL_ALLOWLIST=admin@example.com
+# or
+ADMIN_DOMAIN_ALLOWLIST=example.com
+```
+`ADMIN_SETUP_KEY`, `TOTP_ENCRYPTION_KEY`, and one of `ADMIN_EMAIL_ALLOWLIST`/`ADMIN_DOMAIN_ALLOWLIST` are required in production.
+
 ### Backend (`backend/.env`)
 ```env
 COSMOS_CONNECTION_STRING=mongodb://localhost:27017/sarkari_db
