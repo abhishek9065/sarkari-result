@@ -60,6 +60,7 @@ ADMIN_EMAIL_ALLOWLIST=admin@example.com
 ADMIN_DOMAIN_ALLOWLIST=example.com
 ```
 `ADMIN_SETUP_KEY`, `TOTP_ENCRYPTION_KEY`, and one of `ADMIN_EMAIL_ALLOWLIST`/`ADMIN_DOMAIN_ALLOWLIST` are required in production.
+`ADMIN_BACKUP_CODE_SALT` is optional (if omitted, backend safely falls back to `JWT_SECRET`).
 
 ### Backend (`backend/.env`)
 ```env
