@@ -1,9 +1,10 @@
 import express from 'express';
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { errorHandler } from '../middleware/errorHandler.js';
 import { requestIdMiddleware } from '../middleware/requestId.js';
+import { ErrorTracking } from '../services/errorTracking.js';
 import { app as serverApp } from '../server.js';
 import { AppError } from '../utils/AppError.js';
 
@@ -25,6 +26,10 @@ const createErrorHarness = () => {
 };
 
 describe('request id + error envelope', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('returns standardized envelope for unhandled errors', async () => {
     const app = createErrorHarness();
     const response = await request(app).get('/boom').set('X-Request-Id', 'req-test-123');
@@ -53,7 +58,28 @@ describe('request id + error envelope', () => {
     });
   });
 
-  it('returns a 400 envelope for malformed JSON bodies instead of a 500', async () => {
+  it('returns a 400 envelope for malformed JSON without capturing to Sentry', async () => {
+    const captureSpy = vi.spyOn(ErrorTracking, 'captureException');
+    const app = createErrorHarness();
+
+    const response = await request(app)
+      .post('/echo')
+      .set('Content-Type', 'application/json')
+      .set('X-Request-Id', 'req-json-123')
+      .send('@@KCnYR');
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({
+      status: 'fail',
+      error: 'Invalid JSON',
+      code: 'BAD_REQUEST',
+      message: 'Request body must be valid JSON.',
+      requestId: 'req-json-123',
+    });
+    expect(captureSpy).not.toHaveBeenCalled();
+  });
+
+  it('returns a 400 envelope for trailing garbage after JSON', async () => {
     const app = createErrorHarness();
     const response = await request(app)
       .post('/echo')
@@ -62,9 +88,28 @@ describe('request id + error envelope', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toMatchObject({
-      error: 'Invalid JSON body',
+      status: 'fail',
+      error: 'Invalid JSON',
       code: 'BAD_REQUEST',
+      message: 'Request body must be valid JSON.',
     });
+  });
+
+  it('treats malformed JSON on password recovery as a bad request', async () => {
+    const captureSpy = vi.spyOn(ErrorTracking, 'captureException');
+
+    const response = await request(serverApp)
+      .post('/api/auth/password-recovery/request')
+      .set('Content-Type', 'application/json')
+      .send('@@KCnYR');
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({
+      error: 'Invalid JSON',
+      code: 'BAD_REQUEST',
+      message: 'Request body must be valid JSON.',
+    });
+    expect(captureSpy).not.toHaveBeenCalled();
   });
 
   it('returns API fallback with code and request id under Express 5', async () => {

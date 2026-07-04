@@ -24,6 +24,23 @@ const toErrorCode = (statusCode: number): string => {
   }
 };
 
+type BodyParserError = Error & {
+  body?: unknown;
+  status?: number;
+  statusCode?: number;
+  type?: string;
+};
+
+const isMalformedJsonError = (err: Error): boolean => {
+  const candidate = err as BodyParserError;
+  return candidate.type === 'entity.parse.failed'
+    || (
+      err instanceof SyntaxError
+      && (candidate.status === 400 || candidate.statusCode === 400)
+      && Object.prototype.hasOwnProperty.call(candidate, 'body')
+    );
+};
+
 export const errorHandler = (
   err: Error,
   req: Request,
@@ -35,6 +52,17 @@ export const errorHandler = (
 
   if (res.headersSent) {
     return next(err);
+  }
+
+  if (isMalformedJsonError(err)) {
+    logger.warn({ path: req.path, requestId }, 'Malformed JSON request body');
+    return res.status(400).json({
+      status: 'fail',
+      error: 'Invalid JSON',
+      code: 'BAD_REQUEST',
+      message: 'Request body must be valid JSON.',
+      requestId,
+    });
   }
 
   // Zod Validation Errors
@@ -84,19 +112,6 @@ export const errorHandler = (
       error: 'csrf_invalid',
       code: 'FORBIDDEN',
       message: 'CSRF validation failed.',
-      requestId,
-    });
-  }
-
-  // Malformed JSON request body (express.json() / body-parser parse failure).
-  // This is client input error, not an application bug — don't 500 or report to Sentry.
-  if (err instanceof SyntaxError && (err as { type?: string }).type === 'entity.parse.failed') {
-    logger.warn({ path: req.path, requestId }, 'Malformed JSON request body');
-    return res.status(400).json({
-      status: 'fail',
-      error: 'Invalid JSON body',
-      code: 'BAD_REQUEST',
-      message: 'Request body must be valid JSON.',
       requestId,
     });
   }
