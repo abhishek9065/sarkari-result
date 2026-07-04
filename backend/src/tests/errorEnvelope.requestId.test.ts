@@ -4,8 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { errorHandler } from '../middleware/errorHandler.js';
 import { requestIdMiddleware } from '../middleware/requestId.js';
-import { ErrorTracking } from '../services/errorTracking.js';
 import { app as serverApp } from '../server.js';
+import { ErrorTracking } from '../services/errorTracking.js';
 import { AppError } from '../utils/AppError.js';
 
 const createErrorHarness = () => {

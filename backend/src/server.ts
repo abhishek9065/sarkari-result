@@ -9,6 +9,7 @@ import express from 'express';
 import { rateLimit as expressRateLimit } from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
 
+import { validateProductionEnv } from './config/validateProductionEnv.js';
 import { config } from './config.js';
 import { cloudflareMiddleware } from './middleware/cloudflare.js';
 import { csrfProtection } from './middleware/csrf.js';
@@ -655,6 +656,7 @@ async function startPostgresPrimaryRuntime() {
 }
 
 export async function startServer() {
+  validateProductionEnv();
   ErrorTracking.init();
   for (const warning of config.runtimeWarnings) {
     logger.warn({ warning }, '[Server] Runtime configuration warning');

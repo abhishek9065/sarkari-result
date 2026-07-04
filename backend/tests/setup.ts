@@ -44,6 +44,23 @@ if (!skipMongoTests && !process.env.MONGODB_URI && await canConnect(27017, '127.
     process.env.MONGODB_URI = 'mongodb://127.0.0.1:27017/sarkari_test';
 }
 
+if (!skipMongoTests && process.env.MONGODB_URI) {
+    try {
+        const uri = new URL(process.env.MONGODB_URI);
+        const host = uri.hostname;
+        const port = Number(uri.port || 27017);
+        const isLocalMongo = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+        const probeHost = host === 'localhost' ? '127.0.0.1' : host;
+        if (isLocalMongo && !(await canConnect(port, probeHost))) {
+            console.warn(`[Tests] Ignoring unreachable local MONGODB_URI at ${host}:${port}; falling back to MongoMemoryServer.`);
+            delete process.env.MONGODB_URI;
+        }
+    } catch {
+        console.warn('[Tests] Ignoring invalid MONGODB_URI; falling back to MongoMemoryServer.');
+        delete process.env.MONGODB_URI;
+    }
+}
+
 if (!skipMongoTests && !process.env.MONGODB_URI) {
     try {
         mongoServer = await MongoMemoryServer.create();

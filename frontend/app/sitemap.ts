@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { siteConfig } from '@/lib/seo';
 import { getContentPagesByType, getRawListing, getTaxonomyList } from '@/lib/content-api';
 import { auxiliaryPageMeta, infoPageMeta, resourceCategoryMeta } from '@/app/lib/public-content';
+import { shouldExcludeFromSitemap } from '@/app/lib/seo-route-policy';
 
 export const revalidate = 300;
 
@@ -15,8 +16,6 @@ const LISTING_TYPES = [
 
 const CONTENT_PAGE_TYPES = ['info', 'auxiliary', 'resource_meta'] as const;
 
-const NOINDEX_PATHS = new Set(['/search', '/profile', '/bookmarks']);
-
 function contentPageHref(page: { slug: string; pageType: string; seoCanonicalPath?: string | null }) {
   if (page.seoCanonicalPath) {
     return page.seoCanonicalPath.startsWith('/') ? page.seoCanonicalPath : `/${page.seoCanonicalPath}`;
@@ -27,10 +26,6 @@ function contentPageHref(page: { slug: string; pageType: string; seoCanonicalPat
   }
 
   return `/${page.slug}`;
-}
-
-function isNoIndexPath(path: string) {
-  return NOINDEX_PATHS.has(path);
 }
 
 function lastModified(value?: string) {
@@ -44,9 +39,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const localStaticPaths = [
     ...Object.values(infoPageMeta)
       .map((item) => item.canonicalPath)
-      .filter((path) => !isNoIndexPath(path)),
-    ...Object.values(auxiliaryPageMeta).map((item) => item.canonicalPath),
-    ...Object.values(resourceCategoryMeta).map((item) => item.canonicalPath),
+      .filter((path) => !shouldExcludeFromSitemap(path)),
+    ...Object.values(auxiliaryPageMeta)
+      .map((item) => item.canonicalPath)
+      .filter((path) => !shouldExcludeFromSitemap(path)),
+    ...Object.values(resourceCategoryMeta)
+      .map((item) => item.canonicalPath)
+      .filter((path) => !shouldExcludeFromSitemap(path)),
   ];
   const staticEntries: MetadataRoute.Sitemap = [
     { url: siteConfig.url, lastModified: now, changeFrequency: 'hourly', priority: 1 },
@@ -97,7 +96,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .flat()
       .forEach((page) => {
         const path = contentPageHref(page);
-        if (isNoIndexPath(path) || path.startsWith('/join/')) {
+        if (shouldExcludeFromSitemap(path)) {
           return;
         }
 

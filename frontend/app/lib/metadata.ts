@@ -45,7 +45,7 @@ type BuildNoIndexMetadataOptions = {
 const DEFAULT_DESCRIPTION =
   'Trusted government jobs and exam update platform for latest jobs, results, admit cards, answer keys, syllabus, admissions, scholarships, and official notices.';
 
-function normalizeCanonicalPath(value?: string): string {
+export function normalizeCanonicalPath(value?: string): string {
   if (!value) return '/';
 
   const cleaned = value.trim();

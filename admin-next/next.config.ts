@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.resolve(__dirname),
   basePath: '/admin',
   poweredByHeader: false,
+  allowedDevOrigins: ['127.0.0.1'],
 };
 
 export default nextConfig;
