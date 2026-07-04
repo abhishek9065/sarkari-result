@@ -21,6 +21,7 @@ import {
   consumePasswordRecoveryToken,
   getPasswordRecoveryToken,
   issuePasswordRecoveryToken,
+  markPasswordRecoveryAttempt,
   revokePasswordRecoveryTokenForUser,
 } from '../services/passwordRecovery.js';
 import { checkPasswordSecurity } from '../services/passwordSecurity.js';
@@ -335,6 +336,7 @@ router.post('/password-recovery/reset', rateLimit({ windowMs: 10 * 60 * 1000, ma
 
     const passwordSecurity = await checkPasswordSecurity(validated.password);
     if (passwordSecurity.breached) {
+      await markPasswordRecoveryAttempt(validated.token);
       return res.status(400).json({
         error: 'weak_password',
         message: 'Choose a stronger password that has not appeared in known breach datasets.',
@@ -347,6 +349,7 @@ router.post('/password-recovery/reset', rateLimit({ windowMs: 10 * 60 * 1000, ma
       config.passwordHistoryLimit,
     );
     if (isReused) {
+      await markPasswordRecoveryAttempt(validated.token);
       return res.status(400).json({
         error: 'password_reused',
         message: 'Choose a password that has not been used recently.',
