@@ -10,11 +10,15 @@ import { AppError } from '../utils/AppError.js';
 const createErrorHarness = () => {
   const app = express();
   app.use(requestIdMiddleware);
+  app.use(express.json());
   app.get('/boom', () => {
     throw new Error('boom');
   });
   app.get('/forbidden', () => {
     throw new AppError('Forbidden test error', 403);
+  });
+  app.post('/echo', (req, res) => {
+    res.json(req.body);
   });
   app.use(errorHandler);
   return app;
@@ -46,6 +50,20 @@ describe('request id + error envelope', () => {
       code: 'FORBIDDEN',
       message: 'Forbidden test error',
       requestId: response.headers['x-request-id'],
+    });
+  });
+
+  it('returns a 400 envelope for malformed JSON bodies instead of a 500', async () => {
+    const app = createErrorHarness();
+    const response = await request(app)
+      .post('/echo')
+      .set('Content-Type', 'application/json')
+      .send('{"email":"sample@email.tst"}garbage');
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({
+      error: 'Invalid JSON body',
+      code: 'BAD_REQUEST',
     });
   });
 
