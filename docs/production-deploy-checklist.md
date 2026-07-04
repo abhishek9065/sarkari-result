@@ -15,9 +15,10 @@ Use this checklist before a production release to `sarkariexams.me`. Production 
   - `POSTGRES_PRISMA_URL` or `DATABASE_URL`
   - `UPSTASH_REDIS_REST_URL`
   - `UPSTASH_REDIS_REST_TOKEN`
+  - `FRONTEND_REVALIDATE_TOKEN`
+- Confirm recommended production variables are set when the corresponding features are enabled:
   - `FRONTEND_URL`
   - `CORS_ORIGINS`
-  - `FRONTEND_REVALIDATE_TOKEN`
   - `METRICS_TOKEN`
 - Keep `LEGACY_MONGO_REQUIRED=false` unless the release explicitly depends on legacy Mongo/Cosmos compatibility paths.
 
@@ -71,8 +72,8 @@ Verify these routes manually or from release smoke tooling:
 - `/api/livez`
 - `/api/readyz`
 - `/api/health`
-- `/api/health/deep` with `METRICS_TOKEN`
-- `/metrics` with `METRICS_TOKEN`
+- `/api/health/deep` with `METRICS_TOKEN`, when configured
+- `/metrics` with `METRICS_TOKEN`, when configured
 - frontend revalidation smoke through the internal frontend container
 
 Also inspect:

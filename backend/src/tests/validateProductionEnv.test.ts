@@ -14,7 +14,6 @@ function setValidProductionEnv(overrides: NodeJS.ProcessEnv = {}) {
     CORS_ORIGINS: 'https://sarkariexams.me,https://www.sarkariexams.me',
     FRONTEND_REVALIDATE_URL: 'http://frontend:3000/api/revalidate',
     FRONTEND_REVALIDATE_TOKEN: 'secure-revalidate-token',
-    METRICS_TOKEN: 'secure-metrics-token',
     UPSTASH_REDIS_REST_URL: 'https://example.upstash.io',
     UPSTASH_REDIS_REST_TOKEN: 'secure-redis-token',
     LEGACY_MONGO_REQUIRED: 'false',
@@ -37,7 +36,11 @@ describe('validateProductionEnv', () => {
   });
 
   it('accepts the required production environment', () => {
-    setValidProductionEnv();
+    setValidProductionEnv({
+      CORS_ORIGINS: '',
+      FRONTEND_URL: '',
+      METRICS_TOKEN: '',
+    });
 
     expect(() => validateProductionEnv()).not.toThrow();
   });
@@ -62,7 +65,29 @@ describe('validateProductionEnv', () => {
       CORS_ORIGINS: 'https://sarkariexams.me,http://localhost:3000',
     });
 
-    expect(() => validateProductionEnv()).toThrow(/JWT_SECRET must not use a placeholder value[\s\S]*FRONTEND_URL must not point to localhost[\s\S]*CORS_ORIGINS must not include localhost/);
+    expect(() => validateProductionEnv()).toThrow(/JWT_SECRET must not use a placeholder value[\s\S]*FRONTEND_URL must not point to localhost/);
+  });
+
+  it('allows localhost CORS origins for mixed local tooling but rejects non-https remote origins', () => {
+    setValidProductionEnv({
+      CORS_ORIGINS: 'https://sarkariexams.me,http://localhost:3000,http://example.com',
+    });
+
+    expect(() => validateProductionEnv()).toThrow(/CORS_ORIGINS origin http:\/\/example.com must use https/);
+  });
+
+  it('allows missing metrics token but rejects placeholder metrics tokens', () => {
+    setValidProductionEnv({
+      METRICS_TOKEN: '',
+    });
+
+    expect(() => validateProductionEnv()).not.toThrow();
+
+    setValidProductionEnv({
+      METRICS_TOKEN: 'change-me',
+    });
+
+    expect(() => validateProductionEnv()).toThrow(/METRICS_TOKEN must not use a placeholder value/);
   });
 
   it('requires legacy Mongo configuration only when legacy runtime is required', () => {

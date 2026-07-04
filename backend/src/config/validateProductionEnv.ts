@@ -1,9 +1,6 @@
 const REQUIRED_PRODUCTION_KEYS = [
   'JWT_SECRET',
-  'FRONTEND_URL',
-  'CORS_ORIGINS',
   'FRONTEND_REVALIDATE_TOKEN',
-  'METRICS_TOKEN',
   'UPSTASH_REDIS_REST_URL',
   'UPSTASH_REDIS_REST_TOKEN',
 ] as const;
@@ -84,14 +81,9 @@ function validateCorsOrigins(failures: string[]) {
   }
 
   for (const origin of origins) {
-    if (isLocalhostUrl(origin)) {
-      failures.push(`CORS_ORIGINS must not include localhost origin ${origin} in production`);
-      continue;
-    }
-
     try {
       const parsed = new URL(origin);
-      if (parsed.protocol !== 'https:') {
+      if (parsed.protocol !== 'https:' && !isLocalhostUrl(origin)) {
         failures.push(`CORS_ORIGINS origin ${origin} must use https in production`);
       }
     } catch {
@@ -119,6 +111,11 @@ export function validateProductionEnv() {
   }
   if (databaseUrl && isPlaceholder(databaseUrl)) {
     failures.push('DATABASE_URL must not use a placeholder value');
+  }
+
+  const metricsToken = readEnv('METRICS_TOKEN');
+  if (metricsToken && isPlaceholder(metricsToken)) {
+    failures.push('METRICS_TOKEN must not use a placeholder value');
   }
 
   const jwtSecret = readEnv('JWT_SECRET');
