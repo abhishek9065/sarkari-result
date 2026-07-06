@@ -444,16 +444,16 @@ function FeaturedSpotlight() {
                   </span>
                 </div>
 
-                <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-3 dark:border-white/7">
+                <div className="mt-4 border-t border-gray-100 pt-3 dark:border-white/7">
+                  <p className="mb-2 truncate text-[10.5px] font-medium text-gray-600 dark:text-gray-300" title={item.org}>{item.org}</p>
                   <SafeLink
                     href={item.href}
                     aria-label={`Apply online for ${item.title}`}
-                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-1.5 text-[12px] font-extrabold transition-colors"
+                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl px-3 py-1.5 text-[12px] font-extrabold transition-colors"
                     style={{ background: `linear-gradient(135deg,${item.accent}18,${item.accent}08)`, border: `1.5px solid ${item.accent}28`, color: item.accent }}
                   >
                     Apply Online <SvgIcon name="arrow-right" size={12} />
                   </SafeLink>
-                  <span className="max-w-27.5 truncate text-[10.5px] font-medium text-gray-700 dark:text-gray-200">{item.org}</span>
                 </div>
               </div>
             </article>
