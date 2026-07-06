@@ -92,70 +92,12 @@ function SvgIcon({
   );
 }
 
-const stats = [
-  { icon: 'briefcase', value: '12,450', label: 'Active Jobs', color: '#fbbf24' },
-  { icon: 'file-check', value: '128', label: 'Admit Cards', color: '#7dd3fc' },
-  { icon: 'clipboard-list', value: '89', label: 'New Results', color: '#86efac' },
-  { icon: 'trending-up', value: '342', label: 'Added Today', color: '#f9a8d4' },
-] as const;
-
 const popular = ['SSC CGL 2026', 'UPSC CSE', 'IBPS PO', 'RRB Group D', 'SBI Clerk'];
 
-const featured = [
-  {
-    chip: 'RECRUITMENT',
-    chipBg: '#fee2e2',
-    chipFg: '#b91c1c',
-    accent: '#dc2626',
-    title: 'SSC CGL 2026',
-    sub: 'Combined Graduate Level - Tier I',
-    org: 'Staff Selection Commission',
-    orgShort: 'SSC',
-    posts: '14,582',
-    qual: 'Graduate',
-    lastDate: 'Check official notice',
-    deadlineLabel: 'Verify deadline',
-    urgency: 50,
-    href: '/jobs/ssc-cgl-2026',
-  },
-  {
-    chip: 'BANKING',
-    chipBg: '#dbeafe',
-    chipFg: '#1d4ed8',
-    accent: '#1d4ed8',
-    title: 'IBPS PO 2026',
-    sub: 'Probationary Officer - CRP-PO/MT-XV',
-    org: 'IBPS',
-    orgShort: 'IBPS',
-    posts: '4,500',
-    qual: 'Graduate',
-    lastDate: 'Check official notice',
-    deadlineLabel: 'Verify deadline',
-    urgency: 12,
-    href: '/jobs/ibps-po-2026',
-  },
-  {
-    chip: 'RAILWAY',
-    chipBg: '#fef3c7',
-    chipFg: '#b45309',
-    accent: '#ea580c',
-    title: 'RRB Group D',
-    sub: 'Level-1 Posts in Various Departments',
-    org: 'Railway Recruitment Board',
-    orgShort: 'RRB',
-    posts: '32,000',
-    qual: '10th Pass',
-    lastDate: 'Check official notice',
-    deadlineLabel: 'Verify deadline',
-    urgency: 8,
-    href: '/jobs/rrb-group-d-level-1-2026',
-  },
-] as const;
-
-const PRIMARY_SECTION_ITEM_LIMIT = 4;
-const PRIORITY_SECTION_ITEM_LIMIT = 4;
-const SECONDARY_SECTION_ITEM_LIMIT = 2;
-const LOW_PRIORITY_SECTION_ITEM_LIMIT = 2;
+const PRIMARY_SECTION_ITEM_LIMIT = 8;
+const PRIORITY_SECTION_ITEM_LIMIT = 6;
+const SECONDARY_SECTION_ITEM_LIMIT = 6;
+const LOW_PRIORITY_SECTION_ITEM_LIMIT = 6;
 
 const linkSections = {
   jobs: [
@@ -234,25 +176,6 @@ type LinkTuple = readonly [string, string, string, ('new' | 'hot' | 'update' | '
 type HomepageSections = Awaited<ReturnType<typeof getHomepageSections>>;
 type HomepageCard = HomepageSections[keyof HomepageSections][number];
 
-const monoPalette: Array<[string, string]> = [
-  ['#fee2e2', '#b91c1c'],
-  ['#dbeafe', '#1d4ed8'],
-  ['#ede9fe', '#6d28d9'],
-  ['#dcfce7', '#15803d'],
-  ['#fef3c7', '#b45309'],
-  ['#ffe4e6', '#be123c'],
-  ['#cffafe', '#0e7490'],
-  ['#fae8ff', '#a21caf'],
-];
-
-function orgColors(name: string): [string, string] {
-  let hash = 0;
-  for (let index = 0; index < name.length; index += 1) {
-    hash = (hash * 31 + name.charCodeAt(index)) >>> 0;
-  }
-  return monoPalette[hash % monoPalette.length];
-}
-
 function itemHref(title: string, fallback: string) {
   return `${fallback}?search=${encodeURIComponent(title.split(' - ')[0])}`;
 }
@@ -294,73 +217,55 @@ function Hero() {
         className="pointer-events-none absolute inset-0 hidden lg:block"
         style={{
           background:
-            'radial-gradient(900px 420px at 10% -10%, rgba(30,58,138,0.85) 0%, transparent 55%),radial-gradient(760px 360px at 92% 0%, rgba(109,40,217,0.72) 0%, transparent 55%)',
+            'radial-gradient(780px 320px at 8% -20%, rgba(30,58,138,0.8) 0%, transparent 55%),radial-gradient(680px 300px at 94% -10%, rgba(109,40,217,0.62) 0%, transparent 55%)',
         }}
       />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-[linear-gradient(90deg,transparent,rgba(253,216,53,0.45)_50%,transparent)]" />
 
-      <div className="relative mx-auto max-w-6xl px-4 pb-8 pt-8">
-        <div className="mb-5 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[linear-gradient(135deg,#fde68a,#fbbf24)] px-2.5 py-1 text-[9.5px] font-extrabold tracking-[0.08em] text-[#0b1437]">
-            <SvgIcon name="zap" size={9} fill="currentColor" /> #1 GOVT JOBS PORTAL
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/9 px-2.5 py-1 text-[9.5px] font-bold text-white/90 ring-1 ring-white/20">
-            <SvgIcon name="shield-check" size={10} className="text-emerald-300" /> Verified Daily
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/9 px-2.5 py-1 text-[9.5px] font-bold text-white/90 ring-1 ring-white/20">
-            <SvgIcon name="badge-check" size={10} className="text-sky-300" /> All India - 28 States
-          </span>
-        </div>
-
-        <div className="grid items-center gap-6 lg:grid-cols-[1fr_auto]">
-          <div>
-            <h1 className="text-[34px] font-black leading-[1.04] tracking-normal text-white sm:text-[40px]">
+      <div className="relative mx-auto max-w-6xl px-4 py-5 sm:py-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-[22px] font-black leading-tight tracking-normal text-white sm:text-[26px]">
               India&apos;s trusted{' '}
               <span className="bg-[linear-gradient(135deg,#fde68a_0%,#fbbf24_45%,#f97316_100%)] bg-clip-text text-transparent">
                 Sarkari Naukri
-              </span>
-              <br />
-              <span className="text-white/85">portal - updated daily.</span>
+              </span>{' '}
+              portal
             </h1>
-            <p className="mt-3 max-w-lg text-[13.5px] font-medium leading-6 text-blue-100/85">
-              Govt job notifications, admit cards, results, answer keys & syllabi - all in one place, always fresh.
+            <p className="mt-1 text-[12px] font-medium leading-5 text-blue-100/80">
+              Latest govt jobs, results, admit cards, answer keys &amp; syllabus &mdash; updated daily.
             </p>
           </div>
 
-          <div className="hidden shrink-0 grid-cols-2 gap-2 rounded-2xl bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))] p-3 ring-1 ring-white/14 lg:grid">
-            {stats.map(({ icon, value, label, color }) => (
-              <div key={label} className="flex items-center gap-2.5 rounded-xl bg-white/4 px-2.5 py-2 ring-1 ring-white/8">
-                <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl" style={{ background: `${color}20` }}>
-                  <SvgIcon name={icon} size={14} style={{ color }} />
-                </div>
-                <div className="leading-tight">
-                  <div className="text-[15px] font-extrabold tabular-nums text-white">{value}</div>
-                  <div className="text-[9px] font-bold uppercase tracking-wider text-white/75">{label}</div>
-                </div>
-              </div>
-            ))}
+          <div className="hidden shrink-0 items-center gap-2 sm:flex">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[linear-gradient(135deg,#fde68a,#fbbf24)] px-2.5 py-1 text-[9.5px] font-extrabold tracking-[0.08em] text-[#0b1437]">
+              <SvgIcon name="zap" size={9} fill="currentColor" /> #1 GOVT JOBS
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/9 px-2.5 py-1 text-[9.5px] font-bold text-white/90 ring-1 ring-white/20">
+              <SvgIcon name="shield-check" size={10} className="text-emerald-300" /> Verified Daily
+            </span>
           </div>
         </div>
 
-        <form action={homePageLinks.jobs} className="mt-6 flex max-w-2xl gap-2">
-          <div className="flex flex-1 items-center gap-2.5 rounded-2xl border border-white/20 bg-white/9 px-4 py-3.5 transition focus-within:ring-2 focus-within:ring-yellow-400/60 lg:shadow-[0_4px_20px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.06)]">
+        <form action={homePageLinks.jobs} className="mt-4 flex gap-2">
+          <div className="flex flex-1 items-center gap-2.5 rounded-xl border border-white/20 bg-white/9 px-3.5 py-2.5 transition focus-within:ring-2 focus-within:ring-yellow-400/60">
             <SvgIcon name="search" size={16} className="shrink-0 text-blue-100/85" />
             <input
               name="search"
-              placeholder="Search jobs, exams, results, admit cards..."
-              className="min-w-0 flex-1 bg-transparent text-[14px] text-white outline-none placeholder:text-blue-100/75"
+              placeholder="Search jobs, results, admit cards..."
+              className="min-w-0 flex-1 bg-transparent text-[13.5px] text-white outline-none placeholder:text-blue-100/70"
             />
           </div>
           <button
             type="submit"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-2xl bg-[linear-gradient(135deg,#fde68a,#f59e0b)] px-5 py-3.5 text-[13px] font-extrabold text-[#0b1437] transition hover:brightness-110 active:scale-95 lg:shadow-[0_6px_20px_rgba(245,158,11,0.32)]"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[linear-gradient(135deg,#fde68a,#f59e0b)] px-4 py-2.5 text-[13px] font-extrabold text-[#0b1437] transition hover:brightness-110 active:scale-95"
           >
             Search <SvgIcon name="arrow-right" size={14} />
           </button>
         </form>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="shrink-0 text-[11px] font-bold text-white/80">Popular:</span>
+        <div className="mt-2.5 flex flex-wrap items-center gap-2">
+          <span className="shrink-0 text-[11px] font-bold text-white/70">Popular:</span>
           {popular.map((label) => (
             <a
               key={label}
@@ -376,91 +281,62 @@ function Hero() {
   );
 }
 
-function FeaturedSpotlight() {
+interface TickerItem {
+  title: string;
+  href: string;
+  tag?: 'new' | 'hot' | 'update' | 'last-date';
+}
+
+const tickerTagColor: Record<NonNullable<TickerItem['tag']>, string> = {
+  new: '#059669',
+  hot: '#dc2626',
+  update: '#2563eb',
+  'last-date': '#d97706',
+};
+
+function NewsTicker({ items }: { items: readonly TickerItem[] }) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  const renderRow = (ariaHidden: boolean) =>
+    items.map((item, index) => (
+      <SafeLink
+        key={`${ariaHidden ? 'dup' : 'row'}-${item.href}-${index}`}
+        href={item.href}
+        aria-hidden={ariaHidden || undefined}
+        tabIndex={ariaHidden ? -1 : undefined}
+        className="inline-flex items-center gap-2 text-[12px] font-semibold text-gray-700 transition-colors hover:text-orange-600 dark:text-gray-200 dark:hover:text-orange-300"
+      >
+        <span className="h-1 w-1 shrink-0 rounded-full bg-orange-500" aria-hidden />
+        {item.tag ? (
+          <span
+            className="rounded px-1 py-px text-[8px] font-extrabold uppercase tracking-wider text-white"
+            style={{ background: tickerTagColor[item.tag] }}
+          >
+            {item.tag === 'last-date' ? 'LAST DATE' : item.tag}
+          </span>
+        ) : null}
+        {item.title}
+      </SafeLink>
+    ));
+
   return (
-    <section className="mx-auto max-w-6xl px-4 pt-6">
-      <div className="mb-4 flex items-end justify-between">
-        <div>
-          <div className="mb-0.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#9a3412] dark:text-orange-300">Closing Soon</div>
-          <h2 className="text-[19px] font-extrabold tracking-normal text-gray-900 dark:text-white">Top recruitments this week</h2>
+    <div className="border-b border-gray-200 bg-white dark:border-white/10 dark:bg-[#0f172a]">
+      <div className="mx-auto flex max-w-6xl items-stretch">
+        <span className="z-10 flex shrink-0 items-center gap-1.5 bg-[#d32f2f] px-3 text-[10px] font-extrabold uppercase tracking-widest text-white">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" aria-hidden />
+          Latest
+        </span>
+        <div className="relative min-w-0 flex-1 overflow-hidden">
+          <div className="flex w-max items-center gap-7 whitespace-nowrap py-2 pl-5 animate-marquee hover:[animation-play-state:paused]">
+            {renderRow(false)}
+            <span className="inline-block w-7" aria-hidden />
+            {renderRow(true)}
+          </div>
         </div>
-        <a href={homePageLinks.jobs} className="hidden items-center gap-1 text-[12px] font-bold text-gray-700 transition-colors hover:text-orange-600 dark:text-gray-200 dark:hover:text-orange-300 sm:inline-flex">
-          View all <SvgIcon name="chevron-right" size={12} />
-        </a>
       </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {featured.map((item) => {
-          const [orgBg, orgFg] = orgColors(item.org);
-          const isUrgent = item.urgency <= 15;
-
-          return (
-            <article
-              key={item.title}
-              className="group relative overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200/80 transition-shadow duration-300 hover:shadow-2xl hover:ring-2 hover:ring-orange-300 dark:bg-[#0f172a] dark:ring-white/9 dark:hover:ring-orange-500/40"
-            >
-              <div className="absolute inset-x-0 top-0 h-1.5" style={{ background: `linear-gradient(90deg, ${item.accent}, ${item.accent}55 65%, transparent)` }} />
-              <div className="absolute inset-x-0 top-1.5 h-0.5 bg-gray-100 dark:bg-white/4">
-                <div className="h-full" style={{ width: `${item.urgency}%`, background: isUrgent ? 'linear-gradient(90deg,#ef4444,#f97316)' : `linear-gradient(90deg,${item.accent}cc,${item.accent}44)` }} />
-              </div>
-              <div className="relative p-4 pt-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="rounded-lg px-2 py-0.5 text-[9px] font-extrabold tracking-[0.07em]" style={{ background: item.chipBg, color: item.chipFg }}>
-                    {item.chip}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold" style={{ color: isUrgent ? '#991b1b' : '#92400e', background: isUrgent ? '#fee2e2' : '#fef3c7' }}>
-                      <SvgIcon name="clock" size={9} />
-                      {item.deadlineLabel}
-                    </span>
-                    <div className="grid h-7 w-7 place-items-center rounded-xl ring-1 ring-black/5 dark:ring-white/10" style={{ background: orgBg }} title={item.org}>
-                      <span className="text-[8.5px] font-black tracking-normal" style={{ color: orgFg }}>{item.orgShort}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <h3 className="text-[19px] font-extrabold tracking-normal">
-                  <SafeLink
-                    href={item.href}
-                    className="text-gray-900 transition hover:text-orange-600 hover:underline hover:decoration-orange-300 hover:underline-offset-4 dark:text-white dark:hover:text-orange-300"
-                  >
-                    {item.title}
-                  </SafeLink>
-                </h3>
-                <p className="mt-0.5 text-[12px] font-medium leading-snug text-gray-700 dark:text-gray-300">{item.sub}</p>
-
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  <span className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-800 dark:bg-white/10 dark:text-gray-100">
-                    <span className="h-1.5 w-1.5 rounded-full bg-current opacity-55" aria-hidden /> {item.posts} Posts
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-800 dark:bg-white/10 dark:text-gray-100">
-                    <span className="text-[9px] font-black leading-none opacity-65" aria-hidden>
-                      Q
-                    </span>{' '}
-                    {item.qual}
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-800 dark:bg-white/10 dark:text-gray-100">
-                    <span className="h-1.5 w-1.5 rounded-full bg-current opacity-55" aria-hidden /> {item.lastDate}
-                  </span>
-                </div>
-
-                <div className="mt-4 border-t border-gray-100 pt-3 dark:border-white/7">
-                  <p className="mb-2 truncate text-[10.5px] font-medium text-gray-600 dark:text-gray-300" title={item.org}>{item.org}</p>
-                  <SafeLink
-                    href={item.href}
-                    aria-label={`Apply online for ${item.title}`}
-                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl px-3 py-1.5 text-[12px] font-extrabold transition-colors"
-                    style={{ background: `linear-gradient(135deg,${item.accent}18,${item.accent}08)`, border: `1.5px solid ${item.accent}28`, color: item.accent }}
-                  >
-                    Apply Online <SvgIcon name="arrow-right" size={12} />
-                  </SafeLink>
-                </div>
-              </div>
-            </article>
-          );
-        })}
-      </div>
-    </section>
+    </div>
   );
 }
 
@@ -513,13 +389,27 @@ function MainGrid({ sections }: { sections: HomepageSections }) {
   );
 }
 
+function buildTickerItems(sections: HomepageSections): TickerItem[] {
+  const order: Array<keyof HomepageSections> = ['jobs', 'results', 'admit-cards', 'admissions', 'answer-keys'];
+  const items: TickerItem[] = [];
+
+  for (const key of order) {
+    for (const card of (sections[key] || []).slice(0, 3)) {
+      items.push({ title: card.title, href: card.href, tag: card.tag });
+    }
+  }
+
+  return items.slice(0, 12);
+}
+
 export default async function HomePage({ initialAuthTab }: HomePageProps) {
   const sections = await getHomepageSections();
+  const tickerItems = buildTickerItems(sections);
 
   return (
     <PublicSiteShell initialAuthTab={initialAuthTab} activeHref={homePageLinks.home}>
       <Hero />
-      <FeaturedSpotlight />
+      <NewsTicker items={tickerItems} />
       <MainGrid sections={sections} />
     </PublicSiteShell>
   );

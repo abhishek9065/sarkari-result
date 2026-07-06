@@ -219,3 +219,10 @@
   background: var(--accent);
   color: var(--accent-foreground);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none !important;
+    transform: none !important;
+  }
+}
