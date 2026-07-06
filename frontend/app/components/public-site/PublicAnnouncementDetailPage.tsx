@@ -842,7 +842,7 @@ function PublicAnnouncementDetailPageInner({
 
       <div className="space-y-4 pb-24 lg:pb-0">
         <nav className="sticky top-[57px] z-20 border-b border-gray-200 bg-white/95 shadow-sm backdrop-blur">
-          <div className="mx-auto flex max-w-6xl min-w-max items-center gap-1 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mx-auto flex w-full max-w-6xl items-center gap-1 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {navSections.map((section) => {
               const Icon = section.icon;
 
@@ -852,7 +852,7 @@ function PublicAnnouncementDetailPageInner({
                   type="button"
                   onClick={() => scrollToSection(section.id)}
                   className={cn(
-                    'inline-flex items-center gap-2 border-b-2 px-3.5 py-4 text-[12px] font-semibold transition-colors',
+                    'inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3.5 py-4 text-[12px] font-semibold transition-colors',
                     activeSection === section.id
                       ? 'border-[#e65100] text-[#e65100]'
                       : 'border-transparent text-gray-500 hover:text-gray-800',
